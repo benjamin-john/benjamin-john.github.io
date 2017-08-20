@@ -1,1 +1,62 @@
-<iframe src="https://calendar.google.com/calendar/embed?showTitle=0&amp;showNav=0&amp;showDate=0&amp;showPrint=0&amp;showTabs=0&amp;showCalendars=0&amp;showTz=0&amp;mode=AGENDA&amp;height=1010&amp;wkst=1&amp;bgcolor=%23FFFFFF&amp;src=benadrome%40gmail.com&amp;color=%235229A3&amp;src=tjl94m92s8f3b7nt2s5pvjh78k%40group.calendar.google.com&amp;color=%232952A3&amp;src=kb03j2l5gu532ii3mer7jmu749r48n94%40import.calendar.google.com&amp;color=%230D7813&amp;src=karnrjohn%40gmail.com&amp;color=%23A32929&amp;src=blg4dqp3hc0i2vcijp8m7cu0jg1ne0o6%40import.calendar.google.com&amp;color=%23060D5E&amp;ctz=America%2FChicago" style="border-width:0" width="1290" height="1010" frameborder="0" scrolling="no"></iframe>
+<html>
+<head>
+<script src="https://s3-us-west-2.amazonaws.com/reallysimpleweather/reallysimpleweather-1.1.0.min.js"></script>
+</head>
+<style>
+.container{
+    display: flex;
+}
+.fixed{
+    width: 600px;
+		padding-right: 30pt;
+}
+.flex-item{
+    flex-grow: 1;
+}
+</style>
+<body>
+<div class="container">
+<div class="fixed">
+<iframe src="https://calendar.google.com/calendar/embed?showTitle=0&amp;showNav=0&amp;showDate=0&amp;showPrint=0&amp;showTabs=0&amp;showCalendars=0&amp;showTz=0&amp;mode=AGENDA&amp;height=1010&amp;wkst=1&amp;bgcolor=%23FFFFFF&amp;src=benadrome%40gmail.com&amp;color=%235229A3&amp;src=tjl94m92s8f3b7nt2s5pvjh78k%40group.calendar.google.com&amp;color=%232952A3&amp;src=kb03j2l5gu532ii3mer7jmu749r48n94%40import.calendar.google.com&amp;color=%230D7813&amp;src=karnrjohn%40gmail.com&amp;color=%23A32929&amp;src=blg4dqp3hc0i2vcijp8m7cu0jg1ne0o6%40import.calendar.google.com&amp;color=%23060D5E&amp;ctz=America%2FChicago" style="border-width:0" width="600" height="1010" frameborder="0" scrolling="no"></iframe>
+</div>
+<div class="flex-item" id="weather"></div>
+</div>
+<script>
+reallySimpleWeather.weather({
+	wunderkey: '', // leave blank for Yahoo API
+    location: 'Minneapolis, MN', //your location here, also works in lat/lon
+    woeid: '', // "Where on Earth ID" optional alternative to location
+    unit: 'f', // 'c' also works
+    success: function(weather) {
+
+
+      html = '<h1>'+weather.city+', '+weather.region+'</h1>';
+      html += '<h2>'+weather.temp+'&#8457&nbsp&nbsp&nbsp'+weather.currently+'</h2>';
+      html += '<h3>High: '+weather.high+'&#8457 &nbsp&nbsp&nbsp Low: '+weather.low+'&#8457</h3>';
+      html += '<p>Wind: '+weather.wind.direction+' '+weather.wind.speed+' '+weather.units.speed+'<br />';
+      html += 'Humidity: '+weather.humidity+'%<br />';
+      html += 'Sunrise: '+weather.sunrise+'<br />Sunset: '+weather.sunset+'</p>';
+
+   html += '<h2>10 Day Forecast</h2>';
+   html += '<table style="width:40%">';
+      for(var i=0;i<weather.forecast.length;i++) {
+          html += '<tr>'+'<th>'+weather.forecast[i].day+'</th>';
+          html += '<th>'+weather.forecast[i].date+'</th>';
+          html += '<th>'+'High: '+weather.forecast[i].high+'</th>';
+          html += '<th>'+'Low: '+weather.forecast[i].low+'</th>';
+          html += '<th>'+weather.forecast[i].text+'</th>'+'</tr>';
+        }
+    html+= '</table>';
+
+    html += '<br /><p>Updated: '+weather.updated+'</p>';
+
+
+
+	  document.getElementById('weather').innerHTML = html;
+    },
+    error: function(error) {
+	  document.getElementById('weather').innerHTML = '<p>'+error+'</p>';
+    }
+});</script>
+</body>
+</html>
