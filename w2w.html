@@ -12,11 +12,9 @@ if (day < 10)
  day = "0" + day;
 day=day+""
 var datestring=year+month+day;
-var string1 = "<iframe src=&quot;https://calendar.google.com/calendar/embed?mode=DAY&amp;dates="
-var string2 = "&amp;height=600&amp;wkst=1&amp;src=bethel.edu_7hbog4g1kv1f9jj7287bcrbh4s%40group.calendar.google.com&amp;color=%23711616&amp;ctz=America%2FChicago&quot; style=&quot;border-width:0&quot; width=&quot;800&quot; height=&quot;600&quot; frameborder=&quot;0&quot; scrolling=&quot;no&quot;></iframe>"
-
+var quote = '"'
 
 document.write(
-  string1+datestring+"/"+datestring+string2
+  "<iframe src="+quote+"https://calendar.google.com/calendar/embed?mode=DAY&amp;dates="+datestring+"/"+datestring+"&amp;height=600&amp;wkst=1&amp;src=bethel.edu_7hbog4g1kv1f9jj7287bcrbh4s%40group.calendar.google.com&amp;color=%23711616&amp;ctz=America%2FChicago"+quote+" style='border-width:0' width='1200' height='700' frameborder='0' scrolling='no'></iframe>"
 );
 </script>
