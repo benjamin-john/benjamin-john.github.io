@@ -14,6 +14,10 @@
     font-size: 18px;
 }
 
+p.big {
+    line-height: 150%;
+}
+
 button {
     border: none;
     outline: 0;
@@ -33,6 +37,13 @@ a {
     color: black;
 }
 
+a.title {
+    text-decoration: none;
+    font-size: 20px;
+    color: grey;
+}
+
+
 button:hover, a:hover {
     opacity: 0.7;
 }
@@ -41,7 +52,7 @@ button:hover, a:hover {
 <div class="card">
  <img src="img.jpg" alt="John" style="width:100%">
  <h1>Benjamin A. John</h1>
- <p class="title">ITS Support Specialist</p>
+ <p class="title"><a class="title" href="https://www.bethel.edu/its/" target="_blank">ITS Support Specialist</a></p>
  <a href="https://www.bethel.edu/" target="_blank"><img src="bethel.jpg" alt="Bethel" style="width:100%"></a>
  <!--
  <a href="#"><i class="fa fa-dribbble"></i></a>
@@ -49,6 +60,6 @@ button:hover, a:hover {
  <a href="#"><i class="fa fa-linkedin"></i></a>
  <a href="#"><i class="fa fa-facebook"></i></a>
  -->
- <p><br />contact@Benajmin-John.com<br />612.839.6889</p>
- <p><a href="mailto:contact@benjamin-john.com"><button>Contact</button></a></p>
+ <p class="big">contact@Benajmin-John.com<br />612.839.6889</p>
+ <p><a href="mailto:hello@benjamin-john.com"><button>Contact</button></a></p>
 </div>
