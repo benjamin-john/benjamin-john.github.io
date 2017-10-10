@@ -1,0 +1,106 @@
+
+/* IMPORT GOOGLE FONTS */
+
+@import url(https://fonts.googleapis.com/css?family=Droid+Sans:400,700);
+
+
+
+
+/* FEED FRAME AREA TOP LEVEL PAGE - WIDTH ADDS BORDER */
+
+#feed_iframe_scroll	{
+		width: 100%;
+		max-width: 250px;
+		min-width: 200px;
+		margin: 0px auto 10px auto;
+		border: #1152D5 1px solid;
+		-moz-box-sizing: border-box;
+		-webkit-box-sizing: border-box;
+		box-sizing: border-box;
+		}
+
+#feed_iframe_scroll iframe 
+		{
+		width: 100%;
+		height: 218px; /* IF YOU EDIT HEIGHT EDIT THE SCROLLING SCRIPT HEIGHT!!!! */
+		display: block;
+		margin: 0px;
+		padding: 0px;
+		overflow: hidden;
+		}
+
+.scroll_feed-title 
+		{
+		color: #FFFFFF;
+		font: normal 20px "Droid Sans", arial, sans-serif;
+		text-align: left;
+		background-color: #1152D5;
+		padding: 5px 5px 5px 5px;
+		border-bottom: #FF3300 2px solid;
+		}
+
+
+
+
+/* EMBEDDED FEED PAGE BODY */
+
+#FeedDiv	{ position: absolute; left: 0; top: 0px; width: 100%; }
+
+body.feed-scroll {
+		background-color: #FFFFFF;
+		background-image: url("picts/feed-globe.jpg");
+		background-repeat: no-repeat;
+		background-position: -30px -40px;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		}
+
+/* FONTS & PADDING */
+
+.feed-text-if	{
+		color: #666666;
+		font: normal 13px "Droid Sans", arial, sans-serif;
+		text-align: left;
+		padding: 8px 0px 0px 0px;
+		}
+
+.feed-title-if {
+		color: #000000;
+		font: bold 15px "Droid Sans", arial, sans-serif;
+		text-align: left;
+		padding: 5px 3px 0px 5px;
+		border-bottom: #666666 0px solid;
+		}
+
+/* FEED NEWS LISTING OPTIONS */
+
+#FeedDiv ul	{
+	list-style: none;
+	padding: 0px;
+	margin-top: 10px;
+	margin-right: 0px;
+	margin-bottom: 10px;
+	margin-left: 0px;
+	}
+
+#FeedDiv ul li 
+	{
+	padding: 10px 5px 10px 5px;
+	}
+
+#FeedDiv ul li	{ background-color: rgba(255,255,255,0.8); }
+#FeedDiv ul li:nth-child(odd) { background-color: rgba(200,210,240,0.6); }
+
+/* EMBEDDED FEED PAGE LINK COLORS */
+
+.feed-scroll a:link	{ color: #000000; text-decoration: none; }
+
+.feed-scroll a:visited	{ color: #000000; text-decoration: none; }
+
+.feed-scroll a:active	{ color: #0033FF; text-decoration: none; }
+
+.feed-scroll a:hover	{ color: #0033FF; text-decoration: underline; }
+
+
+
