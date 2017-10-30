@@ -57,6 +57,7 @@ function copyToClipboard(elem) {
 }
 </script>
 <style>
+
 button {
     border: none;
     outline: 0;
@@ -68,13 +69,12 @@ button {
     cursor: pointer;
     width: 90%;
     font-size: 18px;
+    margin:auto;
 }
 button:hover, a:hover {
     opacity: 0.7;
 }
 .title {
-
-  padding-right: 25px;
   text-align: center;
   margin: auto;
 }
@@ -85,7 +85,8 @@ button:hover, a:hover {
 <input type="text" placeholder="Click here and press Ctrl-V to see clipboard contents">
 -->
  <!-- columns divs, float left, no margin so there is no space between column, width=1/3 -->
-    <div id="column1" style="float:left; margin:0; width:25%;">
+  <div id="contentBox" style="margin:0px auto; width:90%">
+    <div id="column1" style="float:left; margin:0; width:25%;text-align: center;">
      <div class="title"><h1>Work</h1></div>
      <p><a href="https://www.bethel.edu/its/"><button>ITS Home Page</button></a></p>
      <p><a href="https://www.bethel.edu/business-office/employees/billing-invoice"><button>Billing Invoice</button></a></p>
@@ -101,7 +102,7 @@ button:hover, a:hover {
      <p><a href="https://www.bethel.edu/human-resources/employee-resources/holiday-schedule.php"><button>Holiday Schedule</button></a></p>
     </div>
 
-    <div id="column2" style="float:left; margin:0;width:25%;">
+    <div id="column2" style="float:left; margin:0;width:25%;text-align: center;">
      <div class="title"><h1>Help Desk</h1></div>
      <p><a href="mhttps://betheluniversity.wufoo.com/login/"><button>Wufoo Forms</button></a></p>
      <p><a href="https://sso.verizonenterprise.com/amserver/sso/login.go"><button>Verizon</button></a></p>
@@ -117,7 +118,7 @@ button:hover, a:hover {
      <p><a href="https://registration.its.bethel.edu"><button>Register Devices</button></a></p>
     </div>
 
-    <div id="column3" style="float:left; margin:0;width:25%">
+    <div id="column3" style="float:left; margin:0;width:25%;text-align: center;">
      <div class="title"><h1>Desktop Services</h1></div>
      <p><a href="http://bsp-dsksrv-h5.its.bethel.edu/Altiris/Console/Default.aspx"><button>Altiris 8 Server</button></a></p>
      <p><a href="http://bsp-dsksrv-h3.its.bethel.edu/Altiris/Console/Default.aspx"><button>Altiris 7 Server</button></a></p>
@@ -132,7 +133,7 @@ button:hover, a:hover {
      <p><a href="https://drive.google.com/open?id=1gDqLHGWZbpGj-8NmUkoDOWVHcj2l_Cx7Y9yNF4Y3hsg"><button>Cost of Equipment</button></a></p>
      <p><a href="http://benjamin-john.com/bookmarks/BudgetNumbers.pdf"><button>Budget Numbers</button></a></p>
    </div>
-   <div id="column4" style="float:left; margin:0;width:25%">
+   <div id="column4" style="float:left; margin:0;width:25%;text-align: center;">
      <div class="title"><h1>Personal</h1></div>
      <p><a href="https://75.72.195.225/shares"><button>ReadyShare Drive</button></a></p>
      <p><a href="http://readycloud.netgear.com/client/index.html#page=access"><button>ReadyCloud Portal</button></a></p>
@@ -147,12 +148,7 @@ button:hover, a:hover {
      <p><a href="https://www.healthpartners.com/"><button>Health Partners</button></a></p>
      <p><a href="https://benjamin-john.github.io/snake"><button>Snake Game</button></a></p>
    </div>
-   <SPAN ID="copytext" STYLE="display:none;">
-110000-52105-7801-60
-</SPAN>
 
-<TEXTAREA ID="holdtext" STYLE="display:none;">
-</TEXTAREA>
 </div>
 
 </body>
