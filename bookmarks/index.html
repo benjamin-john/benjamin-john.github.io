@@ -2,58 +2,11 @@
 <head>
 </head>
 <script>
-document.getElementById("copyButton").addEventListener("click", function() {
-    copyToClipboard(document.getElementById("copyTarget"));
-});
-
-function copyToClipboard(elem) {
-	  // create hidden text element, if it doesn't already exist
-    var targetId = "_hiddenCopyText_";
-    var isInput = elem.tagName === "INPUT" || elem.tagName === "TEXTAREA";
-    var origSelectionStart, origSelectionEnd;
-    if (isInput) {
-        // can just use the original source element for the selection and copy
-        target = elem;
-        origSelectionStart = elem.selectionStart;
-        origSelectionEnd = elem.selectionEnd;
-    } else {
-        // must use a temporary form element for the selection and copy
-        target = document.getElementById(targetId);
-        if (!target) {
-            var target = document.createElement("textarea");
-            target.style.position = "absolute";
-            target.style.left = "-9999px";
-            target.style.top = "0";
-            target.id = targetId;
-            document.body.appendChild(target);
-        }
-        target.textContent = elem.textContent;
-    }
-    // select the content
-    var currentFocus = document.activeElement;
-    target.focus();
-    target.setSelectionRange(0, target.value.length);
-
-    // copy the selection
-    var succeed;
-    try {
-    	  succeed = document.execCommand("copy");
-    } catch(e) {
-        succeed = false;
-    }
-    // restore original focus
-    if (currentFocus && typeof currentFocus.focus === "function") {
-        currentFocus.focus();
-    }
-
-    if (isInput) {
-        // restore prior selection
-        elem.setSelectionRange(origSelectionStart, origSelectionEnd);
-    } else {
-        // clear temporary content
-        target.textContent = "";
-    }
-    return succeed;
+function myFunction() {
+  var copyText = document.getElementById("myInput");
+  copyText.select();
+  document.execCommand("Copy");
+  alert("Copied: " + copyText.value);
 }
 </script>
 <style>
@@ -104,7 +57,7 @@ button:hover, a:hover {
 
     <div id="column2" style="float:left; margin:0;width:25%;text-align: center;">
      <div class="title"><h1>Help Desk</h1></div>
-     <p><a href="mhttps://betheluniversity.wufoo.com/login/"><button>Wufoo Forms</button></a></p>
+     <p><a href="https://betheluniversity.wufoo.com/login/"><button>Wufoo Forms</button></a></p>
      <p><a href="https://sso.verizonenterprise.com/amserver/sso/login.go"><button>Verizon</button></a></p>
      <p><a href="https://www.bethel.edu/printing/"><button>Printing</button></a></p>
      <p><a href="https://confluence.bethel.edu/display/TLT/Bethel+Classroom+Information"><button>Classroom Information</button></a></p>
@@ -131,7 +84,8 @@ button:hover, a:hover {
      <p><a href="https://atlaslms.apple.com/"><button>ATLAS</button></a></p>
      <p><a href="https://docs.google.com/spreadsheets/d/10A5YT7Pbd2fXsrkhoEVtFZw3k1whjGDflCI4CKP54uk/edit#gid=1"><button>PO's 2017/2018</button></a></p>
      <p><a href="https://drive.google.com/open?id=1gDqLHGWZbpGj-8NmUkoDOWVHcj2l_Cx7Y9yNF4Y3hsg"><button>Cost of Equipment</button></a></p>
-     <p><a href="http://benjamin-john.com/bookmarks/BudgetNumbers.pdf"><button>Budget Numbers</button></a></p>
+     <p><button onclick="myFunction()">Desktop Budget #</button></p>
+     <input type="text" value="110000-52105-7801-60" id="myInput" style = "display:none">
    </div>
    <div id="column4" style="float:left; margin:0;width:25%;text-align: center;">
      <div class="title"><h1>Personal</h1></div>
