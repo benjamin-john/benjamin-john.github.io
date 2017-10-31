@@ -68,9 +68,29 @@
         border: 1px solid #c6c6c6;
         background-color: #d6d6d6;
     }
+    #box{
+      position:relative;
+      display: inline-block;
+      padding-top: 50px;
+    }
+    body{
+      width:100%;
+      margin:0 auto;
+      text-align: center;
+    }
+
     </style>
 
     <script>
+    setTimeout("document.getElementById('display').focus();", 500);
+    //document.getElementById('display').focus();
+    function keyCode(event) {
+    var x = event.keyCode;
+    if (x == 13) {
+        //alert ("You pressed the Enter key!");
+        answer();
+    }
+}
     function set(op) {
 
         document.getElementById("display").value += op;
@@ -154,7 +174,8 @@
     }
     </script>
 
-    <body>
+    <body onkeydown="keyCode(event)">
+      <div id="box">
         <table>
             <tr>
                 <td colspan="7">
@@ -276,6 +297,7 @@
                     <input id="btnAdd" type="button" name="operator" value="+" onclick="set('+')" />
                 </td>
         </table>
+      </div>
         <script src="js/index.js"></script>
     </body>
 
