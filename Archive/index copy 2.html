@@ -3,6 +3,18 @@
 <head>
 <title>Benjamin John</title>
 </head>
+<script>
+
+window.onload = function(){
+  alert("test");
+  document.getElementById('header').style.visibility="hidden";
+};
+
+// function hide() {
+//   // document.getElementById('header').style.visability="hidden";
+//   alert("test");
+// }
+</script>
 <style>
 .card {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
@@ -35,13 +47,13 @@ button {
 
 a {
     text-decoration: none;
-    font-size: 20px;
+    font-size: 22px;
     color: black;
 }
 
 a.title {
     text-decoration: none;
-    font-size: 22px;
+    font-size: 20px;
     color: grey;
 }
 
@@ -80,7 +92,7 @@ input[type=submit]:hover {
 }
 </style>
 
-<div class="card">
+<div class="card" id="test">
  <img src="img.jpg" alt="John" style="width:100%">
  <h1>Benjamin A. John</h1>
  <p class="title"><a class="title" href="https://www.bethel.edu/its/" target="_blank">ITS Support Specialist</a></p>
@@ -91,6 +103,27 @@ input[type=submit]:hover {
  <a href="#"><i class="fa fa-linkedin"></i></a>
  <a href="#"><i class="fa fa-facebook"></i></a>
  -->
- <p class="big"><a href="mailto:benjamin-john@bethel.edu">Benjamin-John@bethel.edu</a><br /><a href="tel:+16516381098">651.638.1098</a></p>
- <p><a href="benjamin-john.com/contact.html"><button>Contact</button></a></p>
+ <p class="big">Benjamin-John@bethel.edu<br />651.638.1098</p>
+ <p><a href="mailto:benjamin-john@bethel.edu"><button>Contact</button></a></p>
 </div>
+
+<div id="wufoo-z1ugezeo1of31up">
+<!-- Fill out my <a href="https://benjohnmn.wufoo.com/forms/z1ugezeo1of31up">online form</a>. -->
+</div>
+<!-- <div id="wuf-adv" style="font-family:inherit;font-size: small;color:#a7a7a7;text-align:center;display:block;">The easy to use <a href="http://www.wufoo.com/form-builder/">Wufoo form builder</a> helps you make forms easy, fast, and fun.</div> -->
+<script type="text/javascript">var z1ugezeo1of31up;(function(d, t) {
+var s = d.createElement(t), options = {
+'userName':'benjohnmn',
+'formHash':'z1ugezeo1of31up',
+'autoResize':true,
+'height':'517',
+'async':true,
+'host':'wufoo.com',
+'header':'show',
+'ssl':true};
+s.src = ('https:' == d.location.protocol ? 'https://' : 'http://') + 'www.wufoo.com/scripts/embed/form.js';
+s.onload = s.onreadystatechange = function() {
+var rs = this.readyState; if (rs) if (rs != 'complete') if (rs != 'loaded') return;
+try { z1ugezeo1of31up = new WufooForm();z1ugezeo1of31up.initialize(options);z1ugezeo1of31up.display(); } catch (e) {}};
+var scr = d.getElementsByTagName(t)[0], par = scr.parentNode; par.insertBefore(s, scr);
+})(document, 'script');</script>
