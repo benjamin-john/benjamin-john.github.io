@@ -94,3 +94,23 @@ input[type=submit]:hover {
  <p class="big">Benjamin-John@bethel.edu<br />651.638.1098</p>
  <p><a href="mailto:benjamin-john@bethel.edu"><button>Contact</button></a></p>
 </div>
+
+
+<div class="container">
+  <form method="POST" action="./action_page.php" name="contactform">
+<!-- action="/action_page.php" -->
+    <label for="fname">First Name</label>
+    <input type="text" id="fname" name="firstname" placeholder="Your name..">
+
+    <label for="lname">Last Name</label>
+    <input type="text" id="lname" name="lastname" placeholder="Your last name..">
+
+    <label for="country">Email</label>
+    <input type="text" id="emailaddress" name="emailaddress" placeholder="Your email..">
+
+    <label for="subject">Message</label>
+    <textarea id="subject" name="message" placeholder="Write something.." style="height:200px"></textarea>
+
+    <input type="submit" value="Submit">
+  </form>
+</div>
