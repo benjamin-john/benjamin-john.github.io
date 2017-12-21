@@ -13,13 +13,15 @@
     }
     function right() {
       if(count < 32) {
-      count = count + 1;
-      document.getElementById("pic").innerHTML='<img src="./'+count+'.jpg" class="jpg">';
+        count = count + 1;
       }
       else{
         count = 1;
       }
+      document.getElementById("pic").innerHTML='<img src="./'+count+'.jpg" class="jpg">';
     }
+
+
     window.onkeypress = function(event) {
       if (event.keyCode == 39) {
         right();
@@ -56,12 +58,15 @@ button {
 .jpg {
   width: 100%;
 }
+.arrow {
+  width: 100%;
+}
 </style>
 <body>
   <div class="container">
-    <button onclick="left()"><img src="./left.png" class="jpg"></button>
+    <button onclick="left()"><img src="./left.png" class="arrow"></button>
     <div class="pic" id="pic"><img src="./1.jpg" class="jpg"></img></div>
-    <button onclick="right()"><img src="./right.png" class="jpg"></button>
+    <button onclick="right()"><img src="./right.png" class="arrow"></button>
 
   </div>
 </body>
