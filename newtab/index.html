@@ -6,7 +6,16 @@
       href="./icons/home.png"> -->
 </head>
 <script>
-
+(function() {
+  var cx = '015754747197950741969:uzkings6gb0';
+  var gcse = document.createElement('script');
+  gcse.type = 'text/javascript';
+  gcse.async = true;
+  gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(gcse, s);
+  setTimeout("document.getElementById('gsc-i-id1').focus();", 500);
+})();
 </script>
 <style>
 
@@ -24,7 +33,7 @@ p {
 body{
 /*	background: linear-gradient( rgba(224,224,224), rgba(160,160,160));
 	height:97.8%;*/
-	
+
 }
 .title {
   text-align: center;
@@ -65,10 +74,28 @@ body{
   width: 100%;
   height: 25px;
 }
+#search{
+
+  margin: auto;
+  width: 90%;
+  margin-top: 0px;
+  float: left;
+}
 </style>
 <body>
   <div id="contentBox" style="margin:0px auto; width:90%">
+
     <div class="spacer"></div>
+    <!--<div>
+    <div id="header" style="margin:0px auto; width:100%">
+      <div id="search">
+        <gcse:search linktarget="_parent"></gcse:search>
+      </div>
+      <div id="star" style="float:left; margin:0;width:10%;text-align: center;">
+          <a href="http://benjamin-john.com/bookmarks/"><img src="./icons/favorite.png" class="iconsSmall"></a>
+      </div>
+    </div>-->
+
     <div id="column1" style="float:left;  width:12.5%;text-align: center;">
       <div class="img__wrap">
         <a href="https://footprints.bethel.edu/"><img src="./icons/footprints.png" class="iconsLarge"></img></a>
@@ -121,8 +148,8 @@ body{
         <p class="img__description">Calendar</p>
       </div>
       <div class="img__wrap">
-        <a href="https://mint.intuit.com/overview.event"><img src="./icons/mint.png" class="iconsLarge"></a>
-        <p class="img__description">Mint</p>
+        <a href="https://home.personalcapital.com/page/login/app#/accounts/details?ua=40424407"><img src="./icons/chart.png" class="iconsLarge"></a>
+        <p class="img__description">Finance</p>
       </div>
     </div>
 
@@ -199,7 +226,7 @@ body{
       <div class="img__wrap">
         <a href="http://benjamin-john.com/files"><img src="./icons/cloud.png" class="iconsLarge"></a>
         <p class="img__description">Share</p>
-      </div>  
+      </div>
     </div>
 
     <div id="column8" style="float:left; margin:0;width:12.5%;text-align: center;">
@@ -239,7 +266,8 @@ body{
         <a href="https://github.com/benjamin-john/benjamin-john.github.io"><img src="./icons/settings.png" class="iconsSmall"></a>
     </div>
   </div>
-</div>  
+
+</div>
 
 </body>
 
