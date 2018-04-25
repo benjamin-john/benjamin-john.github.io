@@ -1,6 +1,16 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
 <head>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-118213057-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-118213057-1');
+</script>
+
 <!--
 
 JavaScript Snake
@@ -8,12 +18,12 @@ By Patrick Gillespie
 http://patorjk.com/games/snake
 
 Terms of Re-Use:
-- If you're interested in using this app (which includes this file, patorjk.com/games/snake/snake.js and 
-  patorjk.com/games/snake/style.css) on your website, I give you permission as long as you link back to 
+- If you're interested in using this app (which includes this file, patorjk.com/games/snake/snake.js and
+  patorjk.com/games/snake/style.css) on your website, I give you permission as long as you link back to
   patorjk.com somewhere noticable in your application or on the website the app is hosted on.
 - As long as that condition is met, this app is free for you to build on and play around with.
 
---> 
+-->
     <title>JavaScript Snake</title>
     <link rel="stylesheet" type="text/css" href="./css/snake.css" />
 </head>
@@ -25,7 +35,7 @@ Terms of Re-Use:
     var mySnakeBoard = new SNAKE.Board(  {
                                             boardContainer: "game-area",
                                             fullScreen: true
-                                        });    
+                                        });
     </script>
 </body>
 </html>
