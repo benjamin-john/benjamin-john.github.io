@@ -27,6 +27,13 @@
   setTimeout("document.getElementById('gsc-i-id1').focus();", 500);
 })();
 </script>
+<script>
+function inventory() {
+
+
+}
+
+</script>
 <style>
 
 p {
@@ -91,6 +98,44 @@ body{
   margin-top: 0px;
   float: left;
 }
+.dropbtn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {background-color: #ddd}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
 </style>
 <body>
   <div id="contentBox" style="margin:0px auto; width:90%">
@@ -126,17 +171,35 @@ body{
     </div>
 
     <div id="column2" style="float:left; margin:0;width:12.5%;text-align: center;">
-      <div class="img__wrap">
-        <a href="https://confluence.bethel.edu/display/helpdesk"><img src="./icons/confluence.png" class="iconsLarge"></a>
-        <p class="img__description">Confluence</p>
+      <div class="dropdown">
+        <div class="img__wrap">
+          <a href="https://confluence.bethel.edu/display/helpdesk"><img src="./icons/confluence.png" class="iconsLarge"></a>
+          <p class="img__description">Confluence</p>
+        </div>
+        <div class="dropdown-content">
+          <a href="https://confluence.bethel.edu/display/desktopservices/Desktop+Services?src=spacemenu">Desktop</a>
+          <a href="https://confluence.bethel.edu/display/ITSKB/Knowledge+Base+Home?src=spacemenu">Knowledge Base</a>
+          <a href="https://confluence.bethel.edu/display/SYS/Systems+Administration?src=spacemenu">Systems</a>
+          <a href="https://confluence.bethel.edu/display/AppsTeam/Applications+Team?src=spacemenu">Apps</a>
+          <a href="https://confluence.bethel.edu/display/TLT/Teaching+and+Learning+Technology?src=spacemenu">TLT</a>
+          <a href="https://confluence.bethel.edu/spacedirectory/view.action?src=spacemenu">Space Directory</a>
+        </div>
       </div>
       <div class="img__wrap">
         <a href="https://bethel.webex.com/mw3200/mywebex/default.do?siteurl=bethel&rnd=0.44623575169554386"><img src="./icons/webex.png" class="iconsLarge"></a>
         <p class="img__description">Webex</p>
       </div>
-      <div class="img__wrap">
-        <a href="https://drive.google.com/drive/my-drive"><img src="./icons/drive.png" class="iconsLarge"></a>
-        <p class="img__description">Drive</p>
+      <div class="dropdown">
+        <div class="img__wrap">
+          <a href="https://drive.google.com/drive/my-drive"><img src="./icons/drive.png" class="iconsLarge"></a>
+          <p class="img__description">Drive</p>
+        </div>
+        <div class="dropdown-content">
+          <a href="https://drive.google.com/drive/folders/0AAvLkVwlvH9CUk9PVA">Desktop</a>
+          <a href="https://drive.google.com/drive/folders/0ANRt_EBkdcm-Uk9PVA">Service Desk</a>
+          <a href="https://drive.google.com/drive/folders/0ANky4ar5YqdYUk9PVA">Infrastructure</a>
+          <a href="https://drive.google.com/drive/folders/0AObyVAfn7m9OUk9PVA">Unified Support</a>
+        </div>
       </div>
       <div class="img__wrap">
         <a href="https://my.goabode.com/#/app/dashboard"><img src="./icons/abode.png" class="iconsLarge"></a>
@@ -202,9 +265,16 @@ body{
     </div>
 
     <div id="column6" style="float:left; margin:0;width:12.5%;text-align: center;">
+      <div class="dropdown">
       <div class="img__wrap">
-        <a href="https://inventory.bethel.edu/statuslabels/25"><img src="./icons/inventory.png" class="iconsLarge"></a>
+        <a href="https://inventory.bethel.edu/"><img src="./icons/inventory.png" class="iconsLarge"></a>
         <p class="img__description">Inventory</p>
+      </div>
+        <div class="dropdown-content">
+          <a href="https://inventory.bethel.edu/statuslabels/25">Help Desk Loaners</a>
+          <a href="https://inventory.bethel.edu/users">Users</a>
+          <a href="https://inventory.bethel.edu/hardware">All Assets</a>
+        </div>
       </div>
       <div class="img__wrap">
         <a href="http://gsx.apple.com/"><img src="./icons/apple.png" class="iconsLarge"></a>
@@ -240,9 +310,22 @@ body{
     </div>
 
     <div id="column8" style="float:left; margin:0;width:12.5%;text-align: center;">
-      <div class="img__wrap">
-        <a href="https://www.bethel.edu/"><img src="./icons/bethel2.png" class="iconsLarge"></a>
-        <p class="img__description">Bethel</p>
+      <div class="dropdown">
+        <div class="img__wrap">
+          <a href="https://www.bethel.edu/"><img src="./icons/bethel2.png" class="iconsLarge"></a>
+          <p class="img__description">Bethel</p>
+        </div>
+
+        <div class="dropdown-content">
+          <a href="https://www.bethel.edu/its/">ITS</a>
+          <a href="https://www.bethel.edu/business-office/">Business Office</a>
+          <a href="https://www.bethel.edu/human-resources/">HR</a>
+          <a href="https://www.bethel.edu/admissions/">Admissions</a>
+          <a href="https://www.bethel.edu/undergrad/financial-aid/">Financial Aid</a>
+          <a href="https://www.bethel.edu/library/">Library</a>
+          <a href="https://www.bethel.edu/learning-technology/">TLT</a>
+          <a href="https://www.bethel.edu/events/calendar/">Calendar</a>
+        </div>
       </div>
       <div class="img__wrap">
         <a href="https://my.bethel.edu/"><img src="./icons/mybethel.png" class="iconsLarge"></a>
