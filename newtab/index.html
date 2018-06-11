@@ -26,7 +26,7 @@ function search() {
   window.open(url, "_self");
 }
 function onLoadFunction(){
-setTimeout("document.getElementById('searchBox').focus();", 500);
+//setTimeout("document.getElementById('searchBox').focus();", 500);
 document.getElementById("searchBox")
     .addEventListener("keyup", function(event) {
     event.preventDefault();
@@ -36,7 +36,12 @@ document.getElementById("searchBox")
 });
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+   document.getElementById('searchBox').focus();
+}, false);
+
 </script>
+
 <style>
 
 p {
