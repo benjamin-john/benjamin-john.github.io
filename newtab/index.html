@@ -23,7 +23,7 @@
 function search() {
   var url;
   var text = document.getElementById("searchBox").value;
-  if(text.indexOf(".com")!== -1 || text.indexOf(".edu")!== -1){
+  if(text.indexOf(".com")!== -1 || text.indexOf(".edu")!== -1 || text.indexOf(".org")!== -1){
     url=text;
     if(text.indexOf("http://")== -1 && text.indexOf("https://")== -1) {
       url="http://"+text;
