@@ -15,22 +15,25 @@
       type="image/png"
       href="./icons/home.png">
 </head>
-<script>
-(function() {
-  var cx = '015754747197950741969:uzkings6gb0';
-  var gcse = document.createElement('script');
-  gcse.type = 'text/javascript';
-  gcse.async = true;
-  gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
-  var s = document.getElementsByTagName('script')[0];
-  s.parentNode.insertBefore(gcse, s);
-  setTimeout("document.getElementById('gsc-i-id1').focus();", 500);
-})();
-</script>
-<script>
-function inventory() {
+  <!-- End of Google Analytics -->
 
+<script>
 
+function search() {
+  var url;
+  var text = document.getElementById("searchBox").value;
+  url="https://www.google.com/search?q="+text;
+  window.open(url, "_self");
+}
+function onLoadFunction(){
+setTimeout("document.getElementById('searchBox').focus();", 500);
+document.getElementById("searchBox")
+    .addEventListener("keyup", function(event) {
+    event.preventDefault();
+    if (event.keyCode === 13) {
+        document.getElementById("searchButton").click();
+    }
+});
 }
 
 </script>
@@ -98,9 +101,18 @@ body{
 #search{
 
   margin: auto;
-  width: 90%;
+  width: 100%;
   margin-top: 0px;
   float: left;
+  border:2px solid white;
+}
+#header{
+  margin: auto;
+  width: 100%;
+  margin-top: 0px;
+  float: left;
+  text-align: center;
+  margin: auto;
 }
 .dropbtn {
     background-color: #4CAF50;
@@ -140,20 +152,52 @@ body{
 .dropdown:hover .dropbtn {
     background-color: #3e8e41;
 }
+input{
+    border: none;
+    height: 30px;
+    width: 80%;
+    border:1px solid #eaeaea;
+    outline:none;
+    font-size: 14px;
+}
+input:hover{
+    border-color: #a0a0a0 #b9b9b9 #b9b9b9 #b9b9b9;
+}
+input:focus{
+    border-color:#4d90fe;
+}
+
+input[type="submit"] {
+    border-radius: 2px;
+    background: #f2f2f2;
+    border: 1px solid #f2f2f2;
+    color: #757575;
+    cursor: default;
+    font-size: 14px;
+    font-weight: bold;
+    width: 100px;
+    height:30px;
+}
+input[type="submit"]:hover {
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    background: #f8f8f8;
+    border: 1px solid #c6c6c6;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    color: #222;
+}
+
 </style>
-<body>
+<body onLoad="onLoadFunction()">
   <div id="contentBox" style="margin:0px auto; width:90%">
 
     <div class="spacer"></div>
-    <!--<div>
-    <div id="header" style="margin:0px auto; width:100%">
-      <div id="search">
-        <gcse:search linktarget="_parent"></gcse:search>
-      </div>
-      <div id="star" style="float:left; margin:0;width:10%;text-align: center;">
-          <a href="http://benjamin-john.com/bookmarks/"><img src="./icons/favorite.png" class="iconsSmall"></a>
-      </div>
-    </div>-->
+
+    <div id="header">
+      <input id="searchBox" type="text" />
+      <input id="searchButton" type="submit" value="Go" onclick="search()">
+    </div><br><br>
+
+    <div class="spacer"></div>
 
     <div id="column1" style="float:left;  width:12.5%;text-align: center;">
       <div class="img__wrap">
