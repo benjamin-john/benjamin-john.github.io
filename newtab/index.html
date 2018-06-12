@@ -39,7 +39,12 @@ function searchBethel() {
   url="https://www.bethel.edu/search/?q="+text;
   window.open(url, "_self");
 }
-
+function searchConfluence() {
+  var url;
+  var text = document.getElementById("searchBox").value;
+  url="https://confluence.bethel.edu/dosearchsite.action?queryString="+text;
+  window.open(url, "_self");
+}
 
 function onLoadFunction(){
 //setTimeout("document.getElementById('searchBox').focus();", 500);
@@ -176,7 +181,7 @@ body{
 input{
     border: none;
     height: 30px;
-    width: 75%;
+    width: 65%;
     border:1px solid #eaeaea;
     outline:none;
     font-size: 14px;
@@ -218,7 +223,8 @@ input[type="submit"]:hover {
     <div id="header">
       <input id="searchBox" type="text" />&nbsp;&nbsp;&nbsp;
       <input id="searchButton" type="submit" value="Google" onclick="search()">&nbsp;&nbsp;
-      <input id="searchButton2" type="submit" value="Bethel" onclick="searchBethel()">
+      <input id="searchButton2" type="submit" value="Bethel" onclick="searchBethel()">&nbsp;&nbsp;
+      <input id="searchButton3" type="submit" value="Confluence" onclick="searchConfluence()">
     </div><br><br>
 
     <div class="spacer"></div>
