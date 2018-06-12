@@ -10,16 +10,14 @@
 
   gtag('config', 'UA-118213057-1');
 </script>
-
+  <!-- End of Google Analytics -->
   <title>New Tab</title>
   <link rel="icon"
       type="image/png"
       href="./icons/home.png">
 </head>
-  <!-- End of Google Analytics -->
 
 <script>
-
 function search() {
   var url;
   var text = document.getElementById("searchBox").value;
@@ -64,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-
 p {
     margin: 0;
     padding-top: 5px;
@@ -79,7 +76,6 @@ p {
 body{
 /*	background: linear-gradient( rgba(224,224,224), rgba(160,160,160));
 	height:97.8%;*/
-
 }
 .title {
   text-align: center;
@@ -109,7 +105,6 @@ body{
   text-align: center;
   margin: auto;
 }
-
 .img__wrap:hover .img__description {
   visibility: visible;
   opacity: .7;
@@ -125,7 +120,6 @@ body{
   height: 25px;
 }
 #search{
-
   margin: auto;
   width: 100%;
   margin-top: 0px;
@@ -147,12 +141,10 @@ body{
     font-size: 16px;
     border: none;
 }
-
 .dropdown {
     position: relative;
     display: inline-block;
 }
-
 .dropdown-content {
     display: none;
     position: absolute;
@@ -161,20 +153,16 @@ body{
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
 }
-
 .dropdown-content a {
     color: black;
     padding: 12px 16px;
     text-decoration: none;
     display: block;
 }
-
 .dropdown-content a:hover {background-color: #ddd}
-
 .dropdown:hover .dropdown-content {
     display: block;
 }
-
 .dropdown:hover .dropbtn {
     background-color: #3e8e41;
 }
@@ -211,9 +199,8 @@ input[type="submit"]:hover {
     box-shadow: 0 1px 1px rgba(0,0,0,0.1);
     color: #222;
 }
-
-
 </style>
+
 <body onLoad="onLoadFunction()">
 
   <div id="contentBox" style="margin:0px auto; width:90%">
@@ -221,7 +208,7 @@ input[type="submit"]:hover {
     <div class="spacer"></div>
 
     <div id="header">
-      <input id="searchBox" type="text" />&nbsp;&nbsp;&nbsp;
+      <input id="searchBox" placeholder="Search..." type="text" />&nbsp;&nbsp;&nbsp;
       <input id="searchButton" type="submit" value="Google" onclick="search()">&nbsp;&nbsp;
       <input id="searchButton2" type="submit" value="Bethel" onclick="searchBethel()">&nbsp;&nbsp;
       <input id="searchButton3" type="submit" value="Confluence" onclick="searchConfluence()">
