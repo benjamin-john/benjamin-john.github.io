@@ -142,13 +142,6 @@ input[type="submit"]:hover {
     background-color: #3e8e41;
 }
 
-#search{
-  margin: auto;
-  width: 100%;
-  margin-top: 0px;
-  float: left;
-  border:2px solid white;
-}
 
 #header{
   margin: auto;
