@@ -24,11 +24,21 @@ function searchConfluence() {
   window.open(url, "_self");
 }
 
-function onLoadFunction(){//allows you to submit serach by pressing Enter
+function calc() {
+  var text = document.getElementById("searchBox").value;
+  text = eval(text);
+  document.getElementById("searchBox").value = text;
+  document.getElementById('searchBox').select();
+}
+
+function onLoadFunction(){//allows you to submit serach by pressing Enter or run calc() by pressing Shift+Enter
   document.getElementById("searchBox")
       .addEventListener("keyup", function(event) {
       event.preventDefault();
-      if (event.keyCode === 13) {
+      if (event.keyCode === 13 && event.shiftKey) {
+          calc();
+      }
+      if (event.keyCode === 13 && !event.shiftKey) {
           document.getElementById("searchButton1").click();
       }
   });
