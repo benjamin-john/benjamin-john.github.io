@@ -1,4 +1,9 @@
 <script type='text/javascript' src='/JavaScriptSpellCheck/include.js' ></script>
 <script type='text/javascript'>$Spelling.SpellCheckAsYouType('myTextArea')</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {//Puts cursor in search box
+   document.getElementById('myTextArea').focus();
+}, false);
+</script>
 <textarea name="myTextArea"  id="myTextArea" cols="30" rows="4" style = 'width:100%;height:100%;margin-bottom:20px'>
 </textarea>
