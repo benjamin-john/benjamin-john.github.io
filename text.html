@@ -1,3 +1,6 @@
+<head>
+  <title>Text Editor</title>
+</head>
 <script type='text/javascript' src='/JavaScriptSpellCheck/include.js' ></script>
 <script type='text/javascript'>$Spelling.SpellCheckAsYouType('myTextArea')</script>
 <script>
@@ -5,5 +8,15 @@ document.addEventListener('DOMContentLoaded', function() {//Puts cursor in searc
    document.getElementById('myTextArea').focus();
 }, false);
 </script>
+<style>
+#myTextArea {
+  background-color: #001a4d;
+  color: white;
+  font-size: 20px;
+}
+
+</style>
+<body>
 <textarea name="myTextArea"  id="myTextArea" cols="30" rows="4" style = 'width:100%;height:100%;margin-bottom:20px'>
 </textarea>
+</body>
