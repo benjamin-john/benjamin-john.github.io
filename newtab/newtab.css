@@ -183,7 +183,7 @@ a
   text-decoration: none;
   color: #232323;
 
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
 }
 
 a:hover
@@ -197,6 +197,7 @@ a:hover
   position: relative;
   top: 44px;
   left: 30px;
+  width:40px;
 
   z-index: 1;
 
@@ -221,9 +222,7 @@ a:hover
   -webkit-touch-callout: none;
 }
 
-/*
- * Just a quick hamburger
- */
+
 #menuToggle span
 {
   display: block;
