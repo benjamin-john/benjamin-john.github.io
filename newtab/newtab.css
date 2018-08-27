@@ -24,9 +24,9 @@ input:focus{
 
 input[type="submit"] {
     border-radius: 2px;
-    background: #f2f2f2;
-    border: 1px solid #f2f2f2;
-    color: #757575;
+    background: #4885ed;
+    border: 1px solid #bfbfbf;
+    color: #ffffff;
     cursor: pointer;
     font-size: 14px;
     font-weight: bold;
@@ -182,7 +182,8 @@ body
 {
   margin: 0;
   padding: 0;
-  background-color: #669999;
+  /* background-color: #669999; */
+  background-color: #f2f2f2;
 }
 
 a
@@ -238,7 +239,7 @@ a:hover
   margin-bottom: 5px;
   position: relative;
 
-  background: #cdcdcd;
+  background: #4885ed;
   border-radius: 3px;
 
   z-index: 1;
