@@ -1,0 +1,103 @@
+body{
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #123563;
+}
+
+.content{
+  width: 80%;
+  max-width: 900px;
+  text-align: center;
+  margin: auto;
+  margin: 2% auto;
+  padding: 1em;
+  color: #fff;
+  font-family:sans-serif;
+  border: .1em solid #ddd;
+  border-radius: 4px;
+  background-color: #0F2C52;
+  box-shadow: 0 80px 80px 0 rgba(0, 0, 0, .3);
+  overflow: auto;
+}
+
+.title{
+  font-size: 50px;
+  font-family:sans-serif;
+  color: #ffc531;
+  margin: auto;
+  text-align: center;
+}
+.timeTitle{
+  font-size: 30px;
+  font-family:sans-serif;
+  margin: auto;
+  text-align: center;
+}
+
+.littleTitle{
+  font-size: 30px;
+  font-family:sans-serif;
+  margin: auto;
+  text-align: center;
+  background-color: #0F2C52;
+  color: #ffc531;
+  border: 1px solid #0F2C52;
+}
+
+.timeBox{
+  width:150px;
+  height:50px;
+  border: .1em solid #ddd;
+  background-color: #123563;
+  border-radius: 4px;
+  font-size: 30px;
+  text-align: center;
+  margin: auto;
+  color: #ffc531;
+  padding-top: 15px;
+
+}
+
+#logo{
+  text-align: center;
+  margin: auto;
+  padding: 50 0 50 0;
+}
+
+.table{
+  margin: 50px;
+  color: black;
+}
+
+.firstrow{
+  color: #123563;
+}
+
+.offCampus{
+  color: tomato;
+}
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 360px;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+tr:nth-child(odd) {
+    background-color: white;
+}
+
+#table1{
+  float: left;
+}
