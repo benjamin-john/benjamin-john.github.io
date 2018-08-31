@@ -1,8 +1,8 @@
 function update(){
   var currentTime;
   var shuttleTime;
-  var nextANC;
-  var nextCLC;
+  var nextANC = "";
+  var nextCLC = "";
   var CLCtoANC = ["07:38",
                   "07:55",
                   "08:08",
@@ -70,6 +70,9 @@ function update(){
         nextANC = shuttleTime;
       }
     }
+    if(nextANC==""){
+      nextANC = ANCtoCLC[0];
+    }
     document.getElementById("anc").innerHTML = militaryToStandard(nextANC);
 
 
@@ -78,6 +81,9 @@ function update(){
       if(shuttleTime > currentTime) {
         nextCLC = shuttleTime;
       }
+    }
+    if(nextCLC==""){
+      nextCLC = CLCtoANC[0];
     }
     document.getElementById("clc").innerHTML = militaryToStandard(nextCLC);
 }

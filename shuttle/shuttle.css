@@ -20,6 +20,7 @@ body{
   background-color: #0F2C52;
   box-shadow: 0 80px 80px 0 rgba(0, 0, 0, .3);
   overflow: auto;
+
 }
 
 .title{
@@ -44,6 +45,7 @@ body{
   background-color: #0F2C52;
   color: #ffc531;
   border: 1px solid #0F2C52;
+  border-bottom: 1px solid #dddddd;
 }
 
 .timeBox{
@@ -66,23 +68,20 @@ body{
   padding: 50 0 50 0;
 }
 
-.table{
-  margin: 50px;
-  color: black;
-}
-
 .firstrow{
-  color: #123563;
+  color: white;
 }
 
 .offCampus{
-  color: tomato;
+  color: #ffc531;
 }
 
 table {
     font-family: arial, sans-serif;
     border-collapse: collapse;
     width: 360px;
+    margin: 50px;
+    color: white;
 }
 
 td, th {
@@ -92,12 +91,20 @@ td, th {
 }
 
 tr:nth-child(even) {
-    background-color: #dddddd;
+    background-color: #123563;
 }
 tr:nth-child(odd) {
-    background-color: white;
+    background-color: #0F2C52;
 }
 
-#table1{
-  float: left;
+@media only screen and (max-width: 1100px) {
+  .table{
+    margin: auto;
+  }
+}
+
+@media only screen and (min-width: 1100px) {
+  .table{
+    display: inline;
+  }
 }
