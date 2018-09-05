@@ -29,12 +29,24 @@ body{
   color: #ffc531;
   margin: auto;
   text-align: center;
+
 }
 .timeTitle{
-  font-size: 30px;
+  font-size: 35px;
+  font-family:sans-serif;
+  display: inline-block;
+  text-align: right;
+  float:left;
+  width:180px;
+  padding-top: 15px;
+
+}
+.smallTitle{
+  font-size: 40px;
   font-family:sans-serif;
   margin: auto;
   text-align: center;
+  color: #ffc531;
 }
 
 .littleTitle{
@@ -49,7 +61,7 @@ body{
 }
 
 .timeBox{
-  width:150px;
+  width:160px;
   height:50px;
   border: .1em solid #ddd;
   background-color: #123563;
@@ -59,7 +71,12 @@ body{
   margin: auto;
   color: #ffc531;
   padding-top: 15px;
+  display: inline-block;
+}
 
+.grid{
+  width: 390px;
+  margin: auto;
 }
 
 #logo{
