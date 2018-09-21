@@ -1,0 +1,81 @@
+<html>
+<link rel="stylesheet" type="text/css" href="kiosk.css">
+<script type="text/javascript" src="kiosk.js"></script>
+
+<head>
+  <title>Task Manager</title>
+</head>
+
+
+<body onload="bodyOnload()">
+    <div id="logo">
+        <img src="https://www.bethel.edu/cdn/images/logo.png" alt="Bethel" style="width:40%">
+    </div>
+    <div class="BigText unselectable" id="mainTitle">Task Manager</div><br>
+
+
+    <form action="https://script.google.com/macros/s/AKfycbyQgttr2K0StWS-tufzQzFV4oQS9iyAruPKaMAPN7kh7Yus6C8/exec" id="myform" onsubmit="return submitForm()" method="get" target="myFrame">
+
+      <div id="formBody"><br>
+      <div class="mediumText unselectable">Submit Case</div><br>
+
+      <br><div class="title unselectable">Status</div>
+      <select name="Status">
+        <option value="Need to Start">Need to Start</option>
+        <option value="Work in Progress">Work in Progress</option>
+        <option value="Assigned to Team">Assigned to Team</option>
+        <option value="ACR">ACR</option>
+        <option value="Scheduled">Scheduled</option>
+        <option value="Hold">Hold</option>
+        <option value="Done">Done</option>
+      </select>
+
+      <br><div class="title unselectable">Priority</div>
+      <select name="Priority">
+        <option value="High">High</option>
+        <option value="Medium" selected="selected">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+
+      <br><div class="title unselectable">Type</div>
+      <select name="Type">
+        <option value="Task">Task</option>
+        <option value="Project">Project</option>
+        <option value="Upgrade">Upgrade</option>
+      </select><br><br>
+
+      <br><div class="title unselectable">Title</div>
+      <input id="title" name="Title" placeholder="Title">
+
+      <br><div class="title unselectable">Case Number</div>
+      <input id="caseNumber" name="Case Number" placeholder="123456">
+
+      <br><div class="title unselectable">Email Subject</div>
+      <input id="emailSubject" name="Email Subject" placeholder="SUB:">
+
+      <br><div class="title unselectable">Contact(s)</div>
+      <input id="contacts" name="Contacts" placeholder="First Name, Last Name">
+
+      <br><div class="title unselectable">Due Date</div>
+      <input type="datetime-local" name="Due Date">
+
+      <br><div class="title unselectable">Description</div>
+      <div class="message" id="caseBody">
+        <label for="textarea"></label>
+        <textarea cols="40" rows="8" name="Description" style="width:80%;" id="textarea" placeholder="Enter Case Information Here..."></textarea>
+      </div>
+
+
+      <div class="submit">
+        <button class="mainButton submitButton unselectable" type="submit" id="submit-form">Submit</button>
+      </div>
+
+      </div>
+    </form>
+
+
+     <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
+
+</body>
+
+</html>
