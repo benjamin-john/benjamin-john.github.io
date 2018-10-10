@@ -59,7 +59,7 @@ select,
 textarea {
   width: 47%;
   height: 3em;
-  text-indent: .5em;
+  
   border: .1em solid #ddd;
   border-radius: $radius;
   outline-color: #002555;

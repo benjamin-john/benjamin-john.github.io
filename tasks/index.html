@@ -21,11 +21,8 @@
 
       <br><div class="title unselectable">Status</div>
       <select name="Status">
-        <option value="Need to Start">Need to Start</option>
         <option value="Work in Progress">Work in Progress</option>
         <option value="Assigned to Team">Assigned to Team</option>
-        <option value="ACR">ACR</option>
-        <option value="Scheduled">Scheduled</option>
         <option value="Hold">Hold</option>
         <option value="Done">Done</option>
       </select>
@@ -46,7 +43,7 @@
       </select><br><br>
 
       <br><div class="title unselectable">Title</div>
-      <input id="title" name="Title" placeholder="Title">
+      <input id="title" name="Title" placeholder="Title" required>
 
       <br><div class="title unselectable">Case Number</div>
       <input id="caseNumber" name="Case Number" placeholder="123456">
@@ -63,13 +60,10 @@
       <br><div class="title unselectable">Due Date</div>
       <input type="datetime-local" name="Due Date">
 
-      <br><div class="title unselectable">Reminder Date</div>
-      <input type="datetime-local" name="Reminder Date">
-
       <br><div class="title unselectable">Description</div>
       <div class="message" id="caseBody">
         <label for="textarea"></label>
-        <textarea cols="40" rows="8" name="Description" style="width:80%;" id="textarea" placeholder="Enter Case Information Here..."></textarea>
+        <textarea cols="40" rows="8" name="Description" style="width:80%;" id="textarea" placeholder="Enter Case Information Here..." required></textarea>
       </div>
 
 
