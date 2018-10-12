@@ -18,14 +18,14 @@
 
 <style>
 body {
-    overflow:hidden;
+    /* overflow:hidden; */
 }
 .weather {
-  width: 470px;
-  height: 100%;
+  width: 60%;
+  height: 120%;
   position:relative;
   display: inline-block;
-  margin-top: 50px;
+  margin-top: 20px;
 }
 
 </style>
@@ -36,7 +36,10 @@ body {
     </div> -->
 
     <div class="weather">
-      <iframe id="forecast_embed" frameborder="0" height="250" width="500" src="https://forecast.io/embed/#lat=44.909575&lon=-93.250263&name=Minneapolis"></iframe>
+      <iframe id="forecast_embed" frameborder="0" height="250" width="500" src="https://forecast.io/embed/#lat=44.909575&lon=-93.250263&name=Minneapolis"></iframe><hr>
+      <script type='text/javascript' src='https://darksky.net/widget/graph-bar/44.9773,-93.2655/us12/en.js?width=100%&height=320&title=Full Forecast&textColor=333333&bgColor=FFFFFF&transparency=false&skyColor=undefined&fontFamily=Default&customFont=&units=us&timeColor=333333&tempColor=333333&currentDetailsOption=true'></script>
+      <hr><script type='text/javascript' src='https://darksky.net/widget/graph/44.9773,-93.2655/us12/en.js?width=100%&height=320&title=minneapolis, MN&textColor=333333&bgColor=FFFFFF&transparency=false&fontFamily=Default&customFont=&units=us&graph=precip_graph&timeColor=333333&tempColor=333333&lineColor=333333&markerColor=333333'></script>
+      <hr><script src='https://darksky.net/map-embed/@radar,2018-10-12,20,45.028,-93.217,10.js?embed=true&timeControl=false&fieldControl=false&defaultField=radar'></script>
     </div>
   </div>
 </body>
