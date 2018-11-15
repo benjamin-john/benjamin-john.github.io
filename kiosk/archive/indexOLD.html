@@ -1,0 +1,46 @@
+<html>
+<link rel="stylesheet" type="text/css" href="kiosk.css">
+<script type="text/javascript" src="kiosk.js"></script>
+
+<head>
+  <title>ITS Walk Up Kiosk</title>
+</head>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-118213057-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-118213057-2');
+</script>
+<!-- End of Google Analytics -->
+
+
+<body>
+    <div id="logo">
+        <img src="https://www.bethel.edu/cdn/images/logo.png" alt="Bethel" style="width:40%">
+    </div>
+    <div class="BigText unselectable">Please Check-In</div><br>
+    <form action="https://script.google.com/macros/s/AKfycbxHAV_mSVbZe4OKY9MixuxbHbI9bqqhixZ4ecyeMpsCMZrgPHc/exec" id="myform" onsubmit="return validate()" method="get" target="myFrame">
+      <div class="title unselectable">Bethel Email</div>
+      <div class="name">
+        <input id="emailInput" type="mail" name="email" placeholder="email@bethel.edu" required>
+      </div>
+      <br><br><div class="title unselectable">Reason for visiting the ITS Service Desk</div><br>
+      <div class="smallText unselectable">Network Support: <input type="checkbox" name="network" value="Yes"> &nbsp;&nbsp;&nbsp;
+      Printing Support: <input type="checkbox" name="printing" value="Yes"></div>
+      <div class="message">
+        <label for="textarea"></label>
+        <textarea cols="40" rows="8" name="other" id="textarea" placeholder="Other..."></textarea>
+      </div>
+      <div class="submit">
+        <button type="submit" id="submit-form">Submit</button>
+      </div>
+    </form>
+
+     <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
+</body>
+
+</html>

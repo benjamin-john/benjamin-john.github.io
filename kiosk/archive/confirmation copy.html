@@ -1,0 +1,121 @@
+<head>
+<title>ITS Walk Up Kiosk</title>
+
+</head>
+<meta http-equiv="refresh" content="10; url=http://people.bethel.edu/~bej68982/kiosk/" />
+<script>
+function onestar() {
+  document.getElementById("star1").className = "yellowstar";
+  document.getElementById("star2").className = "whitestar";
+  document.getElementById("star3").className = "whitestar";
+  document.getElementById("star4").className = "whitestar";
+  document.getElementById("star5").className = "whitestar";
+}
+function twostar() {
+  document.getElementById("star1").className = "yellowstar";
+  document.getElementById("star2").className = "yellowstar";
+  document.getElementById("star3").className = "whitestar";
+  document.getElementById("star4").className = "whitestar";
+  document.getElementById("star5").className = "whitestar";
+}
+function threestar() {
+  document.getElementById("star1").className = "yellowstar";
+  document.getElementById("star2").className = "yellowstar";
+  document.getElementById("star3").className = "yellowstar";
+  document.getElementById("star4").className = "whitestar";
+  document.getElementById("star5").className = "whitestar";
+}
+function fourstar() {
+  document.getElementById("star1").className = "yellowstar";
+  document.getElementById("star2").className = "yellowstar";
+  document.getElementById("star3").className = "yellowstar";
+  document.getElementById("star4").className = "yellowstar";
+  document.getElementById("star5").className = "whitestar";
+}
+function fivestar() {
+  document.getElementById("star1").className = "yellowstar";
+  document.getElementById("star2").className = "yellowstar";
+  document.getElementById("star3").className = "yellowstar";
+  document.getElementById("star4").className = "yellowstar";
+  document.getElementById("star5").className = "yellowstar";
+}
+function goToForm() {
+  window.open("http://people.bethel.edu/~bej68982/kiosk", "_self");
+}
+</script>
+<style>
+.text{
+  margin: auto;
+  text-align: center;
+  font-family:sans-serif;
+}
+#small{
+  font-size: 30px;
+  color: white;
+  padding: 80 0 50 0;
+}
+#large{
+  font-size: 80px;
+  color: #ffc531;
+  padding-top: 200px;
+}
+body {
+  background-color: #123563;
+  margin: auto;
+  text-align: center;
+}
+#survey {
+  margin: auto;
+  text-align: center;
+}
+button {
+  //display: block;
+  //margin: auto;
+  //width: 99.5%;
+  background: #0069AA;
+  color: #fff;
+  border: 0;
+  border-bottom: solid darken(#002555, 7%);
+  font-size: 2em;
+  font-weight: bold;
+  margin: 80 20 10 20;
+  padding: 10;
+  cursor: pointer;
+  border-radius: 10px;
+}
+button:hover{
+  color: #ffc531;
+}
+.whitestar {
+  font-size: 100px;
+  color: white;
+  cursor: pointer;
+}
+.yellowstar {
+  font-size: 100px;
+  color: #ffc531;
+  cursor: pointer;
+}
+</style>
+
+<body>
+    <div class="text" id="large">Thank You!</div>
+
+    <div class="text" id="small">Rate Your Experience (Optional)</div>
+    <form action="https://script.google.com/macros/s/AKfycbxHAV_mSVbZe4OKY9MixuxbHbI9bqqhixZ4ecyeMpsCMZrgPHc/exec" id="test-form" method="get" target="myFrame">
+
+    <div id="survey">
+      <span class="whitestar" id="star1" onclick="onestar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
+      <span class="whitestar" id="star2" onclick="twostar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
+      <span class="whitestar" id="star3" onclick="threestar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
+      <span class="whitestar" id="star4" onclick="fourstar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
+      <span class="whitestar" id="star5" onclick="fivestar()">&bigstar;</span>
+    </div>
+
+     <!-- <button type="submit" id="submit-form" onclick="setTimeout(goToForm, 100);">Submit</button> -->
+   <button id="nothanks" onclick="goToForm()">Submit</button>
+    <button id="nothanks" onclick="goToForm()">No Thanks</button>
+    </form>
+    <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
+
+</body>

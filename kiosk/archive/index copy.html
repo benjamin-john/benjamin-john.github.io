@@ -1,0 +1,209 @@
+<head>
+<title>ITS Walk Up Kiosk</title>
+
+</head>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-118213057-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-118213057-2');
+</script>
+
+<style type="text/css">
+// Variables
+$radius: 4px;
+
+html {font: 16px 'Open sans', sans-serif;}
+form label {font-size: .9em;}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #123563;
+}
+form {
+  margin: 2% auto;
+  padding: 1em;
+  width: 400px;
+  color: #fff;
+  font-family:sans-serif;
+  border: .1em solid #ddd;
+  border-radius: $radius;
+  background-color: #0F2C52;
+  box-shadow: 0 80px 80px 0 rgba(0, 0, 0, .3);
+}
+.name {width: 100%;}
+.name input,
+.submit input,
+.submit button,
+select,
+textarea {
+  width: 47%;
+  height: 3em;
+  text-indent: .5em;
+  border: .1em solid #ddd;
+  border-radius: $radius;
+  outline-color: #002555;
+  font-family:sans-serif;
+}
+textarea {
+  padding: 10px 6px 6px 6px;
+  font-size: 15px;
+}
+.name input {
+  font-size: 15px;
+}
+.name input[name="surname"] {float: right;}
+.name input[type="mail"] {
+  margin-top: 1em;
+  width: 100%;
+}
+.radio,
+.dropdown,
+.message,
+.check,
+.submit {margin-top: 1em;}
+.dropdown select,
+.message textarea,
+.submit input {width: 100%;}
+.submit button {width: 100%;}
+.dropdown select {color: #aaa;}
+.message textarea {height: 8em;}
+.radio input,
+.check input {position: relative;top: 1px;}
+.radio input:before,
+.check input:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1em;
+  height: 1em;
+  background: #e9e9e9;
+  border-radius: $radius;
+  transition: all .35s ease;
+}
+.radio input:before {
+  border-radius: 50%;
+}
+.radio input:checked:before {
+  top: -.1em;
+  left: -.1em;
+  width: .5em;
+  height: .5em;
+  border: .35em solid #e9e9e9;
+  background: #002555;
+}
+.check input:checked:before {
+  content: "\f00c";
+  font-family: 'fontAwesome';
+  color: #1abc9c;
+}
+.check input:before {left:-.1px;}
+.submit button {
+  display: block;
+  margin: auto;
+  width: 99.5%;
+  background: #0069AA;
+  color: #fff;
+  border: 0;
+  border-bottom: $radius solid darken(#002555, 7%);
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 6px;
+}
+button:hover{
+  color: #ffc531;
+  background: #005991;
+}
+#logo{
+  text-align: center;
+  margin: auto;
+  padding: 50 0 50 0;
+}
+.title{
+  font-size: 19px;
+  font-weight: bold;
+  color: #ffc531;
+}
+.smallText{
+  font-size: 18px;
+}
+.bigText{
+  font-size: 50px;
+  font-family:sans-serif;
+  color: #ffc531;
+  margin: auto;
+  text-align: center;
+}
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+input[type='checkbox'] {
+    width:18px;
+    height:18px;
+    background:white;
+    cursor: pointer;
+}
+</style>
+
+<script>
+  function redirect() {
+      window.open("http://people.bethel.edu/~bej68982/kiosk/confirmation.html", "_self");
+  }
+  function validate() {
+    var myVar;
+    var x = document.forms["myform"]["email"].value;
+    if (x == "") {
+      return false;
+    } else {
+      if (!document.forms["myform"]["network"].checked && !document.forms["myform"]["printing"].checked && document.forms["myform"]["other"].value == "") {
+        window.alert('You must select one of the checkboxes or fill out the "Other" section');
+        return false;
+      } else {
+        myVar = setTimeout(redirect, 200);
+        return true;
+      }
+    }
+  }
+</script>
+
+<body>
+    <div id="logo">
+        <img src="https://www.bethel.edu/cdn/images/logo.png" alt="Bethel" style="width:40%">
+    </div>
+    <div class="BigText unselectable">Please Check-In</div><br>
+    <form action="https://script.google.com/macros/s/AKfycbxHAV_mSVbZe4OKY9MixuxbHbI9bqqhixZ4ecyeMpsCMZrgPHc/exec" id="myform" onsubmit="return validate()" method="get" target="myFrame">
+      <div class="title unselectable">Bethel Email</div>
+      <div class="name">
+        <input type="mail" name="email" placeholder="email@bethel.edu" required>
+      </div>
+      <br><br><div class="title unselectable">Reason for visiting the ITS Service Desk</div><br>
+      <div class="smallText unselectable">Network Support: <input type="checkbox" name="network" value="Yes"> &nbsp;&nbsp;&nbsp;
+      Printing Support: <input type="checkbox" name="printing" value="Yes"></div>
+      <div class="message">
+        <label for="textarea"></label>
+        <textarea cols="40" rows="8" name="other" id="textarea" placeholder="Other..."></textarea>
+      </div>
+      <div class="submit">
+        <button type="submit" id="submit-form">Submit</button>
+      </div>
+    </form>
+
+     <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
+</body>

@@ -1,0 +1,111 @@
+<html>
+<link rel="stylesheet" type="text/css" href="kiosk.css">
+<script type="text/javascript" src="kiosk.js"></script>
+
+<head>
+  <title>ITS Walk Up Kiosk</title>
+</head>
+
+
+<body onload="bodyOnload()">
+    <div id="logo">
+        <img src="https://www.bethel.edu/cdn/images/logo.png" alt="Bethel" style="width:40%" onclick="easterEgg()">
+    </div>
+    <div class="unselectable" id="gif" style="display:none;margin:auto;text-align: center;padding: 50 0 50 0;"><img src="https://i.imgur.com/uWyfGIO.gif" style="width:40%;"></div>
+    <div class="BigText unselectable" id="mainTitle">Please Check Out</div><br>
+
+
+    <form action="https://script.google.com/macros/s/AKfycbxBGTskCLCcTo18Xd0P2Mq2mMv9lanN3jQc_fqzfx2Hk6iTjrEc/exec" id="myform" onsubmit="return submitForm()" method="get" target="myFrame">
+
+      <div id="formBody"><br>
+      <div class="mediumText unselectable">Reason(s) for visiting the Help Desk today?</div><br>
+      <div class="mainButton unselectable" id="eduroam" name="Wifi" onclick="wifi()">WiFi</div>
+      <div class="mainButton unselectable" id="printing" name="Printing" onclick="follow()">Printing</div>
+      <div class="mainButton unselectable" id="other" onclick="other()">Other</div>
+
+      <div class="message" id="otherBox" style="display: none;">
+        <label for="textarea"></label>
+        <textarea cols="40" rows="8" name="Other" style="width:80%;" id="textarea" placeholder="Other..."></textarea>
+      </div>
+
+      <br><br><br><div class="mediumText unselectable" id="optionalTitle">Optional</div>
+      <div class="mainButton optionalButton unselectable" id="optional" onclick="optional()">Enter Contact Information</div>
+      <div id="contact" style="display:none;">
+
+        <div class="title unselectable">First Name <div style="color:red; display:inline">*</div></div>
+        <div class="name">
+          <input id="FirstInput" type="mail" name="First" placeholder="First">
+        </div>
+
+        <br><div class="title unselectable">Last Name <div style="color:red; display:inline">*</div></div>
+        <div class="name">
+          <input id="LastInput" type="mail" name="Last" placeholder="Last">
+        </div>
+
+      <br><div class="title unselectable">Bethel Email <div style="color:red; display:inline">*</div></div>
+      <div class="name">
+        <input id="emailInput" type="mail" name="Email" placeholder="email@bethel.edu">
+      </div>
+
+      <!-- <br><div class="title unselectable">ID Number</div>
+      <div class="name">
+        <input id="IDInput" type="mail" name="ID" placeholder="000000000">
+      </div> -->
+
+      <br><div class="title unselectable">Phone Number</div>
+      <div class="name">
+        <input id="phoneInput" type="mail" name="Phone" placeholder="123-456-7890">
+      </div>
+
+      <br><div class="title unselectable" style="color:white; font-size:18px; font-weight: normal;font-style: italic;">Fields marked with "<div style="color:red; display:inline">*</div>" are required</div>
+
+      </div>
+
+      <br><br><br><div class="title unselectable" style="font-size: 30px; color:white;">Was your issue resolved?</div><br>
+
+
+      <div class="mainButton unselectable" id="resolved" name="resolved" onclick="resolved()">Yes</div>
+      <div class="mainButton unselectable" id="unresolved" name="unresolved" onclick="unresolved()">No</div>
+
+
+      <div class="submit">
+        <div class="mainButton submitButton unselectable" id="goToSurvey"  onclick="test()">Submit</div>
+      </div>
+
+      </div>
+
+      <div id="survey" style="display:none">
+
+        <div class="BigText unselectable" style="font-size:80px; padding-bottom:50px;">Thank You!</div>
+
+        <div class="mediumText unselectable" style="padding:40px;">Rate Your Experience (Optional)</div>
+
+        <span class="whitestar unselectable" id="star1" onclick="onestar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
+        <span class="whitestar unselectable" id="star2" onclick="twostar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
+        <span class="whitestar unselectable" id="star3" onclick="threestar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
+        <span class="whitestar unselectable" id="star4" onclick="fourstar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
+        <span class="whitestar unselectable" id="star5" onclick="fivestar()">&bigstar;</span>
+
+        <br><br><br><button class="mainButton submitButton unselectable" type="submit" id="submit-form">Submit</button>
+        <div class="mainButton unselectable" id=""  onclick="noThanks()" style="max-width:200px">No Thanks</div>
+      </div>
+
+      <div id="thanks" style="display:none">
+          <div class="BigText unselectable" style="font-size:80px; padding-bottom:50px;">Thank You!</div>
+      </div>
+
+      <div id=hidden style="display:none;">
+         <input id="wifiBox" type="checkbox" name="Wifi" value="Selected">
+         <input id="printingBox" type="checkbox" name="Printing" value="Selected">
+         <input id="status1" type="radio" name="Status" value="Resolved" checked="checked">
+         <input id="status2" type="radio" name="Status" value="Unresolved">
+         <input id="surveyResult" type="mail" name="Survey" value="No Response">
+      </div>
+    </form>
+
+
+     <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
+
+</body>
+
+</html>

@@ -1,0 +1,81 @@
+<html>
+<link rel="stylesheet" type="text/css" href="kiosk.css">
+<script type="text/javascript" src="kiosk.js"></script>
+
+<head>
+  <title>ITS Walk Up Kiosk</title>
+</head>
+
+
+<body>
+    <div id="logo">
+        <img src="https://www.bethel.edu/cdn/images/logo.png" alt="Bethel" style="width:40%" onclick="easterEgg()">
+    </div>
+    <div class="unselectable" id="gif" style="display:none;margin:auto;text-align: center;padding: 50 0 50 0;"><img src="https://i.imgur.com/uWyfGIO.gif" style="width:40%;"></div>
+    <div class="BigText unselectable">Welcome Week Tracker</div><br>
+
+    <br><br>
+    <form action="https://script.google.com/macros/s/AKfycbxBGTskCLCcTo18Xd0P2Mq2mMv9lanN3jQc_fqzfx2Hk6iTjrEc/exec" id="myform" onsubmit="return validate()" method="get" target="myFrame">
+
+
+      <div class="mediumText unselectable">Select Topic(s)</div>
+      <div class="mainButton unselectable" id="eduroam" name="Wifi" onclick="wifi()">WiFi</div>
+      <div class="mainButton unselectable" id="printing" name="Printing" onclick="follow()">Printing</div>
+      <div class="mainButton unselectable" id="other" onclick="other()">Other</div>
+
+      <div class="message" id="otherBox" style="display: none;">
+        <label for="textarea"></label>
+        <textarea cols="40" rows="8" name="Other" style="width:80%;" id="textarea" placeholder="Other..."></textarea>
+      </div>
+
+
+      <br><br><br><div class="mediumText unselectable" id="optionalTitle">(Optional)</div>
+      <div class="mainButton optionalButton unselectable" id="optional" onclick="optional()">Enter Contact Information</div>
+      <div id="contact" style="display:none;">
+      <div class="title unselectable">First Name</div>
+      <div class="name">
+        <input id="FirstInput" type="mail" name="First" placeholder="First">
+      </div>
+
+      <br><div class="title unselectable">Last Name</div>
+      <div class="name">
+        <input id="LastInput" type="mail" name="Last" placeholder="Last">
+      </div>
+
+      <br><div class="title unselectable">Bethel Email</div>
+      <div class="name">
+        <input id="emailInput" type="mail" name="Email" placeholder="email@bethel.edu">
+      </div>
+
+      <br><div class="title unselectable">ID Number</div>
+      <div class="name">
+        <input id="IDInput" type="mail" name="ID" placeholder="000000000">
+      </div>
+
+      <br><div class="title unselectable">Phone Number</div>
+      <div class="name">
+        <input id="IDInput" type="mail" name="Phone" placeholder="123-456-7890">
+      </div>
+      </div>
+
+      <br><br><br><div class="title unselectable">Was their issue resolved?</div><br>
+
+      <input id="status1" type="radio" name="Status" value="Resolved" checked="checked">&nbsp;<div style="font-size:20px; display:inline;">Yes</div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <input id="status2" type="radio" name="Status" value="Unresolved">&nbsp;<div style="font-size:20px;display:inline;">No</div>
+
+      <div class="submit">
+        <button class="mainButton submitButton unselectable" type="submit" id="submit-form">Submit</button>
+      </div>
+
+      <div id=hidden style="display:none;">
+         <input id="wifiBox" type="checkbox" name="Wifi" value="Yes">
+         <input id="printingBox" type="checkbox" name="Printing" value="Yes">
+      </div>
+    </form>
+
+
+     <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
+
+</body>
+
+</html>
