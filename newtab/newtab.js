@@ -77,7 +77,8 @@ function copyTextToClipboard() {
   var successful = document.execCommand('copy');
   document.body.removeChild(textArea);
   if(successful) {
-    alert("Copy was successful!");
+    document.getElementById('searchBox').value = "";
+    document.getElementById('searchBox').focus();
   } else {
     alert("Error: Copy was unsuccessful");
   }
