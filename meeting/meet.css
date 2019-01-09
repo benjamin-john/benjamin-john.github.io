@@ -5,6 +5,10 @@
     text-align: center;
 }
 
+body{
+  height: 95%;
+}
+
 .title {
     color: grey;
     font-size: 18px;
