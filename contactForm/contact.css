@@ -20,8 +20,6 @@ form {
   padding: 1em;
   color: black;
   font-family:sans-serif;
-  border: .1em solid #ddd;
-  border-radius: $radius;
   background-color: white;
   overflow: auto;
 }
