@@ -3,10 +3,7 @@ function bodyOnload(){
 
 }
 function redirect() {
-  alert("Thank You");
-  document.getElementById("FirstInput").value="";
-  document.getElementById("textarea").value="";
-  document.getElementById("emailInput").value="";
+  window.open("https://benjamin-john.com", "_self");
 }
 function validate() {
   if(document.getElementById("FirstInput").value!="" && document.getElementById("textarea").value!="" && document.getElementById("emailInput").value!=""){

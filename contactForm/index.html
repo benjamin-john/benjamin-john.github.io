@@ -1,25 +1,37 @@
 <html>
-<link rel="stylesheet" type="text/css" href="https://benjamin-john.com/contactForm/contact.css">
-<script type="text/javascript" src="https://benjamin-john.com/contactForm/contact.js"></script>
-<body onload="bodyOnload()">
-    <form action="https://script.google.com/macros/s/AKfycbzxJrQwcMjdlPaP0CttAVr4K6i16IItCResVL7Q0IwFJldTaJn6/exec" id="myform" onsubmit="return submitForm()" method="get" target="myFrame">
-      <div class="mediumText unselectable">Contact Form</div>
-      <div id="contact">
-      <div class="name">
-        <input id="FirstInput" type="mail" name="Name" placeholder="Name">
-      </div>
-      <div class="name">
-        <input id="emailInput" type="mail" name="Email" placeholder="Email">
-      </div>
-      <div class="message" id="otherBox">
-        <label for="textarea"></label>
-        <textarea cols="40" rows="8" name="Body" style="width:95%;" id="textarea" placeholder="Body"></textarea>
-      </div>
-      </div>
-      <div class="submit">
-        <button class="mainButton unselectable" id="submit" type="submit">Submit</button>
-      </div>
-    </form>
-     <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
+<link rel="stylesheet" type="text/css" href="contact.css">
+<script type="text/javascript" src="contact.js"></script>
+<head>
+  <title>Contact</title>
+</head>
+
+<body>
+
+  <div class="card">
+   <img src="https://benjamin-john.com/profile.JPG" alt="John" style="width:100%">
+   <h1>Benjamin John</h1>
+   <p class="title"><a class="title" href="https://www.bethel.edu/its/" target="_blank">Application Integration Specialist</a></p>
+   <a href="https://www.bethel.edu/" target="_blank"><img src="https://benjamin-john.com/bethel.jpg" alt="Bethel" style="width:100%"></a>
+   <h2 style="margin-bottom:0px;">Contact Form</h1>
+     <form action="https://script.google.com/macros/s/AKfycbzxJrQwcMjdlPaP0CttAVr4K6i16IItCResVL7Q0IwFJldTaJn6/exec" id="myform" onsubmit="return submitForm()" method="get" target="myFrame">
+       <div id="contact">
+         <div class="name">
+           <input id="FirstInput" type="mail" name="Name" placeholder="Name">
+         </div>
+         <div class="name">
+           <input id="emailInput" type="mail" name="Email" placeholder="Email">
+         </div>
+         <div class="message" id="otherBox">
+           <label for="textarea"></label>
+           <textarea cols="40" rows="8" name="Body" style="width:95%;" id="textarea" placeholder="Body"></textarea>
+         </div>
+       </div>
+       <div class="submit">
+         <p><button style="width:95%;" id="submit" type="submit">Submit</button></p>
+       </div>
+     </form>
+      <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
+  </div>
+
 </body>
 </html>
