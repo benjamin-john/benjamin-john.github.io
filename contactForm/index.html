@@ -1,0 +1,25 @@
+<html>
+<link rel="stylesheet" type="text/css" href="https://benjamin-john.com/contactForm/contact.css">
+<script type="text/javascript" src="https://benjamin-john.com/contactForm/contact.js"></script>
+<body onload="bodyOnload()">
+    <form action="https://script.google.com/macros/s/AKfycbzxJrQwcMjdlPaP0CttAVr4K6i16IItCResVL7Q0IwFJldTaJn6/exec" id="myform" onsubmit="return submitForm()" method="get" target="myFrame">
+      <div class="mediumText unselectable">Contact Form</div>
+      <div id="contact">
+      <div class="name">
+        <input id="FirstInput" type="mail" name="Name" placeholder="Name">
+      </div>
+      <div class="name">
+        <input id="emailInput" type="mail" name="Email" placeholder="Email">
+      </div>
+      <div class="message" id="otherBox">
+        <label for="textarea"></label>
+        <textarea cols="40" rows="8" name="Body" style="width:95%;" id="textarea" placeholder="Body"></textarea>
+      </div>
+      </div>
+      <div class="submit">
+        <button class="mainButton unselectable" id="submit" type="submit">Submit</button>
+      </div>
+    </form>
+     <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
+</body>
+</html>
