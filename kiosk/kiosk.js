@@ -111,6 +111,16 @@ function unresolved() {
   }
 }
 
+function selected(ID) {
+  document.getElementById(ID).style.color = '#ffc531';
+  document.getElementById(ID).style.borderColor = '#ffc531';
+}
+
+function unselected(ID) {
+  document.getElementById(ID).style.color = 'white';
+  document.getElementById(ID).style.borderColor = '#0069AA';
+}
+
 
 function test() {
   if(validate()==true){

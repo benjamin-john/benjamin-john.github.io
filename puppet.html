@@ -1,0 +1,110 @@
+<style>
+pre {
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-left: 3px solid #f36d33;
+    color: #666;
+    page-break-inside: avoid;
+    font-family: monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 1.6em;
+    max-width: 100%;
+    overflow: auto;
+    padding: 1em 1.5em;
+    display: block;
+    word-wrap: break-word;
+}
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+<h1>Puppet</h1>
+<h3><a href="https://puppet.its.bethel.edu/gitweb">GitHub</a></h3>
+
+<h2>Start</h2>
+<pre><code>cd puppet.environments/</code></pre>
+
+<h2>Create a new puppet branch</h2>
+<pre><code>git checkout production</code><br /><code>git pull</code><br /><code>git checkout -b &lt;branch name&gt;</code><br /><code>git push --set-upstream origin &lt;branch name&gt;</code></pre>
+
+<h2>Commit changes to your branch</h2>
+<pre><code>git add .</code><br /><code>git commit -m "&lt;message&gt;"</code><br /><code>git push</code></pre>
+
+<h2>Test new changes on a server</h2>
+
+<pre><code>sudo puppet agent --test --environment &lt;branch&gt; --noop</code></pre>
+
+<h2>Merge your branch into Production</h2>
+
+<pre><code>git checkout production</code><br /><code>git pull</code><br /><code>git checkout &lt;branch&gt;</code><br /><code>git rebase -i production &lt;branch&gt;</code><br /><code>(edit the file, using 'f' instead of 'pick' to squash unwanted commits)</code><br /><code>git checkout production</code><br /><code>git merge &lt;branch&gt; --no-ff</code><br /><code>(write a meaningful merge message)</code><br /><code>git push</code><br /><code>git branch -d &lt;branch&gt;</code><br /><code>git push origin --delete &lt;branch&gt;</code></pre>
+<hr>
+
+<h1>Atom</h1>
+<table>
+  <tr>
+    <td>Open Projects</td>
+    <td>Ctrl + Cmd + P</td>
+  </tr>
+  <tr>
+    <td>Enable Split Difference</td>
+    <td>Ctrl + Alt + T</td>
+  </tr>
+  <tr>
+    <td>Go to next difference</td>
+    <td>Ctrl + Alt + N</td>
+  </tr>
+  <tr>
+    <td>Go to previous difference</td>
+    <td>Ctrl + Alt + P</td>
+  </tr>
+  <tr>
+    <td>Copy section left to right</td>
+    <td>Ctrl + Alt + . (>)</td>
+  </tr>
+  <tr>
+    <td>Copy section right to left</td>
+    <td>Ctrl + Alt + , (<)</td>
+  </tr>
+</table>
+<hr>
+
+<h1>Linux</h1>
+<table>
+  <tr>
+    <td>Become root</td>
+    <td>sudo -i</td>
+  </tr>
+  <tr>
+    <td>Move</td>
+    <td>mv source dest</td>
+  </tr>
+  <tr>
+    <td>Copy</td>
+    <td>cp source dest</td>
+  </tr>
+  <tr>
+    <td>Extract</td>
+    <td>tar xvzf file.tar.gz</td>
+  </tr>
+  <tr>
+    <td>Copy from client to net share on server</td>
+    <td>scp '/Users/bej68982 1/Downloads/file.txt' server.its.bethel.edu:</td>
+  </tr>
+  <tr>
+    <td>Get current directory</td>
+    <td>pwd</td>
+  </tr>
+</table>
