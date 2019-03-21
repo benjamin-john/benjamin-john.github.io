@@ -151,7 +151,8 @@ Docs & License: https://fullcalendar.io/
             end: item.end.dateTime || item.end.date,
             url: url,
             location: item.location,
-            description: item.description
+            description: startTime+" - "+endTime
+            //description: item.description
         };
     }
     function convertTime(date) {
