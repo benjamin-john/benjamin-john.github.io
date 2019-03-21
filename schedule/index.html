@@ -78,6 +78,8 @@
 
   body {
     margin: 40px 10px;
+    margin-right: 130px;
+    margin-left:130px;
     padding: 0;
     font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
     font-size: 14px;
@@ -94,12 +96,25 @@
     max-width: 900px;
     margin: 0 auto;
   }
+  #backButton
+  {
+    display: block;
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    width:80px;
+
+    z-index: 1;
+
+    -webkit-user-select: none;
+    user-select: none;
+  }
 
 
 </style>
 </head>
 <body>
-
+  <a href="https://benjamin-john.com" target="_self"><img src="left-arrow.png" alt="Back" id="backButton"></a>
   <div id='loading'>loading...</div>
   <div id='calendar'></div>
 
