@@ -140,15 +140,41 @@ Docs & License: https://fullcalendar.io/
         if (url && gcalTimezone) {
             url = injectQsComponent(url, 'ctz=' + gcalTimezone);
         }
+        var startTime = convertTime(item.start.dateTime);
+        var endTime = convertTime(item.end.dateTime);
+        // var startTime = item.start.dateTime;
+        // var endTime = item.end.dateTime;
         return {
             id: item.id,
-            title: "Busy",
+            title: "Busy "+startTime+" - "+endTime,
             start: item.start.dateTime || item.start.date,
             end: item.end.dateTime || item.end.date,
             url: url,
             location: item.location,
             description: item.description
         };
+    }
+    function convertTime(date) {
+      // alert(date);
+      // var hours = date.getHours();
+      // var minutes = date.getMinutes();
+      var hours = Number(date.substring(date.indexOf("T")+1, date.indexOf("T")+3));
+      var minutes = Number(date.substring(date.indexOf("T")+4, date.indexOf("T")+6));
+
+      var timeValue;
+
+      if (hours > 0 && hours <= 12) {
+        timeValue= "" + hours;
+      } else if (hours > 12) {
+        timeValue= "" + (hours - 12);
+      } else if (hours == 0) {
+        timeValue= "12";
+      }
+
+      timeValue += (minutes < 10) ? ":0" + minutes : ":" + minutes;  // get minutes
+      timeValue += (hours >= 12) ? " P.M." : " A.M.";  // get AM/PM
+
+      return timeValue;
     }
     // Injects a string like "arg=value" into the querystring of a URL
     // TODO: move to a general util file?
