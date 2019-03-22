@@ -14,6 +14,8 @@
 <script src='./packages/timegrid/main.js'></script>
 <script src='https://unpkg.com/popper.js/dist/umd/popper.min.js'></script>
 <script src='https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js'></script>
+<link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+<script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript"></script>
 <script>
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -21,14 +23,18 @@
 
     var calendar = new FullCalendar.Calendar(calendarEl, {
 
-      //plugins: [ 'interaction', 'dayGrid', 'list', 'googleCalendar' , 'timeGrid'],
       plugins: [ 'interaction', 'timeGrid', 'list', 'googleCalendar', 'dayGrid'],
       timeZone: "CST",
       header: {
-        left: 'prev,next today',
+        left: 'myCustomButton',
         center: 'title',
-        right: 'timeGridDay,timeGridWeek'
+        right: 'prev,next today'
       },
+      // footer: {
+      //   left: '',
+      //   center: '',
+      //   right: 'timeGridDay,timeGridWeek'
+      // },
 
       eventClick: function(arg) {
         arg.jsEvent.preventDefault();
@@ -39,13 +45,20 @@
           bool ? 'block' : 'none';
       },
       eventRender: function(info) {
-        //alert(info.event.extendedProps.description);
         var tooltip = new Tooltip(info.el, {
           title: info.event.extendedProps.description,
           placement: 'top',
           trigger: 'hover',
           container: 'body'
         });
+      },
+      customButtons: {
+        myCustomButton: {
+          text: 'Schedule a Meeting',
+          click: function() {
+            Calendly.showPopupWidget('https://calendly.com/benjamin-john/60min');return false;;
+          }
+        }
       },
 
       displayEventTime: false, // don't show the time column in list view
