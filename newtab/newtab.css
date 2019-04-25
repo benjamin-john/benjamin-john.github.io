@@ -296,13 +296,14 @@ a:hover
 #menu
 {
   position: absolute;
-  width: 300px;
+  width: 200px;
   margin: -100px 0 0 -50px;
   padding: 50px;
   padding-top: 125px;
+  border-style: groove;
+  border-color: #999999;
 
-  /* background: #ededed; */
-  background: #4c535e;
+  background: #ededed;
 
   list-style-type: none;
   -webkit-font-smoothing: antialiased;
@@ -315,7 +316,7 @@ a:hover
 }
 
 #menu a {
-  color: white;
+  color: black;
 }
 
 #menu a:hover
