@@ -32,6 +32,7 @@ function calc() {
 }
 
 function onLoadFunction(){//allows you to submit serach by pressing Enter or run calc() by pressing Shift+Enter
+  document.getElementById("menu").style.display = 'block';
   document.getElementById("searchBox")
       .addEventListener("keyup", function(event) {
       event.preventDefault();
@@ -45,6 +46,10 @@ function onLoadFunction(){//allows you to submit serach by pressing Enter or run
           copyTextToClipboard();
       }
   });
+}
+
+function displayMenu() {
+  document.getElementById("menu").style.display = 'block';
 }
 
 function copyTextToClipboard() {
