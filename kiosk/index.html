@@ -11,9 +11,9 @@
     <div id="logo">
         <img src="https://www.bethel.edu/cdn/images/logo.png" alt="Bethel" style="width:40%" onclick="easterEgg()">
     </div>
-    <div class="unselectable" id="gif" style="display:none;margin:auto;text-align: center;padding: 50 0 50 0;"><img src="https://i.imgur.com/uWyfGIO.gif" style="width:40%;"></div>
+    <div class="unselectable" id="gif" style="display:none;margin:auto;text-align: center;padding: 50 0 50 0;"><img id="sourceGif"  style="width:40%;"onclick="easterEgg()"></div>
+    <div id="snake" style="display:none;margin:auto;text-align: center;padding: 50 0 50 0;"><iframe name="secretFrame" src="https://benjamin-john.com/snake/" style="width:70%;height:50%;border:0; border:none;"></iframe></div>
     <div class="BigText unselectable" id="mainTitle">Please Check Out</div><br>
-
 
     <form action="https://script.google.com/macros/s/AKfycbxBGTskCLCcTo18Xd0P2Mq2mMv9lanN3jQc_fqzfx2Hk6iTjrEc/exec" id="myform" onsubmit="return validate()" method="get" target="myFrame">
 
@@ -69,14 +69,9 @@
       <div class="mainButton unselectable" id="unresolved" name="unresolved" onclick="unresolved()">No</div>
 
       <div class="submit">
-        <!-- <div class="mainButton submitButton unselectable" id="goToSurvey"  onclick="test()">Submit</div> -->
         <button class="mainButton submitButton unselectable" type="submit" id="submit-form">Submit</button>
       </div>
 
-      </div>
-
-      <div id="thanks" style="display:none">
-          <div class="BigText unselectable" style="font-size:80px; padding-bottom:50px;">Thank You!</div>
       </div>
 
       <div id=hidden style="display:none;">
@@ -89,18 +84,13 @@
       </div>
     </form>
 
+    <div id="thanks" style="display:none">
+        <br><br><br><div class="BigText unselectable" style="font-size:80px; padding-bottom:50px;">Thank You!</div>
+    </div>
 
-     <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
+
+    <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
 
 </body>
-<!-- <script>
-var slider = document.getElementById("myRange");
-var output = document.getElementById("time");
-output.innerHTML = slider.value + " Minutes";
-
-slider.oninput = function() {
-  output.innerHTML = this.value+ " Minutes";
-}
-</script> -->
 <script type="text/javascript" src="kiosk.js"></script>
 </html>

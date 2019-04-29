@@ -10,6 +10,12 @@ var passedLocation;
 var slider = document.getElementById("myRange");
 var output = document.getElementById("time");
 
+function test(){
+  show("thanks",'block');
+  hide("myform");
+  hide("mainTitle");
+}
+
 function bodyOnload(){
   output.innerHTML = slider.value + " Minutes";
   getUrlParams();
@@ -36,7 +42,7 @@ function validate() {
 function submitForm(){
   var myVar = setTimeout(redirect, 3000);
   show("thanks",'block');
-  hide("formBody");
+  hide("myform");
   hide("mainTitle");
   return true;
 }
@@ -51,7 +57,6 @@ function getUrlParams(){//get parameters from URL
   passedLocation = urlParams.get('location');
   if(passedLocation == null){passedLocation = "3900";}
   document.getElementById("formLocation").value = passedLocation;
-  alert(document.getElementById("formLocation").value);
 }
 
 slider.oninput = function() {//adjust displayed number as user slides input
@@ -150,7 +155,39 @@ document.getElementById(ID).style.display = STYLE;
 function easterEgg() {
   count=count+1;
   if(count==10){
+    genreateGif();
     document.getElementById("logo").style.display = 'none';
     document.getElementById("gif").style.display = 'block';
   }
+  if(count>10 && count<20){
+    genreateGif();
+  }
+  if(count==20){
+    document.getElementById("logo").style.display = 'none';
+    document.getElementById("gif").style.display = 'none';
+    document.getElementById("snake").style.display = 'block';
+  }
+}
+var allGifs = ["https://i.imgur.com/F06qhIH.gif",
+"https://media.giphy.com/media/otnqsqqzmsw7K/giphy.gif",
+"https://78.media.tumblr.com/3f1fafb8559dcba3d44479c1c57e0bfd/tumblr_ml216s1RkJ1s376dio1_400.gif",
+"https://media.giphy.com/media/l3mZ27Y0YyNFtOGkw/giphy.gif",
+"https://media.giphy.com/media/ZPKA8hg390ZP2/giphy.gif",
+"http://i.imgur.com/vtpk5wI.gif",
+"https://i.imgur.com/sykPBDO.gif",//
+"https://i.imgur.com/NDcDjgt.gif",
+"https://i.imgur.com/1gjdk4e.gif",
+"https://i.imgur.com/313lXVC.gif",
+"https://i.imgur.com/XZScASg.gif",
+"https://i.imgur.com/wHUbrjL.gif",
+"https://i.imgur.com/6FRC9TY.gif",
+"https://i.imgur.com/XW9aWbb.gif",
+"https://i.imgur.com/sRYa61u.gif",
+"https://media.giphy.com/media/j1QQj6To9Pbxu/giphy.gif",];
+
+function genreateGif() {
+  var index = Math.floor(Math.random() * allGifs.length);
+  var randomGif = allGifs[index];
+  allGifs.splice(index, 1);
+  document.getElementById("sourceGif").src = randomGif;
 }
