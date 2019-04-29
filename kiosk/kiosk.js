@@ -27,7 +27,7 @@ function validate() {
     return false;
   }
   if(contactBoxShown == true){//verify user entered contact info if the fields are visible
-    if(document.getElementById("FirstInput").value=="" && document.getElementById("LastInput").value=="" && document.getElementById("emailInput").value==""){
+    if(document.getElementById("FirstInput").value=="" || document.getElementById("LastInput").value=="" || document.getElementById("emailInput").value==""){
       alert("You must enter contact information");
       return false;
     }
@@ -39,7 +39,7 @@ function validate() {
   submitForm();//validation passes
 }
 
-function submitForm(){
+function submitForm(){//submit response, show thank you message, then reirect back to form after 3 sec
   var myVar = setTimeout(redirect, 3000);
   show("thanks",'block');
   hide("myform");
@@ -47,7 +47,7 @@ function submitForm(){
   return true;
 }
 
-function redirect() {
+function redirect() {//redirect back to blank form
   var url = "https://benjamin-john.com/kiosk?"+passedLocation;
   window.open(url, "_self");
 }
