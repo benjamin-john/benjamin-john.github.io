@@ -1,195 +1,150 @@
-var count=0;
-var enteredInfo=false;
-function bodyOnload(){
+//Global Variables
+var count = 0;
+var enteredInfo = false;
+var contactBoxShown = false;
+var issueResolved = null;
+var selectedOther = null;
+var selectedWifi = null;
+var selectedPrinting = null;
+var passedLocation;
+var slider = document.getElementById("myRange");
+var output = document.getElementById("time");
 
-}
-function redirect() {
-    window.open("https://benjamin-john.com/kiosk", "_self");
+function bodyOnload(){
+  output.innerHTML = slider.value + " Minutes";
+  getUrlParams();
 }
 
 function validate() {
-  if(document.getElementById("resolved").style.color == 'rgb(255, 197, 49)' || document.getElementById("unresolved").style.color == 'rgb(255, 197, 49)'){
-    if(document.getElementById("eduroam").style.color == 'rgb(255, 197, 49)' || document.getElementById("printing").style.color == 'rgb(255, 197, 49)' || document.getElementById("other").style.color == 'rgb(255, 197, 49)') {
-      if(document.getElementById("contact").style.display == 'block'){
-        if(document.getElementById("FirstInput").value!="" && document.getElementById("LastInput").value!="" && document.getElementById("emailInput").value!=""){
-          return true;
-        }else{
-          alert("You must enter contact information");
-          return false;
-        }
-      }else{
-        return true;
-      }
-    } else {
-      alert("You must select at least 1 topic");
+  if(selectedOther == null && selectedWifi == null && selectedPrinting == null){//verify user selected a topic
+    alert("You must select at least 1 topic");
+    return false;
+  }
+  if(contactBoxShown == true){//verify user entered contact info if the fields are visible
+    if(document.getElementById("FirstInput").value=="" && document.getElementById("LastInput").value=="" && document.getElementById("emailInput").value==""){
+      alert("You must enter contact information");
       return false;
     }
-  }else{
+  }
+  if(issueResolved == null){//verify user selected yes/no
     alert("You must say whether your issue was resolved or not");
     return false;
   }
+  submitForm();//validation passes
 }
 
 function submitForm(){
-  var myVar = setTimeout(redirect, 200);
+  var myVar = setTimeout(redirect, 3000);
+  show("thanks",'block');
+  hide("formBody");
+  hide("mainTitle");
   return true;
 }
 
-function other(){
+function redirect() {
+  var url = "https://benjamin-john.com/kiosk?"+passedLocation;
+  window.open(url, "_self");
+}
 
-  if(document.getElementById('otherBox').style.display == 'none'){
-    document.getElementById("otherBox").style.display = 'block';
-  } else {
-    document.getElementById("otherBox").style.display = 'none';
-  }
+function getUrlParams(){//get parameters from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  passedLocation = urlParams.get('location');
+  if(passedLocation == null){passedLocation = "3900";}
+  document.getElementById("formLocation").value = passedLocation;
+  alert(document.getElementById("formLocation").value);
+}
 
-  if(document.getElementById('other').style.color == 'rgb(255, 197, 49)'){
-    document.getElementById('other').style.color = 'white';
-    document.getElementById('other').style.borderColor = '#0069AA';
-  } else {
-    document.getElementById('other').style.color = '#ffc531';
-    document.getElementById('other').style.borderColor = '#ffc531';
+slider.oninput = function() {//adjust displayed number as user slides input
+  output.innerHTML = this.value+ " Minutes";
+}
+
+function other(){//user selected OTHER option
+  if(selectedOther == true){
+    hide('otherBox');
+    unselected('other');
+    selectedOther = false;
+  }else{
+    show('otherBox','block');
+    selected('other');
+    selectedOther = true;
   }
 }
 
-function wifi() {
-  if(document.getElementById('eduroam').style.color == 'rgb(255, 197, 49)'){
-    document.getElementById('eduroam').style.color = 'white';
-    document.getElementById('eduroam').style.borderColor = '#0069AA';
+function wifi() {//user selected WIFI option
+  if(selectedWifi == true){
+    unselected('eduroam');
+    selectedWifi = false;
     document.getElementById("wifiBox").checked = false;
-  } else {
-    document.getElementById('eduroam').style.color = '#ffc531';
-    document.getElementById('eduroam').style.borderColor = '#ffc531';
+  }else{
+    selected('eduroam');
+    selectedWifi = true;
     document.getElementById("wifiBox").checked = true;
   }
 }
 
-
-function follow() {
-  if(document.getElementById('printing').style.color == 'rgb(255, 197, 49)'){
-    document.getElementById('printing').style.color = 'white';
-    document.getElementById('printing').style.borderColor = '#0069AA';
+function follow() {//user selected PRINTING option
+  if(selectedPrinting == true){
+    unselected('printing');
+    selectedPrinting = false;
     document.getElementById("printingBox").checked = false;
-  } else {
-    document.getElementById('printing').style.color = '#ffc531';
-    document.getElementById('printing').style.borderColor = '#ffc531';
+  }else{
+    selected('printing');
+    selectedPrinting = true;
     document.getElementById("printingBox").checked = true;
   }
 }
 
-function resolved() {
-  if(document.getElementById('resolved').style.color == 'rgb(255, 197, 49)'){
+function optional() {//user selected ENTER CONTACT INFO option
+    enteredInfo=true;
+    contactBoxShown = true;
+    show('contact','block');
+    hide('optional');
+    hide('optionalTitle');
+}
 
-  } else {
-    if(enteredInfo==false){
-      document.getElementById("contact").style.display = 'none';
-      document.getElementById("optional").style.display = 'inline-block';
-      document.getElementById("optionalTitle").style.display = 'block';
-    }
-    document.getElementById('unresolved').style.color = 'white';
-    document.getElementById('unresolved').style.borderColor = '#0069AA';
-    document.getElementById("status2").checked = false;
-    document.getElementById('resolved').style.color = '#ffc531';
-    document.getElementById('resolved').style.borderColor = '#ffc531';
-    document.getElementById("status1").checked = true;
+function resolved() {//user selected YES
+  issueResolved = true;
+  unselected('unresolved');
+  selected('resolved');
+  document.getElementById("status2").checked = false;
+  document.getElementById("status1").checked = true;
+  if(enteredInfo==false){
+    document.getElementById("contact").style.display = 'none';
+    hide("contact");
+    show("optional",'inline-block');
+    show("optionalTitle",'block');
+    contactBoxShown = false;
   }
 }
 
-function unresolved() {
-  if(document.getElementById('unresolved').style.color == 'rgb(255, 197, 49)'){
-
-  } else {
-    document.getElementById("contact").style.display = 'block';
-    document.getElementById("optional").style.display = 'none';
-    document.getElementById("optionalTitle").style.display = 'none';
-    document.getElementById('resolved').style.color = 'white';
-    document.getElementById('resolved').style.borderColor = '#0069AA';
-    document.getElementById("status1").checked = false;
-    document.getElementById('unresolved').style.color = '#ffc531';
-    document.getElementById('unresolved').style.borderColor = '#ffc531';
-    document.getElementById("status2").checked = true;
-  }
+function unresolved() {//user selected NO
+  issueResolved = false;
+  contactBoxShown = true;
+  show("contact",'block');
+  hide("optional");
+  hide("optionalTitle");
+  unselected('resolved');
+  selected('unresolved');
+  document.getElementById("status1").checked = false;
+  document.getElementById("status2").checked = true;
 }
 
-function selected(ID) {
+function selected(ID) {//Turn button yellow
   document.getElementById(ID).style.color = '#ffc531';
   document.getElementById(ID).style.borderColor = '#ffc531';
 }
 
-function unselected(ID) {
+function unselected(ID) {//Turn button white
   document.getElementById(ID).style.color = 'white';
   document.getElementById(ID).style.borderColor = '#0069AA';
 }
 
-
-function test() {
-  if(validate()==true){
-      if(document.getElementById("status2").checked == true){
-        document.getElementById("thanks").style.display = 'block';
-        document.getElementById("formBody").style.display = 'none';
-        document.getElementById("mainTitle").style.display = 'none';
-         setTimeout(noThanks,3000);
-      }else{
-         document.getElementById("survey").style.display = 'block';
-         document.getElementById("formBody").style.display = 'none';
-         document.getElementById("mainTitle").style.display = 'none';
-         setTimeout(noThanks,10000);
-     }
-   }
+function hide(ID) {//hide passed element
+  document.getElementById(ID).style.display = 'none';
 }
 
-
-function onestar() {
-  document.getElementById("surveyResult").value = "1";
-  document.getElementById("star1").className = "yellowstar";
-  document.getElementById("star2").className = "whitestar";
-  document.getElementById("star3").className = "whitestar";
-  document.getElementById("star4").className = "whitestar";
-  document.getElementById("star5").className = "whitestar";
-}
-function twostar() {
-  document.getElementById("surveyResult").value = "2";
-  document.getElementById("star1").className = "yellowstar";
-  document.getElementById("star2").className = "yellowstar";
-  document.getElementById("star3").className = "whitestar";
-  document.getElementById("star4").className = "whitestar";
-  document.getElementById("star5").className = "whitestar";
-}
-function threestar() {
-  document.getElementById("surveyResult").value = "3";
-  document.getElementById("star1").className = "yellowstar";
-  document.getElementById("star2").className = "yellowstar";
-  document.getElementById("star3").className = "yellowstar";
-  document.getElementById("star4").className = "whitestar";
-  document.getElementById("star5").className = "whitestar";
-}
-function fourstar() {
-  document.getElementById("surveyResult").value = "4";
-  document.getElementById("star1").className = "yellowstar";
-  document.getElementById("star2").className = "yellowstar";
-  document.getElementById("star3").className = "yellowstar";
-  document.getElementById("star4").className = "yellowstar";
-  document.getElementById("star5").className = "whitestar";
-}
-function fivestar() {
-  document.getElementById("surveyResult").value = "5";
-  document.getElementById("star1").className = "yellowstar";
-  document.getElementById("star2").className = "yellowstar";
-  document.getElementById("star3").className = "yellowstar";
-  document.getElementById("star4").className = "yellowstar";
-  document.getElementById("star5").className = "yellowstar";
-}
-
-function noThanks(){
-  document.getElementById("surveyResult").value = "No Response";
-  document.getElementById("submit-form").click();
-}
-
-function optional() {
-    enteredInfo=true;
-    document.getElementById("contact").style.display = 'block';
-    document.getElementById("optional").style.display = 'none';
-    document.getElementById("optionalTitle").style.display = 'none';
+function show(ID, STYLE) {//show passed element
+document.getElementById(ID).style.display = STYLE;
 }
 
 function easterEgg() {

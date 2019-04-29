@@ -1,6 +1,6 @@
 <html>
 <link rel="stylesheet" type="text/css" href="kiosk.css">
-<script type="text/javascript" src="kiosk.js"></script>
+
 
 <head>
   <title>ITS Walk Up Kiosk</title>
@@ -15,7 +15,7 @@
     <div class="BigText unselectable" id="mainTitle">Please Check Out</div><br>
 
 
-    <form action="https://script.google.com/macros/s/AKfycbxBGTskCLCcTo18Xd0P2Mq2mMv9lanN3jQc_fqzfx2Hk6iTjrEc/exec" id="myform" onsubmit="return submitForm()" method="get" target="myFrame">
+    <form action="https://script.google.com/macros/s/AKfycbxBGTskCLCcTo18Xd0P2Mq2mMv9lanN3jQc_fqzfx2Hk6iTjrEc/exec" id="myform" onsubmit="return validate()" method="get" target="myFrame">
 
       <div id="formBody"><br>
       <div class="mediumText unselectable">Reason(s) for visiting the Help Desk today?</div><br>
@@ -47,11 +47,6 @@
         <input id="emailInput" type="mail" name="Email" placeholder="email@bethel.edu">
       </div>
 
-      <!-- <br><div class="title unselectable">ID Number</div>
-      <div class="name">
-        <input id="IDInput" type="mail" name="ID" placeholder="000000000">
-      </div> -->
-
       <br><div class="title unselectable">Phone Number</div>
       <div class="name">
         <input id="phoneInput" type="mail" name="Phone" placeholder="123-456-7890">
@@ -64,37 +59,20 @@
 
       <br><br><br><div class="title unselectable" style="font-size: 30px; color:white;">Duration of your visit?</div><br>
       <div class="slidecontainer">
-        <input type="range" min="1" max="160" value="10" class="slider" id="myRange">
+        <input name="Duration" type="range" min="1" max="160" value="10" class="slider" id="myRange">
         <p>Time: <span id="time"></span></p>
       </div>
 
       <br><br><br><div class="title unselectable" style="font-size: 30px; color:white;">Was your issue resolved?</div><br>
 
-
       <div class="mainButton unselectable" id="resolved" name="resolved" onclick="resolved()">Yes</div>
       <div class="mainButton unselectable" id="unresolved" name="unresolved" onclick="unresolved()">No</div>
 
-
       <div class="submit">
-        <div class="mainButton submitButton unselectable" id="goToSurvey"  onclick="test()">Submit</div>
+        <!-- <div class="mainButton submitButton unselectable" id="goToSurvey"  onclick="test()">Submit</div> -->
+        <button class="mainButton submitButton unselectable" type="submit" id="submit-form">Submit</button>
       </div>
 
-      </div>
-
-      <div id="survey" style="display:none">
-
-        <div class="BigText unselectable" style="font-size:80px; padding-bottom:50px;">Thank You!</div>
-
-        <div class="mediumText unselectable" style="padding:40px;">Rate Your Experience (Optional)</div>
-
-        <span class="whitestar unselectable" id="star1" onclick="onestar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
-        <span class="whitestar unselectable" id="star2" onclick="twostar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
-        <span class="whitestar unselectable" id="star3" onclick="threestar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
-        <span class="whitestar unselectable" id="star4" onclick="fourstar()">&bigstar;</span>&nbsp;&nbsp;&nbsp;
-        <span class="whitestar unselectable" id="star5" onclick="fivestar()">&bigstar;</span>
-
-        <br><br><br><button class="mainButton submitButton unselectable" type="submit" id="submit-form">Submit</button>
-        <div class="mainButton unselectable" id=""  onclick="noThanks()" style="max-width:200px">No Thanks</div>
       </div>
 
       <div id="thanks" style="display:none">
@@ -107,6 +85,7 @@
          <input id="status1" type="radio" name="Status" value="Resolved" checked="checked">
          <input id="status2" type="radio" name="Status" value="Unresolved">
          <input id="surveyResult" type="mail" name="Survey" value="No Response">
+         <input id="formLocation" type="mail" name="Location">
       </div>
     </form>
 
@@ -114,7 +93,7 @@
      <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
 
 </body>
-<script>
+<!-- <script>
 var slider = document.getElementById("myRange");
 var output = document.getElementById("time");
 output.innerHTML = slider.value + " Minutes";
@@ -122,5 +101,6 @@ output.innerHTML = slider.value + " Minutes";
 slider.oninput = function() {
   output.innerHTML = this.value+ " Minutes";
 }
-</script>
+</script> -->
+<script type="text/javascript" src="kiosk.js"></script>
 </html>
