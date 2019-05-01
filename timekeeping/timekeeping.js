@@ -1,6 +1,7 @@
 var action;
 var name;
 var scanning = false;
+var gloabalProx;
 var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWAi8ncz1oY1iZzVvlpLdH1fAajOoWjZ6gvRudBcxzteZ8AgKh/exec";
 
 function bodyOnload(){
@@ -18,6 +19,7 @@ proxInputField.addEventListener("keydown", function (e) {
 function validate(e) {
     // loadingIcon("start");
     var enteredProx = e.target.value;
+    gloabalProx = enteredProx;
     getName(enteredProx);
 }
 
@@ -37,18 +39,19 @@ function focusAndClear() {
 }
 
 function getName(prox) {
-  var newURL = SCRIPT_URL+"?prox="+prox+"&action="+action;
+  var newURL = SCRIPT_URL+"?prox="+prox+"&action="+action+"&first=null"+"&last=null";
   name = httpGet(newURL);
-  name = name.substring(1, name.length - 1)
-  if(name != null){
+  name = name.substring(1, name.length - 1);;
+  if(name != "null" && name != null){
     displayGreeting(name);
   }else{
-    getContactInfo(prox);
+    getContactInfo();
   }
 }
 
 function displayGreeting(name) {
   hide('scanID');
+  hide('enterInfo');
   if(action=="in"){
     document.getElementById('message').innerHTML = "Welcome " + name + "!";
   }
@@ -59,8 +62,18 @@ function displayGreeting(name) {
   var myVar = setTimeout(redirect, 4000);
 }
 
-function getContactInfo(prox) {
+function getContactInfo() {
+  show('enterInfo','block');
+  hide('scanID');
+}
 
+function updateContactInfo() {
+  var first = document.getElementById('FirstInput').value;
+  var last = document.getElementById('LastInput').value;
+  var newURL = SCRIPT_URL+"?prox="+gloabalProx+"&action="+action+"&first="+first+"&last="+last;
+  name = httpGet(newURL);
+  name = name.substring(1, name.length - 1);
+  displayGreeting(name);
 }
 
 function httpGet(theUrl)
