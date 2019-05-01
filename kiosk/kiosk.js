@@ -48,7 +48,7 @@ function submitForm(){//submit response, show thank you message, then reirect ba
 }
 
 function redirect() {//redirect back to blank form
-  var url = "https://benjamin-john.com/kiosk?"+passedLocation;
+  var url = "https://benjamin-john.com/kiosk?location="+passedLocation;
   window.open(url, "_self");
 }
 

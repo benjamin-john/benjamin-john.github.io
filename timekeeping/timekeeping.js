@@ -32,7 +32,7 @@ function focusAndClear() {
     if(scanning == true){
       document.getElementById('proxNumber').value = "";
       document.getElementById('proxNumber').focus();
-      var myVar = setTimeout(focusAndClear, 3000);
+      var myVar = setTimeout(focusAndClear, 10000);
     }
 }
 
