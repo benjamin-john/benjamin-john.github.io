@@ -60,16 +60,20 @@ function getUrlParams(){//get parameters from URL
 }
 
 slider.oninput = function() {//adjust displayed number as user slides input
-  if(this.value==60){
-    output.innerHTML = "1 Hour";
+  if(this.value==1){
+    output.innerHTML = "1 Minute";
   }else{
-    if(this.value==120){
-      output.innerHTML = "2 Hours";
+    if(this.value==60){
+      output.innerHTML = "1 Hour";
     }else{
-      if(this.value>60){
-        output.innerHTML = "1 Hour, "+ (this.value-60) + " Minutes";
+      if(this.value==120){
+        output.innerHTML = "2 Hours";
       }else{
-        output.innerHTML = this.value+ " Minutes";
+        if(this.value>60){
+          output.innerHTML = "1 Hour, "+ (this.value-60) + " Minutes";
+        }else{
+          output.innerHTML = this.value+ " Minutes";
+        }
       }
     }
   }
