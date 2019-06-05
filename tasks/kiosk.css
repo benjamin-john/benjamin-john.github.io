@@ -59,7 +59,7 @@ select,
 textarea {
   width: 47%;
   height: 3em;
-  
+
   border: .1em solid #ddd;
   border-radius: $radius;
   outline-color: #002555;
@@ -185,6 +185,7 @@ input[type='checkbox'] {
   text-align: center;
   margin: auto;
   padding: 50 0 50 0;
+  max-width: 1400px;
 }
 
 .mainButton {
