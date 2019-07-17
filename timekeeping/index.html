@@ -1,34 +1,25 @@
 <html>
 <link rel="stylesheet" type="text/css" href="timekeeping.css">
-<link rel="stylesheet" href="../css-loader-master/dist/css-loader.css">
 
 <head>
   <title>Timekeeping</title>
 </head>
 
 <body onload="bodyOnload()">
-    <div id="spinner" class="loader loader-default data-text="Please Wait..."></div>
     <div id="logo">
-        <img src="https://www.bethel.edu/cdn/images/logo.png" alt="Bethel" style="width:40%" onclick="easterEgg()">
+        <img src="https://www.bethel.edu/cdn/images/logo.png" alt="Bethel" style="width:40%">
     </div>
-    <div class="unselectable" id="gif" style="display:none;margin:auto;text-align: center;padding: 50 0 50 0;"><img id="sourceGif"  style="width:40%;"onclick="easterEgg()"></div>
-    <!-- <div id="snake" style="display:none;margin:auto;text-align: center;padding: 50 0 50 0;"><iframe name="secretFrame" src="https://benjamin-john.com/snake/" style="width:70%;height:50%;border:0; border:none;"></iframe></div> -->
 
     <div class="mediumText unselectable" id="mainTitle">Help Desk Timekeeping</div><br>
 
     <div id="centerArea">
-
-      <div class="loader loader-default data-text="Custom text">hey</div>
-
       <div id="formBody"><br>
 
-        <!-- <div class="loader loader-default is-active"></div> -->
         <div id="clock" class="clock unselectable"></div><br>
         <div class="mainButton unselectable" id="in" name="Clock Out" onclick="ClockIn()">Clock In</div>
         <div class="mainButton unselectable" id="out" name="Clock In" onclick="ClockOut()">Clock Out</div>
 
         <div class="submit">
-          <!-- <button class="mainButton submitButton unselectable" type="submit" id="submit-form">Submit</button> -->
           <div class="mainButton submitButton unselectable" id="test" onclick="displayScanID()">Submit</div>
         </div>
       </div>
@@ -47,24 +38,14 @@
         <div class="mainButton submitButton unselectable" id="submitName" onclick="updateContactInfo()">Submit</div>
       </div>
 
-
-
       <div id=hidden style="display:none;">
-         <!-- <input id="wifiBox" type="checkbox" name="Wifi" value="Selected">
-         <input id="printingBox" type="checkbox" name="Printing" value="Selected">
-         <input id="status1" type="radio" name="Status" value="Resolved" checked="checked">
-         <input id="status2" type="radio" name="Status" value="Unresolved">
-         <input id="surveyResult" type="mail" name="Survey" value="No Response">
-         <input id="formLocation" type="mail" name="Location"> -->
+          <!-- Hidden Input Fields -->
       </div>
 
       <div id="welcome" style="display:none">
           <br><br><br><div id="message" class="bigText unselectable"></div>
       </div>
-
-    </div><!-- centerArea -->
-
-
+    </div>
 
     <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
 

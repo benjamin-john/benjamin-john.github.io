@@ -17,7 +17,6 @@ proxInputField.addEventListener("keydown", function (e) {
 });
 
 function validate(e) {
-    // loadingIcon("start");
     var enteredProx = e.target.value;
     gloabalProx = enteredProx;
     getName(enteredProx);
