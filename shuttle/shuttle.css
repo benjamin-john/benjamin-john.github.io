@@ -135,6 +135,23 @@ tr:nth-child(odd) {
   .table{
     margin: auto;
   }
+  /* .title{
+    font-size: 100px;
+  }
+  .timeTitle{
+    font-size: 70px;
+  }
+  .smallTitle{
+    font-size: 80px;
+  }
+
+  .littleTitle{
+    font-size: 60px;
+  }
+
+  .timeBox{
+    font-size: 60px;
+  } */
 }
 
 @media only screen and (min-width: 1100px) {
