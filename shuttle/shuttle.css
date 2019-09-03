@@ -135,6 +135,9 @@ tr:nth-child(odd) {
   .table{
     margin: auto;
   }
+  .content{
+    width: 95%;
+  }
   /* .title{
     font-size: 100px;
   }
