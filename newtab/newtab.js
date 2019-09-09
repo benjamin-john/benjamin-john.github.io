@@ -24,6 +24,16 @@ function searchConfluence() {
   window.open(url, "_self");
 }
 
+function searchJira() {
+  var text = document.getElementById("searchBox").value;
+  if(Number.isInteger(text)){
+    var url="https://jira.bethel.edu/secure/QuickSearch.jspa?searchString=ITS-"+text;
+  }else{
+    var url="https://jira.bethel.edu/secure/QuickSearch.jspa?searchString="+text;
+  }
+  window.open(url, "_self");
+}
+
 function calc() {
   var text = document.getElementById("searchBox").value;
   text = eval(text);

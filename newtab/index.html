@@ -37,14 +37,26 @@
     <div id="header">
       <input id="searchBox" placeholder="Search..." type="text" />&nbsp;&nbsp;&nbsp;
       <input id="searchButton1" type="submit" value="Google" onclick="search()">&nbsp;&nbsp;
-      <input id="searchButton2" type="submit" value="Bethel" onclick="searchBethel()">&nbsp;&nbsp;
-      <input id="searchButton3" type="submit" value="Confluence" onclick="searchConfluence()">
+      <input id="searchButton4" type="submit" value="Jira" onclick="searchJira()">&nbsp;&nbsp;
+      <input id="searchButton3" type="submit" value="Confluence" onclick="searchConfluence()">&nbsp;&nbsp;
+      <input id="searchButton2" type="submit" value="Bethel" onclick="searchBethel()">      
     </div>
 
     <div id="column1" class="column">
       <div class="img__wrap">
-        <a href="https://footprints.bethel.edu/"><img src="./icons/footprints.png" class="iconsLarge"></img></a>
-        <p class="img__description">Footprints</p>
+        <div class="dropdown">
+          <a href="https://jira.bethel.edu"><img src="./icons/jira.png" class="iconsLarge"></a>
+          <p class="img__description">Jira</p>
+            <div class="dropdown-content">
+              <a href="https://service.bethel.edu">Service Desk</a>
+              <a href="https://jira.bethel.edu/issues/?jql=">Search</a>
+              <a href="https://jira.bethel.edu/secure/CreateIssue!default.jspa">Create</a>
+              <a href="https://jira.bethel.edu/secure/admin/ViewApplicationProperties.jspa">System Settings</a>
+              <a href="https://jira.bethel.edu/servicedesk/admin/ITS/request-types/group/1">Project Settings</a>
+              <a href="https://jira.bethel.edu/secure/admin/ViewIssueTypes.jspa">Issue Settings</a>
+              <a href="https://jira.bethel.edu/secure/AutomationProjectAdminAction!default.jspa?projectKey=ITS#/">Automation</a>
+            </div>
+        </div>
       </div>
       <div class="img__wrap">
         <a href="https://bwsip.com/Login/"><img src="./icons/bwsip.png" class="iconsLarge"></a>
@@ -178,8 +190,8 @@
         <p class="img__description">Youtube</p>
       </div>
       <div class="img__wrap">
-        <a href="https://jira.xp.bethel.edu"><img src="./icons/jira.png" class="iconsLarge"></a>
-        <p class="img__description">Jira</p>
+        <a href="https://footprints.bethel.edu/"><img src="./icons/footprints.png" class="iconsLarge"></img></a>
+        <p class="img__description">Footprints</p>
       </div>
       <div class="img__wrap">
           <a href="https://ub.minneapolismn.gov/iwr//user/login.seam"><img src="./icons/mpls.png" class="iconsLarge"></a>
