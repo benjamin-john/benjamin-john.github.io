@@ -622,9 +622,9 @@ SNAKE.Board = SNAKE.Board || (function() {
             var welcomeTxt = document.createElement("div");
             var fullScreenText = "";
             if (config.fullScreen) {
-                //fullScreenText = "On Windows, press F11 to play in Full Screen mode.";
+                fullScreenText = "On Windows, press F11 to play in Full Screen mode.";
             }
-            welcomeTxt.innerHTML = "Take a Break!<p></p>Use the <strong>arrow keys</strong> on your keyboard to play the Snake game. " + fullScreenText + "<p></p>";
+            welcomeTxt.innerHTML = "JavaScript Snake<p></p>Use the <strong>arrow keys</strong> on your keyboard to play the game. " + fullScreenText + "<p></p>";
             var welcomeStart = document.createElement("button");
             welcomeStart.appendChild( document.createTextNode("Play Game"));
 
@@ -656,7 +656,7 @@ SNAKE.Board = SNAKE.Board || (function() {
             tmpElm.className = "snake-try-again-dialog";
 
             var tryAgainTxt = document.createElement("div");
-            tryAgainTxt.innerHTML = "<p></p>You Died<p></p>";
+            tryAgainTxt.innerHTML = "JavaScript Snake<p></p>You died :(.<p></p>";
             var tryAgainStart = document.createElement("button");
             tryAgainStart.appendChild( document.createTextNode("Play Again?"));
 
