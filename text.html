@@ -7,16 +7,81 @@
 document.addEventListener('DOMContentLoaded', function() {//Puts cursor in search box
    document.getElementById('myTextArea').focus();
 }, false);
+
+function saveTextAsFile()
+{
+    var textToSave = document.getElementById("myTextArea").value;
+    var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+    var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+    var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
+
+    var downloadLink = document.createElement("a");
+    downloadLink.download = fileNameToSaveAs;
+    downloadLink.innerHTML = "Download File";
+    downloadLink.href = textToSaveAsURL;
+    downloadLink.onclick = destroyClickedElement;
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+
+    downloadLink.click();
+}
+
+function destroyClickedElement(event)
+{
+    document.body.removeChild(event.target);
+}
+
+function loadFileAsText()
+{
+    var fileToLoad = document.getElementById("fileToLoad").files[0];
+
+    var fileReader = new FileReader();
+    fileReader.onload = function(fileLoadedEvent)
+    {
+        var textFromFileLoaded = fileLoadedEvent.target.result;
+        document.getElementById("myTextArea").value = textFromFileLoaded;
+    };
+    fileReader.readAsText(fileToLoad, "UTF-8");
+}
 </script>
 <style>
 #myTextArea {
   background-color: #001a4d;
   color: white;
   font-size: 20px;
+  width:100%;
+  height:calc(100% - 100px);
+  margin-bottom:20px;
+}
+
+table {
+  width:100%;
 }
 
 </style>
 <body>
-<textarea name="myTextArea"  id="myTextArea" cols="30" rows="4" style = 'width:100%;height:100%;margin-bottom:20px'>
-</textarea>
+  <!-- <div style="height: 100%" -->
+  <textarea name="myTextArea" id="myTextArea" ></textarea>
+  <table>
+      <!-- <tr><td>Text to Save:</td></tr>
+      <tr>
+          <td style="height: 100%" colspan="3">
+              <textarea name="myTextArea" id="myTextArea" ></textarea>
+          </td>
+      </tr> -->
+      <tr>
+          <td>Filename to Save As:</td>
+          <td><input id="inputFileNameToSaveAs"></input></td>
+          <td><button onclick="saveTextAsFile()">Save Text to File</button></td>
+      </tr>
+      <tr>
+          <td>Select a File to Load:</td>
+          <td><input type="file" id="fileToLoad"></td>
+          <td><button onclick="loadFileAsText()">Load Selected File</button><td>
+      </tr>
+  </table>
+
+
+<!-- <textarea name="myTextArea"  id="myTextArea" cols="30" rows="4" style = 'width:100%;height:100%;margin-bottom:20px'>
+</textarea> -->
 </body>
