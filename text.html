@@ -43,7 +43,18 @@ function loadFileAsText()
     };
     fileReader.readAsText(fileToLoad, "UTF-8");
 }
+function previewHTML(){
+  var text = document.getElementById("myTextArea").value;
+  //var url = "data:text/html," + text;
+  //window.open(url);
+  //javascript:document.write(text);
+  var frog = window.open("","wildebeast","width=300,height=300,scrollbars=1,resizable=1")
+  frog.document.open()
+  frog.document.write(text)
+  frog.document.close()
+}
 </script>
+
 <style>
 #myTextArea {
   /* background-color: #001a4d; */
@@ -51,7 +62,7 @@ function loadFileAsText()
   color: white;
   font-size: 20px;
   width:100%;
-  height:calc(100% - 100px);
+  height:calc(100% - 150px);
   margin-bottom:8px;
 }
 
@@ -107,6 +118,11 @@ button:hover {
           <td>Select a File to Load:</td>
           <td><input type="file" id="fileToLoad"></td>
           <td><button onclick="loadFileAsText()">Load Selected File</button><td>
+      </tr>
+      <tr>
+          <td>Enter HTML Code to Preview in a New Tab:</td>
+          <td></td>
+          <td><button onclick="previewHTML()">Preview HTML</button><td>
       </tr>
   </table>
 
