@@ -99,6 +99,10 @@ function copyTextToClipboard() {
   }
 }
 
+function focusToSearch(){
+  document.getElementById('searchBox').focus();
+}
+
 document.addEventListener('DOMContentLoaded', function() {//Puts cursor in search box
-   document.getElementById('searchBox').focus();
+   myVar = setTimeout(focusToSearch, 500);
 }, false);
