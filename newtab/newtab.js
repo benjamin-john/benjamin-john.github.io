@@ -129,7 +129,7 @@ function copyTextToClipboard2(myVar) {
   var successful = document.execCommand('copy');
   document.body.removeChild(textArea);
   if(successful) {
-    alert("successfully Copied Calendar Shareable URL to Clipboard");
+    alert("Successfully Copied Calendar Shareable URL to Clipboard");
   } else {
     alert("Copy was unsuccessful");
   }
