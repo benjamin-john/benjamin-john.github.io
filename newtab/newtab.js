@@ -34,6 +34,16 @@ function searchJira() {
   window.open(url, "_self");
 }
 
+function searchDashboard() {
+  var text = document.getElementById("searchBox").value;
+  if(!isNaN(text)){
+    var url="https://jira.bethel.edu/secure/QuickSearch.jspa?searchString=ITS-"+text;
+  }else{
+    var url='https://jira.bethel.edu/issues/?jql=text%20~%20%22'+text+'%22%20AND%20project%20%3D%20%22Information%20Technology%20Services%22%20AND%20(%22ITS%20Team%22%20%3D%20%22CRM%20Admin%22%20OR%20assignee%20%3D%20currentUser()%20OR%20reporter%20%3D%20currentUser()%20OR%20watcher%20%3D%20currentUser()%20OR%20%22Request%20participants%22%20%3D%20currentUser())%20AND%20statusCategory%20!%3D%20Done%20ORDER%20BY%20updatedDate%20DESC';
+  }
+  window.open(url,  "_self");
+}
+
 function searchSF() {
   var text = document.getElementById("searchBox").value;
   var encodedText = '{"componentDef":"forceSearch:search","attributes":{"term":"' + text + '","scopeMap":{"type":"TOP_RESULTS"},"context":{"disableSpellCorrection":false,"SEARCH_ACTIVITY":{"term":"' + text + '"}}}}';
