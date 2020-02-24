@@ -149,5 +149,5 @@ function focusToSearch(){
 }
 
 document.addEventListener('DOMContentLoaded', function() {//Puts cursor in search box
-   myVar = setTimeout(focusToSearch, 1000);
+   myVar = setTimeout(focusToSearch, 100);
 }, false);
