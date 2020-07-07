@@ -46,9 +46,14 @@ function searchDashboard() {
 
 function searchSF() {
   var text = document.getElementById("searchBox").value;
-  var encodedText = '{"componentDef":"forceSearch:search","attributes":{"term":"' + text + '","scopeMap":{"type":"TOP_RESULTS"},"context":{"disableSpellCorrection":false,"SEARCH_ACTIVITY":{"term":"' + text + '"}}}}';
-  encodedText = window.btoa(encodedText);
-  var url='https://bethel-university.lightning.force.com/one/one.app#'+encodedText;
+  var url;
+  if(text.length = 18 && !/\s/.test(text)) {
+    url = 'https://bethel-university.lightning.force.com/' + text;
+  } else {
+    var encodedText = '{"componentDef":"forceSearch:search","attributes":{"term":"' + text + '","scopeMap":{"type":"TOP_RESULTS"},"context":{"disableSpellCorrection":false,"SEARCH_ACTIVITY":{"term":"' + text + '"}}}}';
+    encodedText = window.btoa(encodedText);
+    var url='https://bethel-university.lightning.force.com/one/one.app#'+encodedText;
+  }
   window.open(url, "_self");
 }
 
