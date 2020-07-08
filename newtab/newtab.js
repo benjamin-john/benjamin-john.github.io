@@ -166,3 +166,9 @@ function copyTextToClipboard2(myVar) {
 // document.addEventListener('DOMContentLoaded', function() {//Puts cursor in search box
 //    myVar = setTimeout(focusToSearch, 100);
 // }, false);
+
+document.addEventListener("keyup", function(event) {//focus to search bar if tab key is pressed
+  if (event.keyCode === 9) {
+      document.getElementById('searchBox').focus();
+  }
+}, false);
