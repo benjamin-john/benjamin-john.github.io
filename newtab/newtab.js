@@ -172,3 +172,14 @@ document.addEventListener("keyup", function(event) {//focus to search bar if tab
       document.getElementById('searchBox').focus();
   }
 }, false);
+
+// document.addEventListener("visibilitychange", handleVisibilityChange, false);
+//
+// function handleVisibilityChange() {
+//   if(document.hidden) {
+//     // the page is hidden
+//   } else {
+//     // the page is visible
+//     document.getElementById('searchBox').focus();
+//   }
+// }
