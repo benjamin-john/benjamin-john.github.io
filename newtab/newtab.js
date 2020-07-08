@@ -47,7 +47,7 @@ function searchDashboard() {
 function searchSF() {
   var text = document.getElementById("searchBox").value;
   var url;
-  if(text.length == 18 && !/\s/.test(text)) {
+  if(text.length == 18 && !/[\s~`!@#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?()\._]/g.test(text)) {
     url = 'https://bethel-university.lightning.force.com/' + text;
   } else {
     var encodedText = '{"componentDef":"forceSearch:search","attributes":{"term":"' + text + '","scopeMap":{"type":"TOP_RESULTS"},"context":{"disableSpellCorrection":false,"SEARCH_ACTIVITY":{"term":"' + text + '"}}}}';
@@ -159,10 +159,10 @@ function copyTextToClipboard2(myVar) {
   }
 }
 
-function focusToSearch(){
-  document.getElementById('searchBox').focus();
-}
-
-document.addEventListener('DOMContentLoaded', function() {//Puts cursor in search box
-   myVar = setTimeout(focusToSearch, 100);
-}, false);
+// function focusToSearch(){
+//   document.getElementById('searchBox').focus();
+// }
+//
+// document.addEventListener('DOMContentLoaded', function() {//Puts cursor in search box
+//    myVar = setTimeout(focusToSearch, 100);
+// }, false);
