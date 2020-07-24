@@ -159,13 +159,14 @@ function copyTextToClipboard2(myVar) {
   }
 }
 
-// function focusToSearch(){
-//   document.getElementById('searchBox').focus();
-// }
-//
-// document.addEventListener('DOMContentLoaded', function() {//Puts cursor in search box
-//    myVar = setTimeout(focusToSearch, 100);
-// }, false);
+function focusToSearch(){
+  document.getElementById('searchBox').focus();
+}
+
+document.addEventListener('DOMContentLoaded', function() {//Puts cursor in search box
+   //myVar = setTimeout(focusToSearch, 100);
+   document.getElementById('searchBox').focus();
+}, false);
 
 document.addEventListener("keyup", function(event) {//focus to search bar if tab key is pressed
   if (event.keyCode === 9) {
