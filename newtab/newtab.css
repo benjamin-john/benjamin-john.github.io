@@ -120,6 +120,7 @@ input[type="submit"]:hover {
 .dropdown {
     position: relative;
     display: inline-block;
+    font-family: verdana;
 }
 
 .dropdown-content {
@@ -159,6 +160,7 @@ input[type="submit"]:hover {
   float: left;
   text-align: center;
   margin: auto;
+  font-family: verdana;
 }
 
 #footerContent{
@@ -228,6 +230,7 @@ a:hover
   position: absolute;
   top: -7px;
   left: -5px;
+  font-family: verdana;
 
   cursor: pointer;
 
@@ -309,6 +312,7 @@ a:hover
   padding-top: 125px;
   border-style: groove;
   border-color: #999999;
+  font-family: verdana;
 
   background: #ededed;
 
