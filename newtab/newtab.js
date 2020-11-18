@@ -1,7 +1,7 @@
 function search() {
   var url;
   var text = document.getElementById("searchBox").value;
-  if(text.indexOf(".com")!== -1 || text.indexOf(".edu")!== -1 || text.indexOf(".org")!== -1){
+  if(text.indexOf(".com")!== -1 || text.indexOf(".edu")!== -1 || text.indexOf(".org")!== -1 || text.indexOf(".net")!== -1){
     url=text;
     if(text.indexOf("http://")== -1 && text.indexOf("https://")== -1) {
       url="http://"+text;
@@ -62,7 +62,8 @@ function calc() {
   var text = document.getElementById("searchBox").value;
   text = eval(text);
   document.getElementById("searchBox").value = text;
-  document.getElementById('searchBox').select();
+  copyTextToClipboard();
+  // document.getElementById('searchBox').select();
 }
 
 function onLoadFunction(){//allows you to submit serach by pressing Enter or run calc() by pressing Shift+Enter
@@ -74,10 +75,14 @@ function onLoadFunction(){//allows you to submit serach by pressing Enter or run
           calc();
       }
       if (event.keyCode === 13 && !event.shiftKey && !event.ctrlKey) {
+        try{
+          calc();
+        } catch (error) {
           document.getElementById("searchButton1").click();
+        }
       }
       if (event.keyCode === 13 && event.ctrlKey) {
-          copyTextToClipboard();
+          searchSF();
       }
   });
 }
@@ -116,7 +121,7 @@ function copyTextToClipboard() {
   var successful = document.execCommand('copy');
   document.body.removeChild(textArea);
   if(successful) {
-    document.getElementById('searchBox').value = "";
+    // document.getElementById('searchBox').value = "";
     document.getElementById('searchBox').focus();
   } else {
     alert("Error: Copy was unsuccessful");
