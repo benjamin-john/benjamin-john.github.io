@@ -62,7 +62,7 @@ function calc() {
   var text = document.getElementById("searchBox").value;
   text = eval(text);
   document.getElementById("searchBox").value = text;
-  copyTextToClipboard();
+  // copyTextToClipboard();
   // document.getElementById('searchBox').select();
 }
 
