@@ -47,14 +47,15 @@
         document.getElementById('loading').style.display =
           bool ? 'block' : 'none';
       },
-      eventRender: function(info) {
-        var tooltip = new Tooltip(info.el, {
-          title: info.event.extendedProps.description,
-          placement: 'top',
-          trigger: 'hover',
-          container: 'body'
-        });
-      },
+      // Displays popup info
+      // eventRender: function(info) {
+      //   var tooltip = new Tooltip(info.el, {
+      //     title: info.event.extendedProps.description,
+      //     placement: 'top',
+      //     trigger: 'hover',
+      //     container: 'body'
+      //   });
+      // },
       customButtons: {
         // myCustomButton2: {
         //   text: 'Back',

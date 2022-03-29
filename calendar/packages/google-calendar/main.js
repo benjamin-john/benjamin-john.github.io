@@ -146,12 +146,14 @@ Docs & License: https://fullcalendar.io/
         // var endTime = item.end.dateTime;
         return {
             id: item.id,
-            title: "Busy "+startTime+" - "+endTime,
+            // title: "Busy "+startTime+" - "+endTime,
+            title: "Busy",
             start: item.start.dateTime || item.start.date,
             end: item.end.dateTime || item.end.date,
             url: url,
             location: item.location,
-            description: startTime+" - "+endTime
+            description: "Busy"
+            // description: startTime+" - "+endTime
             //description: item.description
         };
     }
