@@ -1,4 +1,18 @@
-function search() {
+function searchDuck() {
+  var url;
+  var text = document.getElementById("searchBox").value;
+  if(text.indexOf(".com")!== -1 || text.indexOf(".edu")!== -1 || text.indexOf(".org")!== -1 || text.indexOf(".net")!== -1){
+    url=text;
+    if(text.indexOf("http://")== -1 && text.indexOf("https://")== -1) {
+      url="http://"+text;
+    }
+  } else {
+    url="https://www.duckduckgo.com/?q="+text;
+  }
+  window.open(url, "_self");
+}
+
+function searchGoogle() {
   var url;
   var text = document.getElementById("searchBox").value;
   if(text.indexOf(".com")!== -1 || text.indexOf(".edu")!== -1 || text.indexOf(".org")!== -1 || text.indexOf(".net")!== -1){
@@ -46,13 +60,16 @@ function searchDashboard() {
 
 function searchSF() {
   var text = document.getElementById("searchBox").value;
-  var url;
+  var prodURL = 'https://bethel-university.lightning.force.com/';
+  var sandboxURL = 'https://bethel-university--full.lightning.force.com/'
+  var url = event.ctrlKey ? sandboxURL : prodURL;
+
   if((text.length == 18 || text.length == 15) && !/[\s~`!@#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?()\._]/g.test(text)) {
-    url = 'https://bethel-university.lightning.force.com/' + text;
+    url += text;
   } else {
     var encodedText = '{"componentDef":"forceSearch:search","attributes":{"term":"' + text + '","scopeMap":{"type":"TOP_RESULTS"},"context":{"disableSpellCorrection":false,"SEARCH_ACTIVITY":{"term":"' + text + '"}}}}';
     encodedText = window.btoa(encodedText);
-    var url='https://bethel-university.lightning.force.com/one/one.app#'+encodedText;
+    var url = url + 'one/one.app#'+encodedText;
   }
   window.open(url, "_self");
 }
@@ -66,13 +83,13 @@ function calc() {
   // document.getElementById('searchBox').select();
 }
 
-function onLoadFunction(){//allows you to submit serach by pressing Enter or run calc() by pressing Shift+Enter
+function onLoadFunction(){//allows you to submit serach by pressing Enter or run searchSF() by pressing Shift+Enter or CTRL+Enter
   document.getElementById("menu").style.display = 'block';
   document.getElementById("searchBox")
       .addEventListener("keyup", function(event) {
       event.preventDefault();
-      if (event.keyCode === 13 && event.shiftKey) {
-          calc();
+      if (event.keyCode === 13 && (event.shiftKey || event.ctrlKey)) {
+          searchSF();
       }
       if (event.keyCode === 13 && !event.shiftKey && !event.ctrlKey) {
         try{
@@ -80,9 +97,6 @@ function onLoadFunction(){//allows you to submit serach by pressing Enter or run
         } catch (error) {
           document.getElementById("searchButton1").click();
         }
-      }
-      if (event.keyCode === 13 && event.ctrlKey) {
-          searchSF();
       }
   });
 }
