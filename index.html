@@ -13,100 +13,14 @@
     href="./icons/user.png">
 </head>
 <style>
-  @media only screen and (min-width: 600px) {
-    .card{
-      <!-- max-width: 350px; -->
-      width: 95%;
-    }
-  }
-
-  @media only screen and (max-width: 600px) {
-    .card{
-      width: 95%;
-    }
-    a.title {
-      font-size: 44px;
-    }
-    a {
-      font-size: 40px;
-    }
-  }
-
-.card {
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-    margin: auto;
-    text-align: center;
-}
-
-.title {
-    color: grey;
-    font-size: 18px;
-}
-
-p.big {
-    line-height: 150%;
-}
-
-button {
-    border: none;
-    outline: 0;
-    display: inline-block;
-    padding: 8px;
-    color: white;
-    background-color: #123563;
-    text-align: center;
-    cursor: pointer;
-    width: 100%;
-    font-size: 18px;
-}
-
-a {
-    text-decoration: none;
-    font-size: 20px;
-    color: black;
-}
-
-a.title {
-    text-decoration: none;
-    font-size: 22px;
-    color: grey;
-}
-
-button:hover, a:hover {
-    opacity: 0.7;
-}
 </style>
 
 <div class="card">
+  <a href="https://www.bethel.edu/" target="_blank"><img src="bethel.jpg" alt="Bethel" style="width:100%"></a>
  <img src="profileNEW.jpg" alt="John" style="width:100%">
  <h1>Benjamin John</h1>
- <p class="title"><a class="title" href="https://www.bethel.edu/its/" target="_blank">ITS Director, Software Development</a></p>
- <a href="https://www.bethel.edu/" target="_blank"><img src="bethel.jpg" alt="Bethel" style="width:100%"></a>
- <p class="big"><a href="mailto:benjamin-john@bethel.edu">Benjamin-John@bethel.edu</a><br /><a href="tel:+16516386528">651.638.6528</a></p>
- <p><button onclick="contactButtonClick()">Contact</button></p>
- <div id="contactForm" "<div style="display:none">
-   <h2 style="margin-bottom:0px;">Contact Form</h2>
-     <form action="https://script.google.com/macros/s/AKfycbzxJrQwcMjdlPaP0CttAVr4K6i16IItCResVL7Q0IwFJldTaJn6/exec" id="myform" onsubmit="return submitForm()" method="get" target="myFrame">
-    <!-- <form id="myform" onsubmit="sendemail(); rest(); return false;"> -->
-
-       <div id="contact">
-         <div class="name">
-           <input id="FirstInput" type="mail" name="Name" placeholder="Name">
-         </div>
-         <div class="name">
-           <input id="emailInput" type="mail" name="Email" placeholder="Email">
-         </div>
-         <div class="message" id="otherBox">
-           <label for="textarea"></label>
-           <textarea cols="40" rows="8" name="Body" style="width:95%;" id="textarea" placeholder="Body"></textarea>
-         </div>
-       </div>
-       <div class="submit">
-         <p><button style="width:95%;" id="submit" type="submit">Submit</button></p>
-       </div>
-     </form>
-      <iframe name="myFrame" style="width:0;height:0;border:0; border:none;"></iframe>
- </div>
+ <p class="title"><a class="title" href="https://www.bethel.edu/its/" target="_blank">ITS Director</a></p>
+ <p class="big"><a href="mailto:benjamin-john@bethel.edu">Benjamin-John@Bethel.edu</a><br /><a href="tel:+16516386528">651.638.6528</a></p>
  <p><a href="" onclick="Calendly.showPopupWidget('https://calendly.com/benjamin-john/60min');return false;"><button>Schedule a Meeting</button></a></p>
  <p><a href="https://benjamin-john.com/calendar/" target="_self"><button>Calendar</button></a></p>
 </div>
