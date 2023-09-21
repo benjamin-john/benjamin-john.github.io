@@ -61,8 +61,8 @@ function searchDashboard() {
 function searchSF() {
   var text = document.getElementById("searchBox").value;
   var prodURL = 'https://bethel-university.lightning.force.com/';
-  var sandboxURL = 'https://bethel-university--full.lightning.force.com/'
-  var url = event.ctrlKey ? sandboxURL : prodURL;
+  var sandboxURL = 'https://bethel-university--full.sandbox.lightning.force.com/'
+  var url = event.shiftKey ? sandboxURL : prodURL;
 
   if((text.length == 18 || text.length == 15) && !/[\s~`!@#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?()\._]/g.test(text)) {
     url += text;
@@ -74,6 +74,21 @@ function searchSF() {
   window.open(url, "_self");
 }
 
+function searchSFUA() {
+  var text = document.getElementById("searchBox").value;
+  var prodURL = 'https://betheluniversity.lightning.force.com/';
+  var sandboxURL = 'https://betheluniversity--sandbox.sandbox.lightning.force.com/'
+  var url = event.shiftKey ? sandboxURL : prodURL;
+
+  if((text.length == 18 || text.length == 15) && !/[\s~`!@#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?()\._]/g.test(text)) {
+    url += text;
+  } else {
+    var encodedText = '{"componentDef":"forceSearch:search","attributes":{"term":"' + text + '","scopeMap":{"type":"TOP_RESULTS"},"context":{"disableSpellCorrection":false,"SEARCH_ACTIVITY":{"term":"' + text + '"}}}}';
+    encodedText = window.btoa(encodedText);
+    var url = url + 'one/one.app#'+encodedText;
+  }
+  window.open(url, "_self");
+}
 
 function calc() {
   var text = document.getElementById("searchBox").value;
