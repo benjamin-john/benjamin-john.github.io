@@ -2,7 +2,7 @@ function FindProxyForURL(url, host) {
   if (isInNet(myIpAddress(), "140.88.95.0", "255.255.255.0"))
     return "DIRECT";
   else if (dnsDomainIs(host, "veeam-sfbackup.its.bethel.edu"))
-    return "SOCKS5 ssh-1.its.bethel.edu:3900";
+    return "PROXY ssh-1.its.bethel.edu:3900";
   else
     return "DIRECT";
 }
