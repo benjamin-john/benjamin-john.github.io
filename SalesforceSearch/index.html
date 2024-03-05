@@ -1,0 +1,448 @@
+<html>
+<link rel="stylesheet" type="text/css" href="newtab.css">
+<meta http-equiv="last-modified" content="Sun, 28 April 2019 14:00:46 GMT " />
+<meta http-equiv="cache-control" content="Private" />
+<meta http-equiv="Expires" content="86400" />
+
+<head>
+  <title>New Tab</title>
+  <link rel="icon"
+      type="image/png"
+      href="./icons/home.png">
+</head>
+
+
+<body onLoad="onLoadFunction()">
+
+  <nav role="navigation">
+  <div id="menuToggle">
+    <!-- <input type="checkbox" onclick=displayMenu() /> -->
+    <input type="checkbox"/>
+    <span></span>
+    <span></span>
+    <span></span>
+    <ul id="menu" style="display:none;">
+      <a href="http://benjamin-john.com"><li>Contact Card</li></a>
+      <a href="https://github.com/benjamin-john/benjamin-john.github.io"><li>Settings</li></a>
+    </ul>
+  </div>
+</nav>
+
+  <div id="contentBox">
+
+    <div id="header">
+      <input id="searchBox" placeholder="Search..." type="text" /><br><br>
+      <input style="animation-delay:0.05s" id="searchButton1" type="submit" value="Google" onclick="searchGoogle()">&nbsp;&nbsp;
+      <input style="animation-delay:0.10s" id="searchButton4" type="submit" value="Admissions" onclick="searchSF()">&nbsp;&nbsp;
+      <input style="animation-delay:0.15s" id="searchButton4" type="submit" value="Advancement" onclick="searchSFUA()">&nbsp;&nbsp;
+      <input style="animation-delay:0.20s" id="searchButton4" type="submit" value="Jira" onclick="searchJira()">&nbsp;&nbsp;
+      <input style="animation-delay:0.25s" id="searchButton3" type="submit" value="Confluence" onclick="searchConfluence()">&nbsp;&nbsp;
+      <input style="animation-delay:0.30s" id="searchButton2" type="submit" value="Bethel" onclick="searchBethel()">&nbsp;&nbsp;
+      <input style="animation-delay:0.35s" id="searchButton4" type="submit" value="Dashboard" onclick="searchDashboard()">&nbsp;&nbsp;
+
+      <!-- <input style="animation-delay:0.35s" id="searchButton7" type="submit" value="Calculate" onclick="calc()"><br><br> -->
+    </div>
+
+    <!-- Column 1 -->
+    <div id="column1" class="column">
+      <div class="img__wrap">
+        <div class="dropdown">
+          <!-- <a href="https://www.bethel.edu/"><img src="./icons/bethel2.png" class="iconsLarge" style="-webkit-filter: drop-shadow(0px 0px 0px #222); filter: drop-shadow(0px 0px 0px #222);"></a> -->
+          <a href="https://bethel.edu/"><img src="./icons/bethel3.png" alt="Avatar" style="border-radius: 50%;" class="iconsLarge"></a>
+          <p class="img__description">Bethel</p>
+            <div class="dropdown-content">
+              <a href="https://www.bethel.edu/offices">All Offices</a>
+              <a href="https://www.bethel.edu/its/">ITS</a>
+              <a href="https://www.bethel.edu/business-office/">Business Office</a>
+              <a href="https://www.bethel.edu/human-resources/">HR</a>
+              <a href="https://www.bethel.edu/admissions/">Admissions</a>
+              <a href="https://www.bethel.edu/undergrad/financial-aid/">Financial Aid</a>
+              <a href="https://www.bethel.edu/library/">Library</a>
+              <a href="https://www.bethel.edu/events/calendar/">Calendar</a>
+              <a href="https://www.bethel.edu/dining-services/locations/monson/">Dining Center</a>
+            </div>
+        </div>
+      </div>
+
+      <div class="img__wrap">
+        <a href="http://mail.bethel.edu/"><img src="./icons/gmail.png" class="iconsLarge"></a>
+        <p class="img__description">Gmail</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://meet.google.com"><img src="./icons/meet.png" class="iconsLarge"></a>
+        <p class="img__description">Meet</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://app.standardnotes.com/"><img src="./icons/notes.png" class="iconsLarge"></a>
+        <p class="img__description">Notes</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://www.amazon.com/"><img src="./icons/amazon.png" class="iconsLarge"></a>
+        <p class="img__description">Amazon</p>
+      </div>
+      <div class="img__wrap">
+          <a href="https://benjamin-john.github.io/snake"><img src="./icons/arcade.png" class="iconsLarge"></a>
+          <p class="img__description">Snake Game</p>
+      </div>
+      <!-- <div style="height:40px;"></div> -->
+    </div>
+
+    <!-- Column 2 -->
+    <div id="column2" class="column">
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="https://jira.bethel.edu"><img src="./icons/jira.png" class="iconsLarge"></a>
+          <p class="img__description">Jira</p>
+            <div class="dropdown-content">
+              <a href="https://jira.xp.bethel.edu">Jira XP</a>
+              <a href="https://jira.bethel.edu/servicedesk/customer/portal/1">Customer Portal</a>
+              <a href="https://jira.bethel.edu/issues/?jql=">Search</a>
+              <a href="https://jira.bethel.edu/secure/CreateIssue!default.jspa">Create</a>
+              <a href="https://jira.bethel.edu/secure/admin/ViewApplicationProperties.jspa">System Settings</a>
+              <a href="https://jira.bethel.edu/servicedesk/admin/ITS/request-types/group/1">Project Settings</a>
+              <a href="https://jira.bethel.edu/secure/admin/ViewIssueTypes.jspa">Issue Settings</a>
+              <a href="https://jira.bethel.edu/secure/AutomationProjectAdminAction!default.jspa?projectKey=ITS#/">Automation</a>
+              <a href="https://jira.bethel.edu/secure/Dashboard.jspa">Backdoor</a>
+            </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="https://drive.google.com/drive/my-drive"><img src="./icons/drive.png" class="iconsLarge"></a>
+          <p class="img__description">Drive</p>
+            <div class="dropdown-content">
+              <a href="https://drive.google.com/drive/folders/0AAvLkVwlvH9CUk9PVA">Desktop</a>
+              <a href="https://drive.google.com/drive/folders/0ANRt_EBkdcm-Uk9PVA">Service Desk</a>
+              <a href="https://drive.google.com/drive/folders/0ANky4ar5YqdYUk9PVA">Infrastructure</a>
+              <a href="https://drive.google.com/drive/folders/0AObyVAfn7m9OUk9PVA">Unified Support</a>
+            </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="https://chat.google.com"><img src="./icons/chat.png" class="iconsLarge"></a>
+          <p class="img__description">Chat</p>
+          <div class="dropdown-content">
+            <a href="https://hangouts.google.com/">Hangouts</a>
+          </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <a href="http://benjamin-john.com/text.html"><img src="./icons/text.png" class="iconsLarge"></img></a>
+        <p class="img__description">Text Editor</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://www.google.com/maps"><img src="./icons/maps.png" class="iconsLarge"></img></a>
+        <p class="img__description">Maps</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://outlook.live.com"><img src="./icons/outlook.png" class="iconsLarge"></a>
+        <p class="img__description">Outlook</p>
+      </div>
+
+    </div>
+
+    <!-- Column 3 -->
+    <div id="column3" class="column">
+
+        <div class="img__wrap">
+          <div class="dropdown">
+            <a href="https://confluence.bethel.edu/display/SF/Salesforce+Home"><img src="./icons/confluence.png" class="iconsLarge"></a>
+            <p class="img__description">Confluence</p>
+            <div class="dropdown-content">
+              <a href="https://confluence.bethel.edu/display/ITSKB/Knowledge+Base+Home?src=spacemenu">Knowledge Base</a>
+              <a href="https://confluence.bethel.edu/display/AppsTeam/Applications+Team?src=spacemenu">Apps Team</a>
+              <a href="https://confluence.bethel.edu/display/desktopservices/Desktop+Services?src=spacemenu">Desktop</a>
+              <a href="https://confluence.bethel.edu/display/SYS/Systems+Administration?src=spacemenu">Systems</a>
+              <a href="https://confluence.bethel.edu/display/helpdesk">Help Desk</a>
+              <a href="https://confluence.bethel.edu/display/TLT/Teaching+and+Learning+Technology?src=spacemenu">TLT</a>
+              <a href="https://confluence.bethel.edu/spacedirectory/view.action?src=spacemenu">Space Directory</a>
+            </div>
+          </div>
+        </div>
+        <div class="img__wrap">
+          <div class="dropdown">
+            <a href="https://calendar.google.com/calendar/render?tab=mc#main_7"><img src="./icons/calendar.png" class="iconsLarge"></a>
+            <p class="img__description">Calendar</p>
+            <div class="dropdown-content">
+              <a href="https://benjamin-john.com/calendar/">Availability</a>
+              <a style="cursor: pointer;"onclick=copyTextToClipboard2("https://benjamin-john.com/calendar/")>Shareable Link</a>
+            </div>
+          </div>
+        </div>
+      <div class="img__wrap">
+        <a href="https://voice.google.com"><img src="./icons/voice.png" class="iconsLarge"></a>
+        <p class="img__description">Voice</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://bethel.1password.com/"><img src="./icons/key.png" class="iconsLarge"></a>
+        <p class="img__description">1Password</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://open.spotify.com/browse/featured"><img src="./icons/spotify.png" class="iconsLarge"></a>
+        <p class="img__description">Spotify</p>
+      </div>
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="https://home.personalcapital.com/page/login/app#/accounts/details?ua=40424407"><img src="./icons/money.png" class="iconsLarge"></a>
+          <p class="img__description">Finance</p>
+          <div class="dropdown-content">
+            <a href="https://www.coinbase.com/">Coinbase</a>
+            <a href="https://accounts.binance.us">Binance</a>
+            <a href="https://messari.io">Messari</a>
+            <a href="https://www.coingecko.com/en">CoinGecko</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Column 4 -->
+    <div id="column4" class="column">
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="https://my.bethel.edu/"><img src="./icons/mybethel.png" class="iconsLarge"></a>
+          <!-- <a href="https://my.bethel.edu/"><img src="./icons/bethel4.png" alt="Avatar" style="border-radius: 50%;" class="iconsLarge"></a> -->
+          <p class="img__description">MyBethel</p>
+          <div class="dropdown-content">
+            <a href="https://banner.bethel.edu/ssomanager/c/SSB?pkg=twbkwbis.P_GenMenu&name=pmenu.P_MainMnu">Banner</a>
+            <a href="https://banner.bethel.edu/ssomanager/c/SSB?pkg=bwpktais.P_SelectLeaveReportRoll">Leave Reports</a>
+            <a href="https://docs.google.com/spreadsheets/d/1RDXF-vRBnvLjtDT9F0SiwnGKNqF91mLXG1ryV34bLV8/edit#gid=0">Vacation/Sick Time Tracker</a>
+            <a href="https://www.bethel.edu/human-resources/employee-resources/holiday-schedule.php">Holiday Schedule</a>
+            <a href="https://docs.google.com/document/d/1HrVFp8XcIX11Vu4sNhi1mCITrahBfGboMPW9sld6fkg/edit">Directors Checkin</a>
+          </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <a href="https://www.youtube.com/"><img src="./icons/youtube.png" class="iconsLarge"></a>
+        <p class="img__description">Youtube</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://slack.com/"><img src="./icons/slack.png" class="iconsLarge"></a>
+        <p class="img__description">Slack</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://cms.bethel.edu"><img src="./icons/cascade.png" alt="Avatar" style="border-radius: 50%;" class="iconsLarge"></a>
+        <p class="img__description">Cascade</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://benjamin-john.com/camera"><img src="./icons/camera.png" class="iconsLarge"></img></a>
+        <p class="img__description">Cameras</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://www.schwab.com/public/schwab/nn/login/login.html?lang=en"><img src="./icons/schwab.png" class="iconsLarge"></img></a>
+        <p class="img__description">Schwab</p>
+      </div>
+
+    </div>
+
+    <!-- Column 5 -->
+    <div id="column5" class="column">
+      <div class="img__wrap">
+        <a href="https://directory.bethel.edu"><img src="./icons/directory.png" class="iconsLarge"></a>
+        <p class="img__description">Directory</p>
+      </div>
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="https://bethel-university.lightning.force.com/lightning/page/home"><img src="./icons/salesforce.png" class="iconsLarge"></a>
+          <p class="img__description">ADM SF</p>
+          <div class="dropdown-content">
+            <a href="https://bethel-university.lightning.force.com/lightning/setup/SetupOneHome/home?setupApp=all">Setup</a>
+            <a href="https://login.salesforce.com">Backdoor</a>
+            <a href="https://bethel-university.lightning.force.com/lightning/setup/InboundChangeSet/home">Inbound Change Sets</a>
+            <a href="https://apply.bethel.edu">Applicant Portal</a>
+            <a href="https://bethel-university.lightning.force.com/lightning/o/Case/list?filterName=00B5A000009R5SMUA0">ITS Cases</a>
+            <a href="https://bethel-university.lightning.force.com/lightning/o/Case/list?filterName=00B5A000009R865UAC">My Cases</a>
+            <a href="https://benjamin-john.com/newtab/salesforce.html">Quick Links</a>
+          </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <a href="https://mc.bethel.edu/"><img src="./icons/marketingCloud.png" class="iconsLarge"></a>
+        <p class="img__description">Marketing Cloud</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://prometheus.its.bethel.edu/"><img src="./icons/prometheus.png" class="iconsLarge"></a>
+        <p class="img__description">Prometheus</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://forecast.weather.gov/MapClick.php?textField1=44.98&textField2=-93.26"><img src="./icons/weather.png" class="iconsLarge"></a>
+        <p class="img__description">Weather</p>
+    </div>
+      <div class="img__wrap">
+          <a href="http://www.discover.com/"><img src="./icons/discover.png" class="iconsLarge"></a>
+          <p class="img__description">Discover</p>
+      </div>
+    </div>
+
+    <!-- Column 6 -->
+    <div id="column6" class="column">
+      <div class="img__wrap">
+        <a href="https://argos.bethel.edu/Argos/AWV/#explorer/"><img src="./icons/argos.png" class="iconsLarge"></a>
+        <p class="img__description">Argos</p>
+      </div>
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="https://bethel-university--full.sandbox.lightning.force.com/lightning/page/home"><img src="./icons/salesforceXP.png" class="iconsLarge"></a>
+          <p class="img__description">ADM Salesforce Full</p>
+          <div class="dropdown-content">
+            <a href="https://bethel-university--full.sandbox.lightning.force.com/lightning/setup/SetupOneHome/home?setupApp=all">Setup</a>
+            <a href="https://test.salesforce.com">Backdoor</a>
+            <a href="https://application.xp.bethel.edu">Applicant Portal</a>
+            <a href="https://bethel-university--full.sandbox.lightning.force.com/lightning/setup/OutboundChangeSet/home">Outbound Change Sets</a>
+          </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <a href="https://astro.bethel.edu//"><img src="./icons/astro.png" class="iconsLarge"></a>
+        <p class="img__description">Astro</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://getjetstream.app/app/home"><img src="./icons/jet.png" class="iconsLarge"></a>
+        <p class="img__description">Jetstream</p>
+      </div>
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="http://tplinkwifi.net/webpages/login.html"><img src="./icons/wifi.png" class="iconsLarge"></a>
+          <p class="img__description">TP-Link</p>
+          <div class="dropdown-content">
+            <a href="https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwiDrr_egdDUAhWkz4MKHcm0DcsQFgg0MAA&url=https%3A%2F%2Fwww.namecheap.com%2F&usg=AFQjCNHEJKUB4FwF6Rd8iTKf-_1cwbA4AA">NameCheap</a>
+            <a href="http://www.routerlogin.net/start.htm">Netgear Admin Login</a>
+          </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <a href="https://www.wingsfinancial.com/home"><img src="./icons/wings.png" class="iconsLarge"></img></a>
+        <p class="img__description">Wings</p>
+      </div>
+    </div>
+
+
+    <!-- Column 7 -->
+    <div id="column7" class="column">
+      <div class="img__wrap">
+        <div class="dropdown">
+          <!-- <a href="https://iam.bethel.edu/IDMProv/PortletServlet?portlet-class=com.novell.afw.portal.portlet.iframe.IframePortletServlet&portlet-instance=5c4bf5c51c594e508f347ff3e50677fb&servlet-action=post"><img src="./icons/iam.png" class="iconsLarge"></a> -->
+          <a href="https://iam.bethel.edu/sspr/private/helpdesk#!/search/cards"><img src="./icons/information.png" class="iconsLarge"></a>
+          <p class="img__description">IAM</p>
+          <div class="dropdown-content">
+            <a href="https://iam.bethel.edu">Portal</a>
+          </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="https://betheluniversity.lightning.force.com/lightning/page/home"><img src="./icons/salesforceUA.png" class="iconsLarge"></a>
+          <p class="img__description">UA Salesforce</p>
+          <div class="dropdown-content">
+            <a href="https://betheluniversity.lightning.force.com/lightning/setup/SetupOneHome/home?setupApp=all">Setup</a>
+            <a href="https://login.salesforce.com">Backdoor</a>
+            <a href="https://betheluniversity.lightning.force.com/lightning/setup/InboundChangeSet/home">Inbound Change Sets</a>
+          </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="https://workbench.developerforce.com"><img src="./icons/workbench.png" class="iconsLarge"></a>
+          <p class="img__description">Workbench</p>
+          <div class="dropdown-content">
+            <a href="https://workbench.developerforce.com/query.php">SOQL Query</a>
+            <a href="https://workbench.developerforce.com/execute.php">Anonymous APEX</a>
+            <a href="https://workbench.developerforce.com/describe.php">Object Explorer</a>
+            <a href="https://workbench.developerforce.com/update.php">Update Data</a>
+            <a href="https://workbench.developerforce.com/insert.php">Insert Data</a>
+            <a href="https://workbench.developerforce.com/restExplorer.php">REST Explorer</a>
+          </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <a href="https://betheluniversity.wufoo.com/"><img src="./icons/wufoo.png" class="iconsLarge"></img></a>
+        <p class="img__description">Wufoo</p>
+      </div>
+
+      <!-- <div class="img__wrap">
+        <a href="http://benjamin-john.com/files"><img src="./icons/cloud.png" class="iconsLarge"></a>
+        <p class="img__description">Share</p>
+      </div> -->
+      <div class="img__wrap">
+        <a href="https://secure-files.bethel.edu"><img src="./icons/file.png" class="iconsLarge"></a>
+        <p class="img__description">File Transfer</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://www.healthpartners.com/"><img src="./icons/hp.png" class="iconsLarge"></img></a>
+        <p class="img__description">HealthPartners</p>
+      </div>
+
+    </div>
+
+    <!-- Column 8 -->
+    <div id="column8" class="column">
+
+      <div class="img__wrap">
+        <a href="https://moodle.bethel.edu"><img src="./icons/moodle.png" class="iconsLarge"></a>
+        <p class="img__description">Moodle</p>
+      </div>
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="https://betheluniversity--sandbox.sandbox.lightning.force.com/lightning/page/home"><img src="./icons/salesforceUAXP.png" class="iconsLarge"></a>
+          <p class="img__description">UA Salesforce Full Sandbox</p>
+          <div class="dropdown-content">
+            <a href="https://betheluniversity--sandbox.sandbox.lightning.force.com/lightning/setup/SetupOneHome/home?setupApp=all">Setup</a>
+            <a href="https://test.salesforce.com">Backdoor</a>
+            <a href="https://betheluniversity--sandbox.sandbox.lightning.force.com/lightning/setup/OutboundChangeSet/home">Outbound Change Sets</a>
+          </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <a href="https://github.com/betheluniversity/salesforce-code"><img src="./icons/github.png" class="iconsLarge"></a>
+        <p class="img__description">Github</p>
+      </div>
+      <div class="img__wrap">
+        <div class="dropdown">
+          <a href="https://zapier.com/app/login"><img src="./icons/zapier.png" class="iconsLarge"></a>
+          <p class="img__description">Zapier</p>
+          <div class="dropdown-content">
+            <a href="https://betheluniversity.wufoo.com">Wufoo</a>
+          </div>
+        </div>
+      </div>
+      <div class="img__wrap">
+        <!-- <a href="https://www.digicert.com/"><img src="./icons/digicert.png" class="iconsLarge"></img></a> -->
+        <a href="https://www.digicert.com/"><img src="./icons/digicert.png" alt="Avatar" style="border-radius: 50%;" class="iconsLarge"></a>
+        <p class="img__description">Digicert</p>
+      </div>
+      <div class="img__wrap">
+        <a href="https://namid.acuity.com/nidp/idff/sso?id=SF&sid=2&option=credential&sid=2&target=https%3A%2F%2Fwww.acuity.com%2Fsso%2Fssocheck%3Furl%3D%2Facuityweb%2Fcklogin%3Fpassthru%3Dyes"><img src="./icons/acuity.png" class="iconsLarge"></img></a>
+        <p class="img__description">Acuity</p>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- <div class="footer">
+    <div id="footerContent" style="margin:0px auto; width:40%">
+      <div id="column2.1" style="float:left; margin:0;width:20%;text-align: center;">
+          <a href="http://benjamin-john.com/bookmarks/"><img src="./icons/favorite.png" class="iconsSmall"></a>
+      </div>
+      <div id="column2.2" style="float:left; margin:0;width:20%;text-align: center;">
+          <a href="http://benjamin-john.com/search/"><img src="./icons/search.png" class="iconsSmall"></a>
+      </div>
+      <div id="column2.3" style="float:left; margin:0;width:20%;text-align: center;">
+          <a href="http://benjamin-john.com/text.html"><img src="./icons/plane.png" class="iconsSmall"></a>
+      </div>
+      <div id="column2.4" style="float:left; margin:0;width:20%;text-align: center;">
+          <a href="https://bethel.1password.com/"><img src="./icons/key.png" class="iconsSmall"></a>
+      </div>
+      <div id="column2.5" style="float:left; margin:0;width:20%;text-align: center;">
+          <a href="https://github.com/benjamin-john/benjamin-john.github.io"><img src="./icons/settings.png" class="iconsSmall"></a>
+      </div>
+    </div>
+  </div> -->
+</body>
+
+<script type="text/javascript" src="newtab.js"></script>
+<!-- <script type='text/javascript' src='/JavaScriptSpellCheck/include.js' ></script> -->
+<!-- <script type='text/javascript'>$Spelling.SpellCheckAsYouType('searchBox')</script> -->
+
+</html>
