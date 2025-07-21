@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Calendar</title>
+
+  <!-- FullCalendar CSS & JS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.js"></script>
+
+  <!-- Google Calendar Plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.10/index.global.min.js"></script>
+
+  <style>
+      body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+          background: #f9f9f9;
+      }
+      #calendar {
+          max-width: 900px;
+          margin: 0 auto;
+          background: #fff;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+
+      /* Dropdown Modal */
+      #optionModal {
+          display: none;
+          position: fixed;
+          z-index: 999;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          justify-content: center;
+          align-items: center;
+      }
+      #optionModalContent {
+          background: white;
+          padding: 20px;
+          border-radius: 8px;
+          text-align: center;
+          width: 300px;
+      }
+      .optionButton {
+          display: block;
+          width: 100%;
+          margin: 8px 0;
+          padding: 10px;
+          background: #007bff;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 16px;
+      }
+      .optionButton:hover {
+          background: #0056b3;
+      }
+  </style>
+</head>
+<body>
+
+<h1 style="text-align:center;">Booking Calendar</h1>
+<div id="calendar"></div>
+
+<!-- Option Modal -->
+<div id="optionModal">
+  <div id="optionModalContent">
+    <h3>Select an Option</h3>
+    <button class="optionButton" data-title="Ben and Ashley">Ben and Ashley</button>
+    <button class="optionButton" data-title="Karn and Larry">Karn and Larry</button>
+    <button class="optionButton" data-title="Kerry">Kerry</button>
+    <button class="optionButton" data-title="Everyone">Everyone</button>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    let calendarEl = document.getElementById('calendar');
+    let selectedRange = null; // Store the range temporarily
+
+    // Initialize FullCalendar
+    let calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      selectable: true,
+      googleCalendarApiKey: 'YOUR_GOOGLE_API_KEY', // STEP 3
+      events: {
+        googleCalendarId: 'YOUR_CALENDAR_ID@group.calendar.google.com' // STEP 3
+      },
+
+      select: function (info) {
+        selectedRange = info;
+        document.getElementById('optionModal').style.display = 'flex';
+      }
+    });
+    calendar.render();
+
+    // Handle Option Buttons
+    document.querySelectorAll('.optionButton').forEach(btn => {
+      btn.addEventListener('click', function () {
+        let title = this.getAttribute('data-title');
+        if (selectedRange && title) {
+          calendar.addEvent({
+            title: title,
+            start: selectedRange.start,
+            end: selectedRange.end,
+            allDay: true
+          });
+        }
+        selectedRange = null;
+        document.getElementById('optionModal').style.display = 'none';
+      });
+    });
+
+    // Close modal if clicked outside content
+    document.getElementById('optionModal').addEventListener('click', function (e) {
+      if (e.target === this) {
+        this.style.display = 'none';
+      }
+    });
+  });
+</script>
+</body>
+</html>
