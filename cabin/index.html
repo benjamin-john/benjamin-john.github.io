@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking Calendar v1.3</title>
+  <title>Booking Calendar v1.4</title>
+
+  <!-- FullCalendar Global Bundle -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
-  <!-- Google API & GIS -->
+  <!-- Google APIs & Identity Services -->
   <script src="https://apis.google.com/js/api.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -26,7 +28,7 @@
   </style>
 </head>
 <body>
-<h2 class="version">Booking Calendar v1.3</h2>
+<h2 class="version">Booking Calendar v1.4</h2>
 <div style="text-align:center;">
   <button id="authorize_button" disabled>Connect to Google Calendar</button>
   <div id="status">Status: Not Connected</div>
@@ -61,19 +63,8 @@
     console.log(msg);
   }
 
-  // Load GAPI
-  function gapiLoaded() {
-    logDebug("Google API script loaded. Initializing...");
-    gapi.load('client', initClient);
-  }
-
-  async function initClient() {
-    try {
-      await gapi.client.init({});
-      logDebug("Google API client initialized (read-only).");
-      document.getElementById('authorize_button').disabled = false;
-
-      // Initialize GIS token client
+  function initTokenClient() {
+    if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
@@ -87,14 +78,30 @@
           logDebug("Access token received.");
         },
       });
-    } catch (err) {
-      logDebug("Init error: " + JSON.stringify(err));
+      logDebug("GIS token client initialized.");
+    } else {
+      logDebug("Error: GIS library not loaded.");
     }
+  }
+
+  // GAPI initialization
+  function gapiLoaded() {
+    logDebug("Google API script loaded. Initializing...");
+    gapi.load('client', async () => {
+      await gapi.client.init({});
+      document.getElementById('authorize_button').disabled = false;
+      initTokenClient();
+      logDebug("Google API client initialized (read-only).");
+    });
   }
 
   function handleAuthClick() {
     logDebug("Authorize button clicked (GIS).");
-    tokenClient.requestAccessToken({ prompt: 'consent' });
+    if (tokenClient) {
+      tokenClient.requestAccessToken({ prompt: 'consent' });
+    } else {
+      logDebug("Error: tokenClient not ready.");
+    }
   }
 
   function createCalendarEvent(optionTitle, startDate, endDate) {
@@ -113,22 +120,16 @@
       path: `/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events`,
       method: 'POST',
       body: event,
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
+      headers: { 'Authorization': `Bearer ${accessToken}` },
     }).then(() => {
       logDebug("Event created successfully: " + optionTitle);
-      calendar.addEvent({
-        title: optionTitle,
-        start: startDate,
-        end: endDate,
-        allDay: true
-      });
+      calendar.addEvent({ title: optionTitle, start: startDate, end: endDate, allDay: true });
     }).catch(err => logDebug("Event creation error: " + JSON.stringify(err)));
   }
 
   document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('authorize_button').onclick = handleAuthClick;
+
     const calendarEl = document.getElementById('calendar');
     const modal = document.getElementById('optionModal');
 
@@ -163,7 +164,6 @@
     });
   });
 </script>
-
 <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
 </body>
 </html>
