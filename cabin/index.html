@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Booking Calendar v1.1</title>
+  <title>Booking Calendar v1.2</title>
 
   <!-- FullCalendar Global Bundle -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet"/>
@@ -14,10 +14,25 @@
 
   <style>
       body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
-      #calendar { max-width: 900px; margin: 40px auto; background: white; padding: 20px; border-radius: 10px; }
+      #calendar { max-width: 900px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; }
       button { padding: 10px 15px; border: none; border-radius: 4px; background: #007bff; color: white; cursor: pointer; }
       button:hover { background: #0056b3; }
       h2.version { text-align: center; color: #555; font-size: 14px; margin-bottom: 10px; }
+      #status { text-align:center; font-size:14px; margin:5px 0; }
+
+      /* Debug panel */
+      #debugLog {
+          background: #222;
+          color: #0f0;
+          padding: 10px;
+          margin: 20px auto;
+          max-width: 900px;
+          border-radius: 5px;
+          font-size: 12px;
+          height: 200px;
+          overflow-y: scroll;
+          white-space: pre-wrap;
+      }
 
       /* Modal */
       #optionModal {
@@ -55,11 +70,15 @@
 </head>
 <body>
 
-<h2 class="version">Booking Calendar v1.1</h2>
+<h2 class="version">Booking Calendar v1.2</h2>
 <div style="text-align:center;">
   <button id="authorize_button" disabled>Connect to Google Calendar</button>
+  <div id="status">Status: Not Connected</div>
 </div>
 <div id="calendar"></div>
+
+<!-- Debug log panel -->
+<div id="debugLog">[Log initialized]</div>
 
 <!-- Modal for options -->
 <div id="optionModal">
@@ -80,9 +99,16 @@
   let selectedRange = null;
   let calendar;
 
+  function logDebug(msg) {
+    const logEl = document.getElementById('debugLog');
+    logEl.textContent += '\n' + msg;
+    logEl.scrollTop = logEl.scrollHeight;
+    console.log(msg);
+  }
+
   // Google API initialization
   function gapiLoaded() {
-    console.log("Google API script loaded. Initializing...");
+    logDebug("Google API script loaded. Initializing...");
     gapi.load('client:auth2', initClient);
   }
 
@@ -92,22 +118,25 @@
         clientId: CLIENT_ID,
         scope: SCOPES
       });
-      console.log("Google API client initialized");
+      logDebug("Google API client initialized");
       document.getElementById('authorize_button').disabled = false;
     } catch (err) {
-      console.error("Init error:", err);
+      logDebug("Init error: " + JSON.stringify(err));
     }
   }
 
   function handleAuthClick() {
-    console.log("Authorize button clicked.");
+    logDebug("Authorize button clicked.");
     gapi.auth2.getAuthInstance().signIn()
-      .then(() => alert('Connected to Google Calendar!'))
-      .catch(err => console.error("Sign-in error:", err));
+      .then(() => {
+        document.getElementById('status').textContent = "Status: Connected";
+        logDebug("Google sign-in successful.");
+      })
+      .catch(err => logDebug("Sign-in error: " + JSON.stringify(err)));
   }
 
   function createCalendarEvent(optionTitle, startDate, endDate) {
-    console.log("Creating event:", optionTitle, startDate, endDate);
+    logDebug(`Creating event: ${optionTitle} ${startDate} ${endDate}`);
     const event = {
       summary: optionTitle,
       start: { date: startDate },
@@ -119,14 +148,14 @@
         calendarId: CALENDAR_ID,
         resource: event,
       }).then(response => {
-        alert('Event created: ' + optionTitle);
+        logDebug("Event created successfully: " + optionTitle);
         calendar.addEvent({
           title: optionTitle,
           start: startDate,
           end: endDate,
           allDay: true
         });
-      }).catch(err => console.error("Event creation error:", err));
+      }).catch(err => logDebug("Event creation error: " + JSON.stringify(err)));
     });
   }
 
@@ -136,7 +165,7 @@
     const calendarEl = document.getElementById('calendar');
     const modal = document.getElementById('optionModal');
 
-    // Initialize FullCalendar (no plugins needed)
+    // Initialize FullCalendar
     calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
       selectable: true,
@@ -147,6 +176,7 @@
       }
     });
     calendar.render();
+    logDebug("FullCalendar initialized");
 
     document.querySelectorAll('.optionButton').forEach(btn => {
       btn.addEventListener('click', function () {
