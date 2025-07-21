@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking Calendar v1.4</title>
+  <title>Booking Calendar v1.5</title>
 
   <!-- FullCalendar Global Bundle -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
-  <!-- Google APIs & Identity Services -->
+  <!-- Google APIs -->
   <script src="https://apis.google.com/js/api.js"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://accounts.google.com/gsi/client" id="gis-script" async defer></script>
 
   <style>
       body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
@@ -28,7 +28,7 @@
   </style>
 </head>
 <body>
-<h2 class="version">Booking Calendar v1.4</h2>
+<h2 class="version">Booking Calendar v1.5</h2>
 <div style="text-align:center;">
   <button id="authorize_button" disabled>Connect to Google Calendar</button>
   <div id="status">Status: Not Connected</div>
@@ -55,6 +55,7 @@
   let calendar;
   let tokenClient;
   let accessToken = null;
+  let gisLoaded = false;
 
   function logDebug(msg) {
     const logEl = document.getElementById('debugLog');
@@ -64,7 +65,7 @@
   }
 
   function initTokenClient() {
-    if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
+    if (gisLoaded && google.accounts && google.accounts.oauth2) {
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
@@ -80,9 +81,16 @@
       });
       logDebug("GIS token client initialized.");
     } else {
-      logDebug("Error: GIS library not loaded.");
+      logDebug("Error: GIS library not loaded yet.");
     }
   }
+
+  // Detect when GIS script is ready
+  document.getElementById('gis-script').addEventListener('load', () => {
+    gisLoaded = true;
+    logDebug("GIS script loaded.");
+    initTokenClient();
+  });
 
   // GAPI initialization
   function gapiLoaded() {
@@ -90,7 +98,6 @@
     gapi.load('client', async () => {
       await gapi.client.init({});
       document.getElementById('authorize_button').disabled = false;
-      initTokenClient();
       logDebug("Google API client initialized (read-only).");
     });
   }
@@ -100,7 +107,7 @@
     if (tokenClient) {
       tokenClient.requestAccessToken({ prompt: 'consent' });
     } else {
-      logDebug("Error: tokenClient not ready.");
+      logDebug("Error: tokenClient not ready yet.");
     }
   }
 
@@ -110,11 +117,7 @@
       return;
     }
     logDebug(`Creating event: ${optionTitle} ${startDate} ${endDate}`);
-    const event = {
-      summary: optionTitle,
-      start: { date: startDate },
-      end: { date: endDate },
-    };
+    const event = { summary: optionTitle, start: { date: startDate }, end: { date: endDate } };
 
     gapi.client.request({
       path: `/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events`,
@@ -164,6 +167,7 @@
     });
   });
 </script>
+
 <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
 </body>
 </html>
