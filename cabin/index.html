@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Booking Calendar</title>
+  <title>Booking Calendar v1.1</title>
 
   <!-- FullCalendar Global Bundle -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet"/>
@@ -17,6 +17,7 @@
       #calendar { max-width: 900px; margin: 40px auto; background: white; padding: 20px; border-radius: 10px; }
       button { padding: 10px 15px; border: none; border-radius: 4px; background: #007bff; color: white; cursor: pointer; }
       button:hover { background: #0056b3; }
+      h2.version { text-align: center; color: #555; font-size: 14px; margin-bottom: 10px; }
 
       /* Modal */
       #optionModal {
@@ -54,7 +55,7 @@
 </head>
 <body>
 
-<h2 style="text-align:center;">Booking Calendar</h2>
+<h2 class="version">Booking Calendar v1.1</h2>
 <div style="text-align:center;">
   <button id="authorize_button" disabled>Connect to Google Calendar</button>
 </div>
@@ -135,8 +136,8 @@
     const calendarEl = document.getElementById('calendar');
     const modal = document.getElementById('optionModal');
 
+    // Initialize FullCalendar (no plugins needed)
     calendar = new FullCalendar.Calendar(calendarEl, {
-      plugins: [ FullCalendar.GoogleCalendar ],
       initialView: 'dayGridMonth',
       selectable: true,
       events: { googleCalendarId: CALENDAR_ID },
