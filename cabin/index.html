@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Booking Calendar</title>
 
-  <!-- FullCalendar CSS & JS -->
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.10/index.global.min.js"></script>
+  <!-- FullCalendar Global Bundle -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
   <!-- Google API -->
   <script src="https://apis.google.com/js/api.js"></script>
@@ -82,26 +81,32 @@
 
   // Google API initialization
   function gapiLoaded() {
+    console.log("Google API script loaded. Initializing...");
     gapi.load('client:auth2', initClient);
   }
 
   async function initClient() {
-    await gapi.client.init({
-      clientId: CLIENT_ID,
-      scope: SCOPES
-    }).then(() => {
+    try {
+      await gapi.client.init({
+        clientId: CLIENT_ID,
+        scope: SCOPES
+      });
       console.log("Google API client initialized");
       document.getElementById('authorize_button').disabled = false;
-    }).catch(err => console.error("Init error: ", err));
+    } catch (err) {
+      console.error("Init error:", err);
+    }
   }
 
   function handleAuthClick() {
-    gapi.auth2.getAuthInstance().signIn().then(() => {
-      alert('Connected to Google Calendar!');
-    }).catch(err => console.error("Sign-in error: ", err));
+    console.log("Authorize button clicked.");
+    gapi.auth2.getAuthInstance().signIn()
+      .then(() => alert('Connected to Google Calendar!'))
+      .catch(err => console.error("Sign-in error:", err));
   }
 
   function createCalendarEvent(optionTitle, startDate, endDate) {
+    console.log("Creating event:", optionTitle, startDate, endDate);
     const event = {
       summary: optionTitle,
       start: { date: startDate },
@@ -120,7 +125,7 @@
           end: endDate,
           allDay: true
         });
-      }).catch(err => console.error("Event creation error: ", err));
+      }).catch(err => console.error("Event creation error:", err));
     });
   }
 
@@ -131,7 +136,7 @@
     const modal = document.getElementById('optionModal');
 
     calendar = new FullCalendar.Calendar(calendarEl, {
-      plugins: [ FullCalendar.googleCalendarPlugin ],
+      plugins: [ FullCalendar.GoogleCalendar ],
       initialView: 'dayGridMonth',
       selectable: true,
       events: { googleCalendarId: CALENDAR_ID },
