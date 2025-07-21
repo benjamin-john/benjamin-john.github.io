@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Booking Calendar v1.2</title>
-
-  <!-- FullCalendar Global Bundle -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Calendar v1.3</title>
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
-  <!-- Google API -->
+  <!-- Google API & GIS -->
   <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
       body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
@@ -19,68 +18,22 @@
       button:hover { background: #0056b3; }
       h2.version { text-align: center; color: #555; font-size: 14px; margin-bottom: 10px; }
       #status { text-align:center; font-size:14px; margin:5px 0; }
-
-      /* Debug panel */
-      #debugLog {
-          background: #222;
-          color: #0f0;
-          padding: 10px;
-          margin: 20px auto;
-          max-width: 900px;
-          border-radius: 5px;
-          font-size: 12px;
-          height: 200px;
-          overflow-y: scroll;
-          white-space: pre-wrap;
-      }
-
-      /* Modal */
-      #optionModal {
-          display: none;
-          position: fixed;
-          z-index: 1000;
-          top: 0; left: 0;
-          width: 100%; height: 100%;
-          background: rgba(0,0,0,0.5);
-          justify-content: center;
-          align-items: center;
-      }
-      #optionModalContent {
-          background: #fff;
-          padding: 20px;
-          border-radius: 8px;
-          text-align: center;
-          width: 280px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      }
-      .optionButton {
-          display: block;
-          width: 100%;
-          margin: 8px 0;
-          padding: 10px;
-          background: #007bff;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 16px;
-      }
+      #debugLog { background: #222; color: #0f0; padding: 10px; margin: 20px auto; max-width: 900px; border-radius: 5px; font-size: 12px; height: 200px; overflow-y: scroll; white-space: pre-wrap; }
+      #optionModal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+      #optionModalContent { background: #fff; padding: 20px; border-radius: 8px; text-align: center; width: 280px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+      .optionButton { display: block; width: 100%; margin: 8px 0; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
       .optionButton:hover { background: #0056b3; }
   </style>
 </head>
 <body>
-
-<h2 class="version">Booking Calendar v1.2</h2>
+<h2 class="version">Booking Calendar v1.3</h2>
 <div style="text-align:center;">
   <button id="authorize_button" disabled>Connect to Google Calendar</button>
   <div id="status">Status: Not Connected</div>
 </div>
 <div id="calendar"></div>
-
-<!-- Debug log panel -->
 <div id="debugLog">[Log initialized]</div>
 
-<!-- Modal for options -->
 <div id="optionModal">
   <div id="optionModalContent">
     <h3>Select Booking Option</h3>
@@ -98,6 +51,8 @@
 
   let selectedRange = null;
   let calendar;
+  let tokenClient;
+  let accessToken = null;
 
   function logDebug(msg) {
     const logEl = document.getElementById('debugLog');
@@ -106,36 +61,47 @@
     console.log(msg);
   }
 
-  // Google API initialization
+  // Load GAPI
   function gapiLoaded() {
     logDebug("Google API script loaded. Initializing...");
-    gapi.load('client:auth2', initClient);
+    gapi.load('client', initClient);
   }
 
   async function initClient() {
     try {
-      await gapi.client.init({
-        clientId: CLIENT_ID,
-        scope: SCOPES
-      });
-      logDebug("Google API client initialized");
+      await gapi.client.init({});
+      logDebug("Google API client initialized (read-only).");
       document.getElementById('authorize_button').disabled = false;
+
+      // Initialize GIS token client
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (response) => {
+          if (response.error) {
+            logDebug("Token error: " + JSON.stringify(response));
+            return;
+          }
+          accessToken = response.access_token;
+          document.getElementById('status').textContent = "Status: Connected";
+          logDebug("Access token received.");
+        },
+      });
     } catch (err) {
       logDebug("Init error: " + JSON.stringify(err));
     }
   }
 
   function handleAuthClick() {
-    logDebug("Authorize button clicked.");
-    gapi.auth2.getAuthInstance().signIn()
-      .then(() => {
-        document.getElementById('status').textContent = "Status: Connected";
-        logDebug("Google sign-in successful.");
-      })
-      .catch(err => logDebug("Sign-in error: " + JSON.stringify(err)));
+    logDebug("Authorize button clicked (GIS).");
+    tokenClient.requestAccessToken({ prompt: 'consent' });
   }
 
   function createCalendarEvent(optionTitle, startDate, endDate) {
+    if (!accessToken) {
+      logDebug("Error: Not authenticated.");
+      return;
+    }
     logDebug(`Creating event: ${optionTitle} ${startDate} ${endDate}`);
     const event = {
       summary: optionTitle,
@@ -143,29 +109,29 @@
       end: { date: endDate },
     };
 
-    gapi.client.load('calendar', 'v3', function () {
-      gapi.client.calendar.events.insert({
-        calendarId: CALENDAR_ID,
-        resource: event,
-      }).then(response => {
-        logDebug("Event created successfully: " + optionTitle);
-        calendar.addEvent({
-          title: optionTitle,
-          start: startDate,
-          end: endDate,
-          allDay: true
-        });
-      }).catch(err => logDebug("Event creation error: " + JSON.stringify(err)));
-    });
+    gapi.client.request({
+      path: `/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events`,
+      method: 'POST',
+      body: event,
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    }).then(() => {
+      logDebug("Event created successfully: " + optionTitle);
+      calendar.addEvent({
+        title: optionTitle,
+        start: startDate,
+        end: endDate,
+        allDay: true
+      });
+    }).catch(err => logDebug("Event creation error: " + JSON.stringify(err)));
   }
 
   document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('authorize_button').onclick = handleAuthClick;
-
     const calendarEl = document.getElementById('calendar');
     const modal = document.getElementById('optionModal');
 
-    // Initialize FullCalendar
     calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
       selectable: true,
