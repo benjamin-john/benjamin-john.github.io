@@ -1,135 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Text Editor</title>
-  <link rel="icon"
-      type="image/png"
-      href="./newtab/icons/note.png">
+  <link rel="icon" type="image/png" href="./newtab/icons/note.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script type="text/javascript" src="/JavaScriptSpellCheck/include.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      background: #0f2a50;
+      font-family: sans-serif;
+    }
+    #myTextArea {
+      background-color: #123563;
+      color: white;
+      font-size: 20px;
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 220px;
+      padding: 10px;
+      box-sizing: border-box;
+      border: none;
+      outline: none;
+    }
+    table {
+      width: 100%;
+      background: #0f2a50;
+      color: #e6eaf2;
+    }
+    td { vertical-align: middle; }
+    input[type="text"], select {
+      width: 100%;
+      box-sizing: border-box;
+      height: 2.14285714em;
+      padding: 4px 10px;
+      margin: 3px;
+      border: 1px solid #2b3f66;
+      border-radius: 3px;
+      background: #0c2244;
+      color: #e6eaf2;
+    }
+    button {
+      width: 160px;
+      box-sizing: border-box;
+      transition: background-color .1s ease-out;
+      border-radius: 3.01px;
+      cursor: pointer;
+      font-size: 14px;
+      background-color: #E2E4E9;
+      border: 1px solid transparent;
+      color: #344563;
+      text-decoration: none;
+      display: inline-block;
+      height: 2.14285714em;
+      line-height: 1.42857143em;
+      margin: 3px;
+      padding: 4px 10px;
+      white-space: nowrap;
+    }
+    button:hover { background-color: #D5D9E0; }
+    .right { text-align: right; }
+    .nowrap { white-space: nowrap; }
+  </style>
 </head>
-<script type='text/javascript' src='/JavaScriptSpellCheck/include.js' ></script>
-<script type='text/javascript'>$Spelling.SpellCheckAsYouType('myTextArea')</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {//Puts cursor in search box
-   document.getElementById('myTextArea').focus();
-}, false);
 
-function saveTextAsFile()
-{
-    var textToSave = document.getElementById("myTextArea").value;
-    var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
-    var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
-    var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
-
-    var downloadLink = document.createElement("a");
-    downloadLink.download = fileNameToSaveAs;
-    downloadLink.innerHTML = "Download File";
-    downloadLink.href = textToSaveAsURL;
-    downloadLink.onclick = destroyClickedElement;
-    downloadLink.style.display = "none";
-    document.body.appendChild(downloadLink);
-
-    downloadLink.click();
-}
-
-function destroyClickedElement(event)
-{
-    document.body.removeChild(event.target);
-}
-
-function loadFileAsText()
-{
-    var fileToLoad = document.getElementById("fileToLoad").files[0];
-
-    var fileReader = new FileReader();
-    fileReader.onload = function(fileLoadedEvent)
-    {
-        var textFromFileLoaded = fileLoadedEvent.target.result;
-        document.getElementById("myTextArea").value = textFromFileLoaded;
-    };
-    fileReader.readAsText(fileToLoad, "UTF-8");
-}
-function previewHTML(){
-  var text = document.getElementById("myTextArea").value;
-  //var url = "data:text/html," + text;
-  //window.open(url);
-  //javascript:document.write(text);
-  var frog = window.open("","wildebeast","width=300,height=300,scrollbars=1,resizable=1")
-  frog.document.open()
-  frog.document.write(text)
-  frog.document.close()
-}
-</script>
-
-<style>
-#myTextArea {
-  /* background-color: #001a4d; */
-  background-color: #123563;
-  color: white;
-  font-size: 20px;
-  width:100%;
-  height:calc(100% - 150px);
-  margin-bottom:8px;
-}
-
-table {
-  width:100%;
-}
-
-button {
-width: 140px;
-box-sizing: border-box;
-transition: background-color .1s ease-out;
-border-radius: 3.01px;
-cursor: pointer;
-font-family: inherit;
-font-size: 14px;
-font-variant: normal;
-font-weight: 400;
-background-image: none;
-/* background-color: rgba(9,30,66,.08); */
-background-color: #E2E4E9;
-border: 1px solid transparent;
-color: #344563;
-text-decoration: none;
-display: inline-block;
-height: 2.14285714em;
-line-height: 1.42857143em;
-margin: 3px 3px 3px 3px;
-padding: 4px 10px;
-vertical-align: baseline;
-white-space: nowrap;
-}
-button:hover {
-    background-color:#D5D9E0;
-}
-
-</style>
 <body>
-  <!-- <div style="height: 100%" -->
-  <textarea name="myTextArea" id="myTextArea" ></textarea>
+  <textarea name="myTextArea" id="myTextArea" placeholder="Start typing..."></textarea>
+
   <table>
-      <!-- <tr><td>Text to Save:</td></tr>
-      <tr>
-          <td style="height: 100%" colspan="3">
-              <textarea name="myTextArea" id="myTextArea" ></textarea>
-          </td>
-      </tr> -->
-      <tr>
-          <td>Filename to Save As:</td>
-          <td><input id="inputFileNameToSaveAs"></input></td>
-          <td><button onclick="saveTextAsFile()">Save Text to File</button></td>
-      </tr>
-      <tr>
-          <td>Select a File to Load:</td>
-          <td><input type="file" id="fileToLoad"></td>
-          <td><button onclick="loadFileAsText()">Load Selected File</button><td>
-      </tr>
-      <tr>
-          <td>Enter HTML Code to Preview in a New Tab:</td>
-          <td></td>
-          <td><button onclick="previewHTML()">Preview HTML</button><td>
-      </tr>
+    <tr>
+      <td class="nowrap">Filename to Save As:</td>
+      <td><input id="inputFileNameToSaveAs" type="text" placeholder="notes.txt" /></td>
+      <td class="right"><button id="btnSaveFile">Save Text to File</button></td>
+    </tr>
+    <tr>
+      <td class="nowrap">Select a File to Load:</td>
+      <td><input type="file" id="fileToLoad" /></td>
+      <td class="right"><button id="btnLoadFile">Load Selected File</button></td>
+    </tr>
+    <tr>
+      <td class="nowrap">Enter HTML Code to Preview:</td>
+      <td></td>
+      <td class="right"><button id="btnPreview">Preview HTML</button></td>
+    </tr>
+    <tr>
+      <td class="nowrap">Snapshots (local):</td>
+      <td>
+        <select id="versionSelect" title="Choose a previous version to restore"></select>
+      </td>
+      <td class="right">
+        <button id="btnRestore">Restore Selected</button>
+        <button id="btnSnapshot">Save Snapshot</button>
+        <button id="btnRestoreLast" style="display:none">Restore Last Autosave</button>
+      </td>
+    </tr>
   </table>
 
+<script>
+const CURRENT_KEY  = 'notepad.current';
+const VERSIONS_KEY = 'notepad.versions';
+const MAX_VERSIONS = 200;
 
-<!-- <textarea name="myTextArea"  id="myTextArea" cols="30" rows="4" style = 'width:100%;height:100%;margin-bottom:20px'>
-</textarea> -->
+const $text   = () => document.getElementById('myTextArea');
+const $select = () => document.getElementById('versionSelect');
+
+function fmtDateMMDDYYYY(date) {
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const yyyy = date.getFullYear();
+  return `${mm}/${dd}/${yyyy}`;
+}
+function preview(txt) {
+  const t = (txt || '').replace(/\s+/g, ' ').trim();
+  return t.length <= 100 ? t : (t.slice(0, 100) + '…');
+}
+function loadVersions() {
+  try {
+    const raw = localStorage.getItem(VERSIONS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+function saveVersions(list) {
+  localStorage.setItem(VERSIONS_KEY, JSON.stringify(list));
+}
+function updateDropdown() {
+  const sel = $select();
+  const versions = loadVersions();
+  sel.innerHTML = '';
+  if (!versions.length) {
+    const opt = document.createElement('option');
+    opt.textContent = 'No snapshots yet';
+    sel.appendChild(opt);
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  versions.slice().sort((a,b) => b.id - a.id).forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = String(v.id);
+    opt.textContent = `${fmtDateMMDDYYYY(new Date(v.id))}: ${preview(v.text)}`;
+    sel.appendChild(opt);
+  });
+}
+
+function createSnapshot() {
+  const text = $text().value || '';
+  const versions = loadVersions();
+  const now = Date.now();
+  const last = versions.length ? versions[versions.length - 1] : null;
+  if (last && last.text === text) {
+    localStorage.setItem(CURRENT_KEY, text);
+    return;
+  }
+  versions.push({ id: now, text });
+  if (versions.length > MAX_VERSIONS) {
+    versions.splice(0, versions.length - MAX_VERSIONS);
+  }
+  saveVersions(versions);
+  localStorage.setItem(CURRENT_KEY, text);
+  updateDropdown();
+}
+
+let inputDebounce = null;
+function handleInputDebounced() {
+  localStorage.setItem(CURRENT_KEY, $text().value || '');
+  if (inputDebounce) clearTimeout(inputDebounce);
+  inputDebounce = setTimeout(createSnapshot, 2000);
+}
+
+function restoreSelectedVersion() {
+  const id = Number($select().value);
+  if (!id) return;
+  const versions = loadVersions();
+  const v = versions.find(x => x.id === id);
+  if (!v) return;
+  $text().value = v.text;
+  localStorage.setItem(CURRENT_KEY, v.text);
+}
+
+function saveTextAsFile() {
+  const textToSave = $text().value;
+  const blob = new Blob([textToSave], {type:"text/plain"});
+  const url = window.URL.createObjectURL(blob);
+  const fileName = document.getElementById("inputFileNameToSaveAs").value || 'notes.txt';
+  const link = document.createElement("a");
+  link.download = fileName;
+  link.href = url;
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+function loadFileAsText() {
+  const fileToLoad = document.getElementById("fileToLoad").files[0];
+  if (!fileToLoad) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    $text().value = e.target.result;
+    localStorage.setItem(CURRENT_KEY, e.target.result);
+    createSnapshot();
+  };
+  reader.readAsText(fileToLoad, "UTF-8");
+}
+function previewHTML(){
+  const text = $text().value;
+  const w = window.open("","wildebeast","width=300,height=300,scrollbars=1,resizable=1");
+  w.document.open();
+  w.document.write(text);
+  w.document.close();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Always start blank
+  $text().value = '';
+
+  // Update dropdown with existing snapshots
+  updateDropdown();
+
+  // Show restore last button if there’s a saved current
+  const hasCurrent = localStorage.getItem(CURRENT_KEY) !== null;
+  const restoreLastBtn = document.getElementById('btnRestoreLast');
+  if (hasCurrent) restoreLastBtn.style.display = 'inline-block';
+
+  // Focus + autosave
+  $text().focus();
+  $text().addEventListener('input', handleInputDebounced);
+
+  // Persist current before unload
+  window.addEventListener('beforeunload', () => {
+    localStorage.setItem(CURRENT_KEY, $text().value || '');
+  });
+
+  // Hook up buttons
+  document.getElementById('btnSaveFile').addEventListener('click', saveTextAsFile);
+  document.getElementById('btnLoadFile').addEventListener('click', loadFileAsText);
+  document.getElementById('btnPreview').addEventListener('click', previewHTML);
+  document.getElementById('btnRestore').addEventListener('click', restoreSelectedVersion);
+  document.getElementById('btnSnapshot').addEventListener('click', createSnapshot);
+  restoreLastBtn.addEventListener('click', () => {
+    const current = localStorage.getItem(CURRENT_KEY);
+    if (current !== null) {
+      $text().value = current;
+      $text().focus();
+    }
+  });
+
+  // Spellcheck
+  if (window.$Spelling && typeof $Spelling.SpellCheckAsYouType === 'function') {
+    $Spelling.SpellCheckAsYouType('myTextArea');
+  }
+});
+</script>
 </body>
+</html>
