@@ -7,71 +7,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script type="text/javascript" src="/JavaScriptSpellCheck/include.js"></script>
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-    body {
-      display: flex;
-      flex-direction: column;
-      background: #0f2a50;
-      font-family: sans-serif;
-    }
+    html, body { height: 100%; margin: 0; }
+    body { display: flex; flex-direction: column; background: #0f2a50; font-family: sans-serif; }
     #myTextArea {
-      background-color: #123563;
-      color: white;
-      font-size: 20px;
-      width: 100%;
-      flex: 1 1 auto;
-      min-height: 220px;
-      padding: 10px;
-      box-sizing: border-box;
-      border: none;
-      outline: none;
+      background-color: #123563; color: white; font-size: 20px; width: 100%;
+      flex: 1 1 auto; min-height: 220px; padding: 10px; box-sizing: border-box; border: none; outline: none;
     }
-    table {
-      width: 100%;
-      background: #0f2a50;
-      color: #e6eaf2;
-    }
+    table { width: 100%; background: #0f2a50; color: #e6eaf2; }
     td { vertical-align: middle; }
     input[type="text"], select {
-      width: 100%;
-      box-sizing: border-box;
-      height: 2.14285714em;
-      padding: 4px 10px;
-      margin: 3px;
-      border: 1px solid #2b3f66;
-      border-radius: 3px;
-      background: #0c2244;
-      color: #e6eaf2;
+      width: 100%; box-sizing: border-box; height: 2.14285714em; padding: 4px 10px; margin: 3px;
+      border: 1px solid #2b3f66; border-radius: 3px; background: #0c2244; color: #e6eaf2;
     }
     button {
-      width: 160px;
-      box-sizing: border-box;
-      transition: background-color .1s ease-out;
-      border-radius: 3.01px;
-      cursor: pointer;
-      font-size: 14px;
-      background-color: #E2E4E9;
-      border: 1px solid transparent;
-      color: #344563;
-      text-decoration: none;
-      display: inline-block;
-      height: 2.14285714em;
-      line-height: 1.42857143em;
-      margin: 3px;
-      padding: 4px 10px;
-      white-space: nowrap;
+      width: 160px; box-sizing: border-box; transition: background-color .1s ease-out; border-radius: 3.01px;
+      cursor: pointer; font-size: 14px; background-color: #E2E4E9; border: 1px solid transparent;
+      color: #344563; text-decoration: none; display: inline-block; height: 2.14285714em; line-height: 1.42857143em;
+      margin: 3px; padding: 4px 10px; white-space: nowrap;
     }
     button:hover { background-color: #D5D9E0; }
     .right { text-align: right; }
     .nowrap { white-space: nowrap; }
+    #status { color: #9fb3d9; font-size: 12px; margin: 4px 8px 8px; min-height: 1em; }
   </style>
 </head>
 
 <body>
   <textarea name="myTextArea" id="myTextArea" placeholder="Start typing..."></textarea>
+
+  <div id="status"></div>
 
   <table>
     <tr>
@@ -103,32 +67,87 @@
   </table>
 
 <script>
-const CURRENT_KEY  = 'notepad.current';
-const VERSIONS_KEY = 'notepad.versions';
-const MAX_VERSIONS = 200;
+/* ==============================
+   Robust per-tab storage & utils
+   ============================== */
 
+// Storage wrappers (fall back to in-memory if localStorage is blocked)
+const __memoryStore = {};
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return k in __memoryStore ? __memoryStore[k] : null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { __memoryStore[k] = String(v); throw e; } },
+  remove(k) { try { localStorage.removeItem(k); } catch { delete __memoryStore[k]; } }
+};
+
+// Generate a per-tab id that survives reloads (sessionStorage -> window.name fallback)
+function getTabId() {
+  try {
+    let id = sessionStorage.getItem('notepad.tabId');
+    if (id) return id;
+    id = (window.name && window.name.startsWith('notepad-'))
+      ? window.name
+      : `notepad-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    sessionStorage.setItem('notepad.tabId', id);
+    if (!window.name) window.name = id;
+    return id;
+  } catch {
+    // If sessionStorage fails (some file:// contexts), use window.name
+    if (!window.name) window.name = `notepad-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    return window.name;
+  }
+}
+const TAB_ID = getTabId();
+
+// Keys scoped to this tab
+const KEY_PREFIX   = `notepad:${TAB_ID}:`;
+const CURRENT_KEY  = `${KEY_PREFIX}current`;
+const VERSIONS_KEY = `${KEY_PREFIX}versions`;
+const LAST_TS_KEY  = `${KEY_PREFIX}lastSnapshotTs`;
+
+// Limits & behavior
+const MAX_VERSIONS = 200;                 // keep at most 200 snapshots
+const AUTOSAVE_IDLE_MS = 2000;            // 2s idle to snapshot
+const SNAPSHOT_MERGE_WINDOW_MS = 60_000;  // coalesce autosaves within 60s
+const DROPDOWN_PREVIEW_LIMIT = 100;       // first 100 chars in dropdown
+
+// Shortcuts
 const $text   = () => document.getElementById('myTextArea');
 const $select = () => document.getElementById('versionSelect');
+const $status = () => document.getElementById('status');
 
+/* ==========
+   Helpers
+   ========== */
 function fmtDateMMDDYYYY(date) {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
   const yyyy = date.getFullYear();
   return `${mm}/${dd}/${yyyy}`;
 }
-function preview(txt) {
+function previewN(txt, n = DROPDOWN_PREVIEW_LIMIT) {
   const t = (txt || '').replace(/\s+/g, ' ').trim();
-  return t.length <= 100 ? t : (t.slice(0, 100) + '…');
+  return t.length <= n ? t : (t.slice(0, n) + '…');
 }
 function loadVersions() {
   try {
-    const raw = localStorage.getItem(VERSIONS_KEY);
+    const raw = store.get(VERSIONS_KEY);
     return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 function saveVersions(list) {
-  localStorage.setItem(VERSIONS_KEY, JSON.stringify(list));
+  store.set(VERSIONS_KEY, JSON.stringify(list));
 }
+function getLastSnapshotTs() {
+  const raw = store.get(LAST_TS_KEY);
+  return raw ? Number(raw) : 0;
+}
+function setLastSnapshotTs(ts) {
+  store.set(LAST_TS_KEY, String(ts));
+}
+function setStatus(msg) { $status().textContent = msg || ''; }
+
 function updateDropdown() {
   const sel = $select();
   const versions = loadVersions();
@@ -138,40 +157,93 @@ function updateDropdown() {
     opt.textContent = 'No snapshots yet';
     sel.appendChild(opt);
     sel.disabled = true;
+    setStatus('No snapshots yet.');
     return;
   }
   sel.disabled = false;
   versions.slice().sort((a,b) => b.id - a.id).forEach(v => {
     const opt = document.createElement('option');
     opt.value = String(v.id);
-    opt.textContent = `${fmtDateMMDDYYYY(new Date(v.id))}: ${preview(v.text)}`;
+    opt.textContent = `${fmtDateMMDDYYYY(new Date(v.id))}: ${previewN(v.text)}`;
     sel.appendChild(opt);
   });
+  setStatus(`Snapshots: ${versions.length}`);
 }
 
-function createSnapshot() {
+/* ==========================
+   Snapshot create / coalesce
+   ========================== */
+function createSnapshot({ forceNew = false } = {}) {
   const text = $text().value || '';
   const versions = loadVersions();
   const now = Date.now();
   const last = versions.length ? versions[versions.length - 1] : null;
+
+  // If identical to last, just update CURRENT and bail
   if (last && last.text === text) {
-    localStorage.setItem(CURRENT_KEY, text);
+    try { store.set(CURRENT_KEY, text); } catch {}
+    setStatus('No change since last snapshot.');
     return;
   }
-  versions.push({ id: now, text });
-  if (versions.length > MAX_VERSIONS) {
-    versions.splice(0, versions.length - MAX_VERSIONS);
+
+  // Coalesce autosaves within the merge window by updating last snapshot
+  const lastTs = getLastSnapshotTs();
+  const withinWindow = !forceNew && last && now - lastTs < SNAPSHOT_MERGE_WINDOW_MS;
+
+  try {
+    if (withinWindow) {
+      last.text = text;
+      versions[versions.length - 1] = last;
+      saveVersions(versions);
+    } else {
+      versions.push({ id: now, text });
+      if (versions.length > MAX_VERSIONS) {
+        versions.splice(0, versions.length - MAX_VERSIONS);
+      }
+      saveVersions(versions);
+      setLastSnapshotTs(now);
+    }
+    store.set(CURRENT_KEY, text);
+    updateDropdown();
+    setStatus(`Saved snapshot at ${new Date().toLocaleTimeString()}`);
+  } catch (e) {
+    // Handle quota / blocked storage gracefully
+    if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      if (versions.length > 10) {
+        versions.splice(0, 10); // trim oldest ten
+        try {
+          saveVersions(versions);
+          // retry once
+          if (withinWindow) {
+            versions[versions.length - 1].text = text;
+          } else {
+            versions.push({ id: now, text });
+          }
+          saveVersions(versions);
+          store.set(CURRENT_KEY, text);
+          setLastSnapshotTs(now);
+          updateDropdown();
+          setStatus('Storage was full — trimmed oldest snapshots and saved.');
+        } catch {
+          alert('Storage is full. Please delete older snapshots or lower MAX_VERSIONS.');
+          setStatus('Storage full; unable to save.');
+        }
+      } else {
+        alert('Storage is full. Please delete older snapshots or lower MAX_VERSIONS.');
+        setStatus('Storage full; unable to save.');
+      }
+    } else {
+      console.warn('Snapshot save failed:', e);
+      setStatus('Snapshot save failed. Check console for details.');
+    }
   }
-  saveVersions(versions);
-  localStorage.setItem(CURRENT_KEY, text);
-  updateDropdown();
 }
 
 let inputDebounce = null;
 function handleInputDebounced() {
-  localStorage.setItem(CURRENT_KEY, $text().value || '');
+  try { store.set(CURRENT_KEY, $text().value || ''); } catch {}
   if (inputDebounce) clearTimeout(inputDebounce);
-  inputDebounce = setTimeout(createSnapshot, 2000);
+  inputDebounce = setTimeout(() => createSnapshot({ forceNew: false }), AUTOSAVE_IDLE_MS);
 }
 
 function restoreSelectedVersion() {
@@ -181,21 +253,21 @@ function restoreSelectedVersion() {
   const v = versions.find(x => x.id === id);
   if (!v) return;
   $text().value = v.text;
-  localStorage.setItem(CURRENT_KEY, v.text);
+  try { store.set(CURRENT_KEY, v.text); } catch {}
+  setStatus(`Restored snapshot from ${new Date(id).toLocaleString()}`);
 }
 
+/* ==========
+   File helpers
+   ========== */
 function saveTextAsFile() {
   const textToSave = $text().value;
   const blob = new Blob([textToSave], {type:"text/plain"});
   const url = window.URL.createObjectURL(blob);
   const fileName = document.getElementById("inputFileNameToSaveAs").value || 'notes.txt';
   const link = document.createElement("a");
-  link.download = fileName;
-  link.href = url;
-  link.style.display = "none";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  link.download = fileName; link.href = url; link.style.display = "none";
+  document.body.appendChild(link); link.click(); document.body.removeChild(link);
 }
 function loadFileAsText() {
   const fileToLoad = document.getElementById("fileToLoad").files[0];
@@ -203,28 +275,29 @@ function loadFileAsText() {
   const reader = new FileReader();
   reader.onload = function(e) {
     $text().value = e.target.result;
-    localStorage.setItem(CURRENT_KEY, e.target.result);
-    createSnapshot();
+    try { store.set(CURRENT_KEY, e.target.result); } catch {}
+    createSnapshot({ forceNew: true }); // manual loads create a new version
   };
   reader.readAsText(fileToLoad, "UTF-8");
 }
 function previewHTML(){
   const text = $text().value;
   const w = window.open("","wildebeast","width=300,height=300,scrollbars=1,resizable=1");
-  w.document.open();
-  w.document.write(text);
-  w.document.close();
+  w.document.open(); w.document.write(text); w.document.close();
 }
 
+/* ========
+   Bootstrap
+   ======== */
 document.addEventListener('DOMContentLoaded', function() {
-  // Always start blank
+  // Start blank
   $text().value = '';
 
-  // Update dropdown with existing snapshots
+  // Build dropdown from this-tab's version list
   updateDropdown();
 
-  // Show restore last button if there’s a saved current
-  const hasCurrent = localStorage.getItem(CURRENT_KEY) !== null;
+  // Show "Restore Last Autosave" if there’s a CURRENT saved for this tab
+  const hasCurrent = store.get(CURRENT_KEY) !== null;
   const restoreLastBtn = document.getElementById('btnRestoreLast');
   if (hasCurrent) restoreLastBtn.style.display = 'inline-block';
 
@@ -234,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Persist current before unload
   window.addEventListener('beforeunload', () => {
-    localStorage.setItem(CURRENT_KEY, $text().value || '');
+    try { store.set(CURRENT_KEY, $text().value || ''); } catch {}
   });
 
   // Hook up buttons
@@ -242,13 +315,10 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btnLoadFile').addEventListener('click', loadFileAsText);
   document.getElementById('btnPreview').addEventListener('click', previewHTML);
   document.getElementById('btnRestore').addEventListener('click', restoreSelectedVersion);
-  document.getElementById('btnSnapshot').addEventListener('click', createSnapshot);
+  document.getElementById('btnSnapshot').addEventListener('click', () => createSnapshot({ forceNew: true }));
   restoreLastBtn.addEventListener('click', () => {
-    const current = localStorage.getItem(CURRENT_KEY);
-    if (current !== null) {
-      $text().value = current;
-      $text().focus();
-    }
+    const current = store.get(CURRENT_KEY);
+    if (current !== null) { $text().value = current; $text().focus(); setStatus('Restored last autosave.'); }
   });
 
   // Spellcheck
