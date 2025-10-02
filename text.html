@@ -61,25 +61,16 @@
       <td class="right">
         <button id="btnRestore">Restore Selected</button>
         <button id="btnSnapshot">Save Snapshot</button>
-        <button id="btnRestoreLast" style="display:none">Restore Last Autosave</button>
       </td>
     </tr>
   </table>
 
 <script>
-/* ==============================
-   Robust per-tab storage & utils
-   ============================== */
+/* =========================================
+   Global version store + per-tab autosaving
+   ========================================= */
 
-// Storage wrappers (fall back to in-memory if localStorage is blocked)
-const __memoryStore = {};
-const store = {
-  get(k) { try { return localStorage.getItem(k); } catch { return k in __memoryStore ? __memoryStore[k] : null; } },
-  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { __memoryStore[k] = String(v); throw e; } },
-  remove(k) { try { localStorage.removeItem(k); } catch { delete __memoryStore[k]; } }
-};
-
-// Generate a per-tab id that survives reloads (sessionStorage -> window.name fallback)
+// ---- Tab identity (persists across reloads in same tab) ----
 function getTabId() {
   try {
     let id = sessionStorage.getItem('notepad.tabId');
@@ -91,33 +82,27 @@ function getTabId() {
     if (!window.name) window.name = id;
     return id;
   } catch {
-    // If sessionStorage fails (some file:// contexts), use window.name
     if (!window.name) window.name = `notepad-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
     return window.name;
   }
 }
 const TAB_ID = getTabId();
 
-// Keys scoped to this tab
-const KEY_PREFIX   = `notepad:${TAB_ID}:`;
-const CURRENT_KEY  = `${KEY_PREFIX}current`;
-const VERSIONS_KEY = `${KEY_PREFIX}versions`;
-const LAST_TS_KEY  = `${KEY_PREFIX}lastSnapshotTs`;
+// ---- Keys (shared across tabs for the same site/origin) ----
+const CURRENT_KEY  = 'notepad.current';      // last working text (global)
+const VERSIONS_KEY = 'notepad.versions';     // array of snapshots (global)
 
-// Limits & behavior
-const MAX_VERSIONS = 200;                 // keep at most 200 snapshots
-const AUTOSAVE_IDLE_MS = 2000;            // 2s idle to snapshot
-const SNAPSHOT_MERGE_WINDOW_MS = 60_000;  // coalesce autosaves within 60s
-const DROPDOWN_PREVIEW_LIMIT = 100;       // first 100 chars in dropdown
+// ---- Settings ----
+const MAX_VERSIONS = 200;                    // total versions kept
+const AUTOSAVE_IDLE_MS = 2000;               // 2s pause before autosave
+const DROPDOWN_PREVIEW_LIMIT = 100;          // first 100 chars in dropdown
 
-// Shortcuts
+// ---- DOM helpers ----
 const $text   = () => document.getElementById('myTextArea');
 const $select = () => document.getElementById('versionSelect');
 const $status = () => document.getElementById('status');
 
-/* ==========
-   Helpers
-   ========== */
+// ---- Utilities ----
 function fmtDateMMDDYYYY(date) {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
@@ -130,23 +115,22 @@ function previewN(txt, n = DROPDOWN_PREVIEW_LIMIT) {
 }
 function loadVersions() {
   try {
-    const raw = store.get(VERSIONS_KEY);
+    const raw = localStorage.getItem(VERSIONS_KEY);
     return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
 }
 function saveVersions(list) {
-  store.set(VERSIONS_KEY, JSON.stringify(list));
-}
-function getLastSnapshotTs() {
-  const raw = store.get(LAST_TS_KEY);
-  return raw ? Number(raw) : 0;
-}
-function setLastSnapshotTs(ts) {
-  store.set(LAST_TS_KEY, String(ts));
+  localStorage.setItem(VERSIONS_KEY, JSON.stringify(list));
 }
 function setStatus(msg) { $status().textContent = msg || ''; }
+
+// Find the index of the most recent snapshot for THIS tab (prefer the most recent overall)
+function findLastSnapshotIndexForTab(list) {
+  for (let i = list.length - 1; i >= 0; i--) {
+    if (list[i].tabId === TAB_ID) return i;
+  }
+  return -1;
+}
 
 function updateDropdown() {
   const sel = $select();
@@ -170,82 +154,101 @@ function updateDropdown() {
   setStatus(`Snapshots: ${versions.length}`);
 }
 
-/* ==========================
-   Snapshot create / coalesce
-   ========================== */
-function createSnapshot({ forceNew = false } = {}) {
-  const text = $text().value || '';
-  const versions = loadVersions();
-  const now = Date.now();
-  const last = versions.length ? versions[versions.length - 1] : null;
+/* =======================
+   Autosave (one per tab)
+   ======================= */
+let inputDebounce = null;
 
-  // If identical to last, just update CURRENT and bail
-  if (last && last.text === text) {
-    try { store.set(CURRENT_KEY, text); } catch {}
-    setStatus('No change since last snapshot.');
+function autosaveSnapshot() {
+  const text = $text().value || '';
+  const trimmed = text.replace(/\s+/g, ' ').trim();
+  // Don't create/overwrite an autosave if the note is empty
+  if (!trimmed) {
+    localStorage.setItem(CURRENT_KEY, '');
+    setStatus('Empty note — autosave skipped.');
     return;
   }
 
-  // Coalesce autosaves within the merge window by updating last snapshot
-  const lastTs = getLastSnapshotTs();
-  const withinWindow = !forceNew && last && now - lastTs < SNAPSHOT_MERGE_WINDOW_MS;
+  const versions = loadVersions();
+  const now = Date.now();
+  const idx = findLastSnapshotIndexForTab(versions);
 
   try {
-    if (withinWindow) {
-      last.text = text;
-      versions[versions.length - 1] = last;
-      saveVersions(versions);
+    if (idx >= 0) {
+      // Overwrite this tab's last snapshot (keep a single autosave per tab)
+      if (versions[idx].text !== text) {
+        versions[idx].text = text;
+        versions[idx].id = now; // refresh date to reflect latest edit
+        saveVersions(versions);
+        setStatus(`Updated autosave @ ${new Date().toLocaleTimeString()}`);
+      } else {
+        setStatus('No change since last autosave.');
+      }
     } else {
-      versions.push({ id: now, text });
+      // First snapshot for this tab
+      versions.push({ id: now, text, tabId: TAB_ID, kind: 'auto' });
+      // Trim overall history if needed
       if (versions.length > MAX_VERSIONS) {
         versions.splice(0, versions.length - MAX_VERSIONS);
       }
       saveVersions(versions);
-      setLastSnapshotTs(now);
+      setStatus(`Created autosave @ ${new Date().toLocaleTimeString()}`);
     }
-    store.set(CURRENT_KEY, text);
+    localStorage.setItem(CURRENT_KEY, text);
     updateDropdown();
-    setStatus(`Saved snapshot at ${new Date().toLocaleTimeString()}`);
   } catch (e) {
-    // Handle quota / blocked storage gracefully
     if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
-      if (versions.length > 10) {
-        versions.splice(0, 10); // trim oldest ten
-        try {
-          saveVersions(versions);
-          // retry once
-          if (withinWindow) {
-            versions[versions.length - 1].text = text;
-          } else {
-            versions.push({ id: now, text });
-          }
-          saveVersions(versions);
-          store.set(CURRENT_KEY, text);
-          setLastSnapshotTs(now);
-          updateDropdown();
-          setStatus('Storage was full — trimmed oldest snapshots and saved.');
-        } catch {
-          alert('Storage is full. Please delete older snapshots or lower MAX_VERSIONS.');
-          setStatus('Storage full; unable to save.');
-        }
-      } else {
-        alert('Storage is full. Please delete older snapshots or lower MAX_VERSIONS.');
-        setStatus('Storage full; unable to save.');
-      }
+      alert('Storage is full. Please delete older snapshots or lower MAX_VERSIONS.');
+      setStatus('Storage full; unable to save.');
     } else {
-      console.warn('Snapshot save failed:', e);
-      setStatus('Snapshot save failed. Check console for details.');
+      console.warn('Autosave failed:', e);
+      setStatus('Autosave failed. Check console for details.');
     }
   }
 }
 
-let inputDebounce = null;
 function handleInputDebounced() {
-  try { store.set(CURRENT_KEY, $text().value || ''); } catch {}
+  try { localStorage.setItem(CURRENT_KEY, $text().value || ''); } catch {}
   if (inputDebounce) clearTimeout(inputDebounce);
-  inputDebounce = setTimeout(() => createSnapshot({ forceNew: false }), AUTOSAVE_IDLE_MS);
+  inputDebounce = setTimeout(autosaveSnapshot, AUTOSAVE_IDLE_MS);
 }
 
+/* ==========================
+   Manual snapshot (permanent)
+   ========================== */
+function createManualSnapshot() {
+  const text = $text().value || '';
+  const trimmed = text.replace(/\s+/g, ' ').trim();
+  if (!trimmed) {
+    setStatus('Cannot save empty snapshot.');
+    return;
+  }
+
+  const versions = loadVersions();
+  const now = Date.now();
+  try {
+    versions.push({ id: now, text, tabId: TAB_ID, kind: 'manual' });
+    if (versions.length > MAX_VERSIONS) {
+      versions.splice(0, versions.length - MAX_VERSIONS);
+    }
+    saveVersions(versions);
+    localStorage.setItem(CURRENT_KEY, text);
+    updateDropdown();
+    setStatus(`Saved manual snapshot @ ${new Date().toLocaleTimeString()}`);
+  } catch (e) {
+    if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      alert('Storage is full. Please delete older snapshots or lower MAX_VERSIONS.');
+      setStatus('Storage full; unable to save.');
+    } else {
+      console.warn('Manual snapshot failed:', e);
+      setStatus('Snapshot failed. Check console for details.');
+    }
+  }
+}
+
+/* =================
+   Restore + helpers
+   ================= */
 function restoreSelectedVersion() {
   const id = Number($select().value);
   if (!id) return;
@@ -253,13 +256,10 @@ function restoreSelectedVersion() {
   const v = versions.find(x => x.id === id);
   if (!v) return;
   $text().value = v.text;
-  try { store.set(CURRENT_KEY, v.text); } catch {}
+  try { localStorage.setItem(CURRENT_KEY, v.text); } catch {}
   setStatus(`Restored snapshot from ${new Date(id).toLocaleString()}`);
 }
 
-/* ==========
-   File helpers
-   ========== */
 function saveTextAsFile() {
   const textToSave = $text().value;
   const blob = new Blob([textToSave], {type:"text/plain"});
@@ -275,8 +275,9 @@ function loadFileAsText() {
   const reader = new FileReader();
   reader.onload = function(e) {
     $text().value = e.target.result;
-    try { store.set(CURRENT_KEY, e.target.result); } catch {}
-    createSnapshot({ forceNew: true }); // manual loads create a new version
+    try { localStorage.setItem(CURRENT_KEY, e.target.result); } catch {}
+    // After loading a file, also make it this tab's autosave immediately
+    autosaveSnapshot();
   };
   reader.readAsText(fileToLoad, "UTF-8");
 }
@@ -290,36 +291,25 @@ function previewHTML(){
    Bootstrap
    ======== */
 document.addEventListener('DOMContentLoaded', function() {
-  // Start blank
+  // Start blank as requested
   $text().value = '';
-
-  // Build dropdown from this-tab's version list
   updateDropdown();
-
-  // Show "Restore Last Autosave" if there’s a CURRENT saved for this tab
-  const hasCurrent = store.get(CURRENT_KEY) !== null;
-  const restoreLastBtn = document.getElementById('btnRestoreLast');
-  if (hasCurrent) restoreLastBtn.style.display = 'inline-block';
-
-  // Focus + autosave
   $text().focus();
+
+  // Input handler -> debounced autosave (updates this tab's single autosave)
   $text().addEventListener('input', handleInputDebounced);
 
-  // Persist current before unload
+  // Persist current before unload (not a version, just working text)
   window.addEventListener('beforeunload', () => {
-    try { store.set(CURRENT_KEY, $text().value || ''); } catch {}
+    try { localStorage.setItem(CURRENT_KEY, $text().value || ''); } catch {}
   });
 
-  // Hook up buttons
+  // Buttons
   document.getElementById('btnSaveFile').addEventListener('click', saveTextAsFile);
   document.getElementById('btnLoadFile').addEventListener('click', loadFileAsText);
   document.getElementById('btnPreview').addEventListener('click', previewHTML);
   document.getElementById('btnRestore').addEventListener('click', restoreSelectedVersion);
-  document.getElementById('btnSnapshot').addEventListener('click', () => createSnapshot({ forceNew: true }));
-  restoreLastBtn.addEventListener('click', () => {
-    const current = store.get(CURRENT_KEY);
-    if (current !== null) { $text().value = current; $text().focus(); setStatus('Restored last autosave.'); }
-  });
+  document.getElementById('btnSnapshot').addEventListener('click', createManualSnapshot);
 
   // Spellcheck
   if (window.$Spelling && typeof $Spelling.SpellCheckAsYouType === 'function') {
