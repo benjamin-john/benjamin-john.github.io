@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Qwixx Dice Roller</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #ffffff;
+      --muted: #cbd5e1;
+      --border: rgba(255,255,255,0.18);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #0f172a;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .app {
+      width: min(720px, 100%);
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    header {
+      display: grid;
+      gap: 4px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .panel {
+      background: #111827;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+
+    .dice-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (min-width: 540px) {
+      .dice-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+    }
+
+    .die {
+      border-radius: 14px;
+      padding: 12px 10px 10px;
+      display: grid;
+      gap: 6px;
+      place-items: center;
+      min-height: 95px;
+      font-weight: 700;
+      color: #000;
+      border: 1px solid rgba(0,0,0,0.12);
+    }
+
+    .die.white { background: #ffffff; color: #000; }
+    .die.red { background: #ef4444; color: #fff; }
+    .die.blue { background: #3b82f6; color: #fff; }
+    .die.green { background: #22c55e; color: #000; }
+    .die.yellow { background: #facc15; color: #000; }
+
+    .die[aria-disabled="true"] {
+      opacity: 0.25;
+      filter: saturate(0.6);
+    }
+
+    .label { font-size: 12px; }
+    .value { font-size: 36px; font-weight: 900; line-height: 1; }
+    .pipline { font-size: 12px; line-height: 1; opacity: 0.9; }
+
+    /* Controls layout fix */
+    .controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .top-controls {
+      display: grid;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    @media (min-width: 540px) {
+      .top-controls {
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+      }
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      background: #ffffff;
+      color: #000000;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-weight: 900;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      min-height: 52px;
+    }
+
+    button:active { transform: scale(0.985); }
+
+    .stats {
+      display: grid;
+      gap: 10px;
+      width: 100%;
+    }
+
+    @media (min-width: 540px) {
+      .stats {
+        justify-items: end;
+      }
+    }
+
+    .pill {
+      background: #1f2937;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+    }
+
+    @media (min-width: 540px) {
+      .pill {
+        width: auto;
+        min-width: 220px;
+      }
+    }
+
+    .pill b { font-size: 14px; }
+
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+
+    .toggles {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    @media (min-width: 540px) {
+      .toggles {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .toggle {
+      background: #1f2937;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+    }
+
+    .toggle input {
+      width: 20px;
+      height: 20px;
+      margin: 0;
+      accent-color: #ffffff;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.35);
+      flex: 0 0 auto;
+    }
+
+    .swatch.red { background: #ef4444; }
+    .swatch.blue { background: #3b82f6; }
+    .swatch.green { background: #22c55e; }
+    .swatch.yellow { background: #facc15; }
+  </style>
+</head>
+
+<body>
+  <main class="app" aria-label="Qwixx Dice Roller">
+    <header>
+      <h1>Qwixx Dice Roller</h1>
+    </header>
+
+    <section class="panel" aria-label="Dice">
+      <div class="dice-grid" id="diceGrid">
+        <div class="die white" id="die-w1" data-die="w1">
+          <div class="label">White 1</div>
+          <div class="value" id="val-w1">-</div>
+          <div class="pipline" id="pip-w1"></div>
+        </div>
+        <div class="die white" id="die-w2" data-die="w2">
+          <div class="label">White 2</div>
+          <div class="value" id="val-w2">-</div>
+          <div class="pipline" id="pip-w2"></div>
+        </div>
+        <div class="die red" id="die-red" data-die="red">
+          <div class="label">Red</div>
+          <div class="value" id="val-red">-</div>
+          <div class="pipline" id="pip-red"></div>
+        </div>
+        <div class="die blue" id="die-blue" data-die="blue">
+          <div class="label">Blue</div>
+          <div class="value" id="val-blue">-</div>
+          <div class="pipline" id="pip-blue"></div>
+        </div>
+        <div class="die green" id="die-green" data-die="green">
+          <div class="label">Green</div>
+          <div class="value" id="val-green">-</div>
+          <div class="pipline" id="pip-green"></div>
+        </div>
+        <div class="die yellow" id="die-yellow" data-die="yellow">
+          <div class="label">Yellow</div>
+          <div class="value" id="val-yellow">-</div>
+          <div class="pipline" id="pip-yellow"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel controls" aria-label="Controls">
+      <div class="top-controls">
+        <button id="rollBtn" type="button" aria-label="Roll dice">Roll</button>
+
+        <div class="stats" aria-label="Sums and shortcut">
+          <div class="pill" title="White 1 + White 2">
+            <span>White sum</span>
+            <b id="whiteSum">-</b>
+          </div>
+          <div class="pill" title="Press R to roll">
+            <span>Shortcut</span>
+            <span class="kbd">R</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="toggles" role="group" aria-label="Enable colored dice">
+        <label class="toggle">
+          <input id="toggle-red" type="checkbox" checked />
+          <span class="swatch red" aria-hidden="true"></span>
+          <span>Red</span>
+        </label>
+
+        <label class="toggle">
+          <input id="toggle-blue" type="checkbox" checked />
+          <span class="swatch blue" aria-hidden="true"></span>
+          <span>Blue</span>
+        </label>
+
+        <label class="toggle">
+          <input id="toggle-green" type="checkbox" checked />
+          <span class="swatch green" aria-hidden="true"></span>
+          <span>Green</span>
+        </label>
+
+        <label class="toggle">
+          <input id="toggle-yellow" type="checkbox" checked />
+          <span class="swatch yellow" aria-hidden="true"></span>
+          <span>Yellow</span>
+        </label>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const DICE = [
+        { key: "w1", alwaysOn: true, colorClass: "white" },
+        { key: "w2", alwaysOn: true, colorClass: "white" },
+        { key: "red", toggleId: "toggle-red", alwaysOn: false, colorClass: "red" },
+        { key: "blue", toggleId: "toggle-blue", alwaysOn: false, colorClass: "blue" },
+        { key: "green", toggleId: "toggle-green", alwaysOn: false, colorClass: "green" },
+        { key: "yellow", toggleId: "toggle-yellow", alwaysOn: false, colorClass: "yellow" }
+      ];
+
+      /** @type {Record<string, number|null>} */
+      const state = Object.fromEntries(DICE.map(d => [d.key, null]));
+
+      const el = (id) => document.getElementById(id);
+
+      function randDie() {
+        return Math.floor(Math.random() * 6) + 1;
+      }
+
+      function renderDie(key) {
+        const value = state[key];
+        const valEl = el(`val-${key}`);
+        const pipEl = el(`pip-${key}`);
+        const dieEl = el(`die-${key}`);
+
+        valEl.textContent = value == null ? "-" : String(value);
+        pipEl.textContent = value == null ? "" : "●".repeat(value);
+
+        const def = DICE.find(d => d.key === key);
+        const enabled = def.alwaysOn ? true : el(def.toggleId).checked;
+        dieEl.setAttribute("aria-disabled", enabled ? "false" : "true");
+      }
+
+      function renderAll() {
+        for (const d of DICE) renderDie(d.key);
+
+        const w1 = state.w1;
+        const w2 = state.w2;
+        el("whiteSum").textContent = (w1 != null && w2 != null) ? String(w1 + w2) : "-";
+      }
+
+      function roll() {
+        state.w1 = randDie();
+        state.w2 = randDie();
+
+        for (const d of DICE) {
+          if (d.alwaysOn) continue;
+          const enabled = el(d.toggleId).checked;
+          if (enabled) state[d.key] = randDie();
+        }
+
+        renderAll();
+      }
+
+      function onToggleChange() {
+        renderAll();
+      }
+
+      for (const d of DICE) {
+        if (!d.alwaysOn) el(d.toggleId).addEventListener("change", onToggleChange);
+      }
+
+      el("rollBtn").addEventListener("click", roll);
+
+      document.addEventListener("keydown", (e) => {
+        if (e.repeat) return;
+        if (e.key === "r" || e.key === "R") roll();
+      });
+
+      renderAll();
+    })();
+  </script>
+</body>
+</html>
