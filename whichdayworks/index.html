@@ -152,6 +152,15 @@ textarea{resize:vertical}
 .tag[data-s="unavailable"]{background:var(--unavailable-t);color:#8A1F1B}
 .tag[data-s="none"]{background:#E3E9ED;color:var(--muted)}
 .note{color:var(--muted);font-size:14px}
+.day-panel .who{display:grid;gap:6px;margin:10px 0 0}
+.day-panel .who li{display:grid;grid-template-columns:1fr auto;align-items:center;gap:3px 10px;padding:10px 12px;border-left:7px solid var(--line);border-radius:10px;background:#fff}
+.who li[data-s="preferred"]{border-left-color:var(--preferred);background:var(--preferred-t)}
+.who li[data-s="second"]{border-left-color:var(--second);background:var(--second-t)}
+.who li[data-s="not_ideal"]{border-left-color:var(--not-ideal);background:var(--not-ideal-t)}
+.who li[data-s="unavailable"]{border-left-color:var(--unavailable);background:var(--unavailable-t)}
+.who .wn{font-weight:600;overflow-wrap:anywhere}
+.who .tag{background:rgba(255,255,255,.8)}
+.who .wnote{grid-column:1/3;color:var(--ink);font-size:14px}
 .block{margin-top:28px}
 .best{list-style:none;margin:10px 0 0;padding:0}
 .best li{border-top:1px solid var(--line)}
@@ -946,18 +955,20 @@ function renderDayPanel() {
     el.innerHTML = html + '<p class="hint" style="margin-top:6px">No answers yet.</p>';
     return;
   }
-  var agg = dayAgg(day, S.responses);
-  ['preferred', 'second', 'not_ideal', 'unavailable', 'none'].forEach(function (s) {
-    var rows = S.responses.filter(function (r) {
-      var us = userStatus(r, day); return (us || 'none') === s;
-    });
-    if (!rows.length) return;
-    html += '<div class="grp"><span class="tag" data-s="' + s + '">' + (s === 'none' ? 'Didn’t mark this day' : SMAP[s].label) + '</span><ul>' +
-      rows.map(function (r) {
-        var n = r.picks && r.picks[day] && r.picks[day].n;
-        return '<li><b>' + esc(r.name) + '</b>' + (n ? ' <span class="note">' + esc(n) + '</span>' : '') + '</li>';
-      }).join('') + '</ul></div>';
+  // One row per person, colored by their answer, with the answer spelled out beside their name.
+  var order = ['preferred', 'second', 'not_ideal', 'unavailable', 'none'];
+  var rows = S.responses.map(function (r) {
+    var p = r.picks && r.picks[day];
+    return { name: r.name, s: userStatus(r, day) || 'none', note: p && p.n };
   });
+  rows.sort(function (a, b) { return order.indexOf(a.s) - order.indexOf(b.s); });
+  html += '<p class="hint" style="margin-top:4px">' + esc(cellInfo(day).label) + '</p><ul class="who">' +
+    rows.map(function (r) {
+      var label = r.s === 'none' ? 'Didn’t mark' : SMAP[r.s].label;
+      return '<li data-s="' + r.s + '"><span class="wn">' + esc(r.name) + '</span>' +
+        '<span class="tag" data-s="' + r.s + '">' + label + '</span>' +
+        (r.note ? '<span class="wnote">“' + esc(r.note) + '”</span>' : '') + '</li>';
+    }).join('') + '</ul>';
   el.innerHTML = html;
 }
 
