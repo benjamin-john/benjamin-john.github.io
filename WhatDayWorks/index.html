@@ -70,6 +70,14 @@ textarea{resize:vertical}
 .linkbox{display:flex;gap:8px;margin:12px 0}
 .linkbox input{flex:1;min-width:0}
 .row-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn.small{min-height:38px;padding:0 14px;font-size:14px;display:inline-flex;align-items:center;text-decoration:none}
+.btn.danger{border-color:#A12F2B;color:#A12F2B}
+.foot{margin-top:36px;font-size:14px;text-align:center}
+.foot a{color:var(--muted)}
+.admin-list{list-style:none;margin:14px 0 0;padding:0}
+.admin-list li{padding:14px 0;border-top:1px solid var(--line)}
+.admin-list .nm{font-family:var(--head);font-size:19px;font-weight:600}
+.admin-list .meta{color:var(--muted);font-size:14px;margin:2px 0 10px}
 .recent{margin-top:28px}
 .recent ul{list-style:none;padding:0;margin:8px 0 0}
 .recent li{padding:10px 0;border-top:1px solid var(--line)}
@@ -296,7 +304,20 @@ var remoteApi = {
     return this.rpc('save_response', { p_code: a.code, p_participant: a.pid, p_name: a.name, p_note: a.note,
       p_picks: a.picks, p_replace: !!a.replace });
   },
-  deleteResponse: function (a) { return this.rpc('delete_response', { p_code: a.code, p_participant: a.pid }); }
+  deleteResponse: function (a) { return this.rpc('delete_response', { p_code: a.code, p_participant: a.pid }); },
+  // Admin functions report problems as {error: "..."} so failed guesses stay counted server-side.
+  adminList: function (pw) {
+    return this.rpc('admin_list_events', { p_password: pw }).then(function (d) {
+      if (d && d.error) throw new ApiError(d.error);
+      return (d && d.events) || [];
+    });
+  },
+  adminDelete: function (pw, code) {
+    return this.rpc('admin_delete_event', { p_password: pw, p_code: code }).then(function (d) {
+      if (d && d.error) throw new ApiError(d.error);
+      return d;
+    });
+  }
 };
 
 // Preview mode: same interface, but everything lives in this browser's localStorage.
@@ -347,7 +368,9 @@ var localApi = {
     db.responses[a.code] = (db.responses[a.code] || []).filter(function (r) { return r.pid !== a.pid; });
     this.put(db);
     return Promise.resolve();
-  }
+  },
+  adminList: function () { return Promise.reject(new ApiError('admin_needs_supabase')); },
+  adminDelete: function () { return Promise.reject(new ApiError('admin_needs_supabase')); }
 };
 
 var api = REMOTE ? remoteApi : localApi;
@@ -361,7 +384,11 @@ function friendly(e) {
     invalid_name: 'Enter a name (up to 60 characters).',
     invalid_picks: 'Those days could not be saved. Refresh the page and try again.',
     range_too_short: 'The date range is shorter than the number of days.',
-    range_too_long: 'The date range can be at most two years.'
+    range_too_long: 'The date range can be at most two years.',
+    wrong_password: 'Wrong password.',
+    too_many_attempts: 'Too many wrong attempts. Try again in 15 minutes.',
+    admin_not_configured: 'No admin password is set yet. Follow the steps at the bottom of admin.sql.',
+    admin_needs_supabase: 'Admin mode needs the Supabase connection. Preview mode only keeps data in this browser.'
   };
   if (map[m]) return map[m];
   if (/find the function|schema cache/i.test(m)) return 'The database is not set up yet. Run schema.sql in the Supabase SQL Editor.';
@@ -491,7 +518,9 @@ function copyText(text, input) {
 /* -------------------------------------------------------------------- routes */
 
 function route() {
-  var code = new URLSearchParams(location.search).get('e');
+  var qs = new URLSearchParams(location.search);
+  if (qs.has('admin') && !qs.get('e')) { renderAdmin(); return; }
+  var code = qs.get('e');
   if (!code) { renderHome(); return; }
   loadEvent(code.trim().toLowerCase());
 }
@@ -507,7 +536,7 @@ function loadEvent(code) {
     S.cursor = r.lo <= r.hi ? r.lo : S.ev.earliest;
     S.sel = null; S.calView = 'month'; S.showMore = false;
     initDraft();
-    S.mode = myResponse() ? 'view' : 'edit';
+    S.mode = 'view';
     S.view = 'event';
     renderEvent();
   }, function (e) {
@@ -553,8 +582,90 @@ function renderHome() {
     '</form>' +
     (recent.length ? '<section class="recent"><h2>Your events</h2><ul>' +
       recent.map(function (r) { return '<li><a href="?e=' + esc(r.code) + '">' + esc(r.name) + '</a></li>'; }).join('') +
-      '</ul></section>' : '');
+      '</ul></section>' : '') +
+    '<p class="foot"><a href="?admin">Admin</a></p>';
   if (REMOTE) checkConnection();
+}
+
+/* -------------------------------------------------------------------- admin */
+
+var A = { pw: '', events: null }; // the password lives only in memory, never saved
+
+function fmtStamp(ts) {
+  var d = new Date(ts);
+  return isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function renderAdmin(msg) {
+  S.view = 'admin';
+  document.title = 'Admin | Which day works?';
+  var nav = '<nav class="topnav"><a href="' + esc(baseUrl()) + '">Home</a></nav>';
+  if (!REMOTE) {
+    $app.innerHTML = previewBanner() + nav + '<h1>Admin</h1><p class="err">' + esc(friendly(new ApiError('admin_needs_supabase'))) + '</p>';
+    return;
+  }
+  if (!A.events) {
+    $app.innerHTML = nav + '<h1>Admin</h1>' +
+      '<p class="lede">Enter the admin password to see every event and delete the ones you don’t need.</p>' +
+      '<form id="adminForm" class="panel" novalidate>' +
+        '<label class="fld"><span>Password</span><input type="password" id="adminPw" name="adminPw" autocomplete="current-password"></label>' +
+        '<button class="btn primary" type="submit">Sign in</button>' +
+        '<p class="err" id="adminErr" role="alert">' + esc(msg || '') + '</p>' +
+      '</form>';
+    return;
+  }
+  var list = A.events;
+  $app.innerHTML = nav + '<h1>All events (' + list.length + ')</h1>' +
+    '<div class="tools"><button type="button" class="chipbtn" data-act="admin-refresh">Refresh</button>' +
+    '<button type="button" class="chipbtn" data-act="admin-out">Sign out</button></div>' +
+    (list.length ? '<ul class="admin-list">' + list.map(function (ev) {
+      var bits = ['Created ' + fmtStamp(ev.created_at) + '.'];
+      bits.push(ev.responses
+        ? ev.responses + (ev.responses === 1 ? ' response' : ' responses') + ', last on ' + fmtStamp(ev.last_response) + '.'
+        : 'No answers yet.');
+      if (ev.num_days > 1) bits.push(ev.num_days + ' days in a row.');
+      if (ev.earliest && ev.latest) bits.push('Between ' + fmtMD(ev.earliest) + ' and ' + fmtMD(ev.latest) + '.');
+      else if (ev.earliest) bits.push('Starting ' + fmtMD(ev.earliest) + ' or later.');
+      else if (ev.latest) bits.push('Ending by ' + fmtMD(ev.latest) + '.');
+      return '<li><div class="nm">' + esc(ev.name) + '</div><p class="meta">' + esc(bits.join(' ')) + '</p>' +
+        '<div class="row-btns"><a class="btn small" href="?e=' + esc(ev.code) + '">Open</a>' +
+        '<button type="button" class="btn small danger" data-act="admin-del" data-code="' + esc(ev.code) + '">Delete</button></div></li>';
+    }).join('') + '</ul>' : '<p class="hint" style="margin-top:14px">There are no events yet.</p>');
+}
+
+function adminFail(e) {
+  var m = e && e.message;
+  if (m === 'wrong_password' || m === 'too_many_attempts' || m === 'admin_not_configured') {
+    A.pw = ''; A.events = null; renderAdmin(friendly(e));
+  } else toast(friendly(e));
+}
+
+function submitAdmin(form) {
+  var pw = form.elements.adminPw.value, err = document.getElementById('adminErr');
+  if (!pw) { err.textContent = 'Enter the password.'; return; }
+  err.textContent = '';
+  var btn = form.querySelector('button[type=submit]');
+  btn.disabled = true; btn.textContent = 'Checking…';
+  api.adminList(pw).then(function (events) {
+    A.pw = pw; A.events = events; renderAdmin();
+  }, function (e) {
+    btn.disabled = false; btn.textContent = 'Sign in';
+    err.textContent = friendly(e);
+    form.elements.adminPw.value = '';
+  });
+}
+
+function adminDelete(code) {
+  var ev = (A.events || []).filter(function (x) { return x.code === code; })[0];
+  if (!ev) return;
+  var n = ev.responses || 0;
+  if (!confirm('Delete “' + ev.name + '”' + (n ? ' and its ' + n + (n === 1 ? ' response' : ' responses') : '') + '? This can’t be undone.')) return;
+  api.adminDelete(A.pw, code).then(function () {
+    A.events = A.events.filter(function (x) { return x.code !== code; });
+    store.set('meetup.recent', store.get('meetup.recent', []).filter(function (r) { return r.code !== code; }));
+    renderAdmin();
+    toast('Deleted “' + ev.name + '”.');
+  }, adminFail);
 }
 
 // Quick self-test on the home page so setup mistakes show up before anyone fills in the form.
@@ -1001,6 +1112,11 @@ $app.addEventListener('click', function (e) {
       renderCalendar(); renderDayPanel();
       var cal = document.querySelector('.cal'); if (cal && cal.scrollIntoView) cal.scrollIntoView({ block: 'start', behavior: 'smooth' });
       break;
+    case 'admin-refresh':
+      api.adminList(A.pw).then(function (events) { A.events = events; renderAdmin(); toast('Updated.'); }, adminFail);
+      break;
+    case 'admin-out': A.pw = ''; A.events = null; renderAdmin(); break;
+    case 'admin-del': adminDelete(t.dataset.code); break;
     case 'new-person':
       store.set('meetup.pid', uuid()); store.set('meetup.name', '');
       toast('You are now a new person in this browser.');
@@ -1020,6 +1136,7 @@ $app.addEventListener('input', function (e) {
 
 $app.addEventListener('submit', function (e) {
   if (e.target.id === 'createForm') { e.preventDefault(); submitCreate(e.target); }
+  else if (e.target.id === 'adminForm') { e.preventDefault(); submitAdmin(e.target); }
 });
 
 document.addEventListener('visibilitychange', function () {
