@@ -51,6 +51,15 @@ button,input,textarea{font:inherit;color:inherit}
 .btn:disabled{opacity:.5;cursor:default}
 .link{background:none;border:0;padding:8px 0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:15px}
 .link.danger{color:#A12F2B}
+.filter{margin:10px 0 4px}
+.filter .frow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.filter h2{font-size:15px;margin:0}
+.filter .fall{font-size:14px}
+.filter .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.fchip{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px 0 10px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:inherit;cursor:pointer;font-size:15px;font-weight:500}
+.fchip .fck{width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:1}
+.fchip[aria-pressed="true"]{border-color:currentColor;background:color-mix(in srgb,currentColor 10%,var(--surface))}
+.fchip[aria-pressed="false"]{opacity:.55;text-decoration:line-through}
 .chipbtn{min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:14px;font-weight:500}
 .bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
@@ -481,9 +490,12 @@ function cleanPicks(picks) {
 var S = {
   view: 'loading', code: '', ev: null, responses: [], pid: '',
   mode: 'view', calView: 'month', cursor: todayISO(), sel: null,
-  draft: { name: '', note: '', picks: {} }, active: null, dirty: false, saving: false, showMore: false
+  draft: { name: '', note: '', picks: {} }, hidden: {}, active: null, dirty: false, saving: false, showMore: false
 };
 
+function nameKey(r) { return String(r.name).trim().toLowerCase(); }
+// Responses that are switched on in the "Show answers from" chips (everyone by default).
+function vis() { return S.responses.filter(function (r) { return !S.hidden[nameKey(r)]; }); }
 function myResponse() {
   return S.responses.filter(function (r) { return r.mine; })[0] || null;
 }
@@ -567,7 +579,7 @@ function loadEvent(code) {
     S.cursor = r.lo <= r.hi ? r.lo : S.ev.earliest;
     S.sel = null; S.calView = 'month'; S.showMore = false;
     initDraft();
-    S.mode = 'view';
+    S.mode = 'view'; S.hidden = {};
     S.view = 'event';
     renderEvent();
   }, function (e) {
@@ -796,6 +808,7 @@ function renderEvent() {
       '</div>' +
     '</div>' +
     (editing ? editTopHTML() : '') +
+    (editing ? '' : '<section id="filter" class="filter" aria-label="Choose whose answers to show"></section>') +
     '<section class="cal" aria-label="Calendar">' +
       '<div class="cal-head">' +
         '<button type="button" class="nav" data-act="prev" aria-label="Previous">‹</button>' +
@@ -841,17 +854,33 @@ function editBottomHTML() {
     (mine ? '<p style="margin-top:6px"><button type="button" class="link danger" data-act="delete">Delete my response</button></p>' : '');
 }
 
-function renderParts() { renderCalendar(); renderDayPanel(); renderBest(); renderPeople(); }
+function renderParts() { renderFilter(); renderCalendar(); renderDayPanel(); renderBest(); renderPeople(); }
 
 /* ----------------------------------------------------------------- calendar */
+
+function renderFilter() {
+  var el = document.getElementById('filter');
+  if (!el) return;
+  if (S.responses.length < 2) { el.innerHTML = ''; return; }
+  var on = vis().length;
+  el.innerHTML = '<div class="frow"><h2>Show answers from</h2><span class="fall">' +
+    '<button type="button" class="link" data-act="filter-all">All</button> · ' +
+    '<button type="button" class="link" data-act="filter-none">None</button></span></div>' +
+    '<div class="chips">' + S.responses.map(function (r) {
+      var isOn = !S.hidden[nameKey(r)];
+      return '<button type="button" class="fchip" data-act="toggle-person" data-key="' + esc(nameKey(r)) + '" aria-pressed="' + isOn + '">' +
+        '<span class="fck" aria-hidden="true">' + (isOn ? '✓' : '') + '</span>' + esc(r.name) + (r.mine ? ' (you)' : '') + '</button>';
+    }).join('') + '</div>' +
+    (on < S.responses.length ? '<p class="small-note">Showing ' + on + ' of ' + S.responses.length + ' people. The calendar and best dates only count them.</p>' : '');
+}
 
 function cellInfo(day) {
   if (S.mode === 'edit') {
     var p = S.draft.picks[day];
     return { status: p ? p.s : 'none', note: p && p.n, label: p ? SMAP[p.s].label : 'Not marked', sub: p && p.n ? p.n : '' };
   }
-  var agg = dayAgg(day, S.responses), total = S.responses.length, c = agg.counts, label;
-  if (!total) label = 'No answers yet';
+  var V = vis(), agg = dayAgg(day, V), total = V.length, c = agg.counts, label;
+  if (!total) label = S.responses.length ? 'Nobody selected' : 'No answers yet';
   else if (c.unavailable) label = c.unavailable + ' of ' + total + ' unavailable';
   else if (c.not_ideal) label = c.not_ideal + ' of ' + total + ' say not ideal';
   else if (c.preferred) label = c.preferred === total ? 'Everyone prefers this day' : c.preferred + ' of ' + total + ' prefer this day';
@@ -974,13 +1003,13 @@ function renderDayPanel() {
     el.innerHTML = html;
     return;
   }
-  if (!S.responses.length) {
-    el.innerHTML = html + '<p class="hint" style="margin-top:6px">No answers yet.</p>';
+  if (!vis().length) {
+    el.innerHTML = html + '<p class="hint" style="margin-top:6px">' + (S.responses.length ? 'Nobody is switched on above. Turn on a name to see their answers.' : 'No answers yet.') + '</p>';
     return;
   }
   // One row per person, colored by their answer, with the answer spelled out beside their name.
   var order = ['preferred', 'second', 'not_ideal', 'unavailable', 'none'];
-  var rows = S.responses.map(function (r) {
+  var rows = vis().map(function (r) {
     var p = r.picks && r.picks[day];
     return { name: r.name, s: userStatus(r, day) || 'none', note: p && p.n };
   });
@@ -1016,7 +1045,11 @@ function renderBest() {
     el.innerHTML = '<h2>Best dates</h2><p class="hint" style="margin-top:6px">Nobody has answered yet. Switch to Edit to add your days.</p>';
     return;
   }
-  var list = bestWindows(S.ev, S.responses);
+  if (!vis().length) {
+    el.innerHTML = '<h2>Best dates</h2><p class="hint" style="margin-top:6px">Nobody is switched on above. Turn on at least one name to see best dates.</p>';
+    return;
+  }
+  var list = bestWindows(S.ev, vis());
   if (!list.length) {
     el.innerHTML = '<h2>Best dates</h2><p class="hint" style="margin-top:6px">No date works for most people yet. As more answers come in, this list will update.</p>';
     return;
@@ -1136,6 +1169,11 @@ $app.addEventListener('click', function (e) {
       break;
     case 'delete': doDelete(); break;
     case 'refresh': refreshNow(false); break;
+    case 'toggle-person':
+      if (S.hidden[t.dataset.key]) delete S.hidden[t.dataset.key]; else S.hidden[t.dataset.key] = true;
+      renderParts(); break;
+    case 'filter-all': S.hidden = {}; renderParts(); break;
+    case 'filter-none': S.responses.forEach(function (r) { S.hidden[nameKey(r)] = true; }); renderParts(); break;
     case 'more': S.showMore = true; renderBest(); break;
     case 'copy-link':
       copyText(shareUrl(S.code)).then(function (ok) { toast(ok ? 'Link copied.' : 'Could not copy. Copy the address from your browser instead.'); });
