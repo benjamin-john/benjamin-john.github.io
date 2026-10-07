@@ -277,8 +277,8 @@ function weekStart(s) { return addDays(s, -parse(s).getDay()); }
 
 function eventRange(ev) {
   var today = todayISO();
-  var lo = ev.earliest || today;
   var over = ev.latest && ev.latest < today;
+  var lo = ev.earliest || (over ? ev.latest : today);
   if (lo < today && !over) lo = today;
   var hi = ev.latest || addDays(lo, 365);
   return { lo: lo, hi: hi };
@@ -429,9 +429,11 @@ function dayAgg(day, responses) {
 }
 
 // Candidate start dates, best first. Unmarked days count as "okay".
+function isExpired(ev) { return !!(ev.latest && ev.latest < todayISO()); }
+
 function bestWindows(ev, responses) {
   var out = [], total = responses.length;
-  if (!total) return out;
+  if (!total || isExpired(ev)) return out;
   var n = ev.num_days || 1, r = eventRange(ev);
   for (var s = r.lo; s <= r.hi && addDays(s, n - 1) <= r.hi; s = addDays(s, 1)) {
     var days = [];
@@ -494,6 +496,26 @@ function initDraft() {
   };
   S.active = null;
   S.dirty = false;
+  S.takeover = '';
+}
+function otherResponseNamed(name) {
+  var n = String(name || '').trim().toLowerCase();
+  if (!n) return null;
+  return S.responses.filter(function (r) { return !r.mine && String(r.name).trim().toLowerCase() === n; })[0] || null;
+}
+// If the typed name already has a saved response from someone else, ask before taking it over.
+// Returns true when it is fine to go on (no clash, or the person agreed to edit that response).
+function confirmTakeover() {
+  var name = S.draft.name.trim(), clash = otherResponseNamed(name);
+  if (!clash || S.takeover === name.toLowerCase()) return true;
+  if (!confirm('There is already a saved response under the name “' + clash.name + '”. Are you sure you want to edit that response?')) return false;
+  S.takeover = name.toLowerCase();
+  S.draft.name = clash.name;
+  S.draft.note = clash.note || '';
+  S.draft.picks = JSON.parse(JSON.stringify(clash.picks || {}));
+  S.dirty = true;
+  S.active = null;
+  return true;
 }
 function validName() { return S.draft.name.trim().length > 0; }
 
@@ -762,6 +784,7 @@ function renderEvent() {
       (facts.length ? '<p class="facts">' + facts.map(function (f) { return '<span>' + esc(f) + '</span>'; }).join('') + '</p>' : '') +
       '<div class="tools"><button type="button" class="chipbtn" data-act="copy-link">Copy link</button>' +
       '<button type="button" class="chipbtn" data-act="refresh">Refresh</button></div></header>' +
+    (isExpired(ev) ? '<div class="banner" role="status"><strong>This event’s dates have passed.</strong> You can still look at the answers.</div>' : '') +
     '<div class="bar">' +
       '<div class="seg" role="group" aria-label="Mode">' +
         '<button type="button" data-act="mode" data-mode="view" aria-pressed="' + !editing + '">View</button>' +
@@ -985,6 +1008,10 @@ function whyLines(w) {
 function renderBest() {
   var el = document.getElementById('best');
   if (!el) return;
+  if (isExpired(S.ev)) {
+    el.innerHTML = '<h2>Best dates</h2><p class="hint" style="margin-top:6px">The dates for this event have passed, so there are no dates to recommend.</p>';
+    return;
+  }
   if (!S.responses.length) {
     el.innerHTML = '<h2>Best dates</h2><p class="hint" style="margin-top:6px">Nobody has answered yet. Switch to Edit to add your days.</p>';
     return;
@@ -1052,6 +1079,8 @@ function setMode(m) {
 
 function doSave(replace) {
   if (!validName()) { updateEditControls(); toast('Enter your name first.'); return; }
+  if (!replace && !confirmTakeover()) { renderEvent(); return; }
+  if (S.takeover === S.draft.name.trim().toLowerCase()) replace = true;
   S.saving = true; updateEditControls();
   var name = S.draft.name.trim();
   api.saveResponse({ code: S.code, pid: S.pid, name: name, note: S.draft.note, picks: cleanPicks(S.draft.picks), replace: replace })
@@ -1143,6 +1172,15 @@ $app.addEventListener('input', function (e) {
   else if (id === 'dayNote' && S.sel && S.draft.picks[S.sel]) {
     S.draft.picks[S.sel].n = e.target.value; S.dirty = true; renderCalendar();
   }
+});
+
+// When the name field is left, check whether that name already has a saved response.
+$app.addEventListener('change', function (e) {
+  if (e.target.id !== 'name') return;
+  S.draft.name = e.target.value;
+  var had = S.takeover;
+  if (!confirmTakeover()) { S.draft.name = ''; renderEvent(); setTimeout(function () { var n = document.getElementById('name'); if (n) n.focus(); }, 0); }
+  else if (S.takeover !== had) renderEvent();
 });
 
 $app.addEventListener('submit', function (e) {
