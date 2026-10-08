@@ -116,7 +116,10 @@ textarea{resize:vertical}
 <div id="toast" role="status" aria-live="polite"></div>
 <noscript><p class="wrap">This page needs JavaScript to work.</p></noscript>
 
-<script src="config.js"></script>
+<script>
+// Load config.js with a fresh address each time so a phone can't keep serving an old, blank copy.
+document.write('<script src="config.js?t=' + Date.now() + '"><\/script>');
+</script>
 <script>
 (function () {
 'use strict';
@@ -192,7 +195,7 @@ var remoteApi = {
   },
   create: function (a) {
     return this.rpc('poll_create', { p_name: a.name, p_description: a.description, p_allow_down: a.allow_down,
-      p_anonymous: a.anonymous, p_allow_custom: a.allow_custom, p_options: a.options });
+      p_anonymous: a.anonymous, p_allow_custom: a.allow_custom, p_options: a.options, p_single_vote: !!a.single_vote });
   },
   get: function (code, pid, owner) { return this.rpc('poll_get', { p_code: code, p_participant: pid, p_owner_token: owner }); },
   vote: function (a) { return this.rpc('poll_vote', { p_code: a.code, p_participant: a.pid, p_name: a.name, p_option: a.option, p_value: a.value }); },
@@ -218,7 +221,7 @@ var localApi = {
   create: function (a) {
     var db = this.db(), c = this.code(db), self = this, token = uuid() + uuid();
     var p = { code: c, owner_token: token, name: a.name.trim(), description: (a.description || '').trim(),
-      allow_down: !!a.allow_down, anonymous: !!a.anonymous, allow_custom: !!a.allow_custom,
+      single_vote: !!a.single_vote, allow_down: !!a.allow_down && !a.single_vote, anonymous: !!a.anonymous, allow_custom: !!a.allow_custom,
       winner_option_id: null, winner_method: null, options: [], votes: {}, voters: {} };
     (a.options || []).forEach(function (l) {
       l = self.clean(l);
@@ -233,7 +236,7 @@ var localApi = {
     if (!p) return Promise.resolve(null);
     return Promise.resolve({
       poll: { code: p.code, name: p.name, description: p.description, allow_down: p.allow_down, anonymous: p.anonymous,
-        allow_custom: p.allow_custom, winner_option_id: p.winner_option_id, winner_method: p.winner_method },
+        allow_custom: p.allow_custom, single_vote: !!p.single_vote, winner_option_id: p.winner_option_id, winner_method: p.winner_method },
       is_owner: !!owner && owner === p.owner_token,
       my_name: p.voters[pid] || null,
       options: p.options.map(function (o) {
@@ -256,6 +259,9 @@ var localApi = {
       p.voters[a.pid] = n;
     }
     var v = p.votes[a.option] || (p.votes[a.option] = {});
+    if (a.value === 1 && p.single_vote) {
+      p.options.forEach(function (o) { if (o.id !== a.option && p.votes[o.id]) delete p.votes[o.id][a.pid]; });
+    }
     if (a.value === 0) delete v[a.pid]; else v[a.pid] = a.value;
     this.put(db);
     return Promise.resolve();
@@ -436,6 +442,7 @@ function renderHome() {
       '<label class="fld"><span>Starting choices (optional)</span><textarea name="options" rows="4" placeholder="One per line&#10;Thai Palace&#10;Tacos El Rey&#10;Pizza Corner"></textarea><small>Up to 40. People can add their own too, if you allow it below.</small></label>' +
       '<div class="checks">' +
         '<label class="check"><input type="checkbox" name="allow_down"><span><b>Allow down votes</b><small>Adds a thumbs-down next to each choice.</small></span></label>' +
+        '<label class="check"><input type="checkbox" name="single_vote"><span><b>Only allow one vote per person</b><small>Each person gets a single thumbs-up and can move it. Down votes are turned off.</small></span></label>' +
         '<label class="check"><input type="checkbox" name="anonymous"><span><b>Anonymous</b><small>Nobody sees who voted for what, and no names are asked for.</small></span></label>' +
         '<label class="check"><input type="checkbox" name="allow_custom" checked><span><b>Allow custom submissions</b><small>Anyone can add their own choice. Turn off to keep your list as is.</small></span></label>' +
       '</div>' +
@@ -469,8 +476,8 @@ function submitCreate(form) {
   if (list.some(function (o) { return o.length > 80; })) { err.textContent = 'Each choice can be at most 80 characters.'; return; }
   if (list.length > 40) { err.textContent = 'Please start with at most 40 choices.'; return; }
   btn.disabled = true; btn.textContent = 'Creating…';
-  api.create({ name: name, description: f.description.value, allow_down: f.allow_down.checked,
-    anonymous: f.anonymous.checked, allow_custom: f.allow_custom.checked, options: list })
+  api.create({ name: name, description: f.description.value, allow_down: f.allow_down.checked && !f.single_vote.checked,
+    anonymous: f.anonymous.checked, allow_custom: f.allow_custom.checked, options: list, single_vote: f.single_vote.checked })
     .then(function (res) {
       setOwnerToken(res.code, res.owner_token);
       rememberPoll(res.code, name);
@@ -492,7 +499,7 @@ function renderPoll() {
   var p = S.poll;
   document.title = p.name + ' | Poll';
   var facts = [];
-  facts.push(p.allow_down ? 'Up and down votes' : 'Up votes only');
+  facts.push(p.single_vote ? 'One vote each' : p.allow_down ? 'Up and down votes' : 'Up votes only');
   if (p.anonymous) facts.push('Anonymous');
   facts.push(p.allow_custom ? 'Anyone can add choices' : 'Organizer adds choices');
   $app.innerHTML =
@@ -509,6 +516,7 @@ function renderPoll() {
     '<section id="winner" aria-live="polite"></section>' +
     (p.anonymous ? '<p class="hint" style="margin-top:16px">Votes are anonymous. Nobody can see who voted for what.</p>' :
       '<div class="namebox" id="nameBox"><label class="fld"><span>Your name</span><input type="text" id="myName" maxlength="40" autocomplete="given-name" placeholder="So people know who voted" value="' + esc(S.myName) + '"></label></div>') +
+    (p.single_vote ? '<p class="hint" style="margin-top:14px">You get one vote. Tap another choice to move it, or tap yours again to take it back.</p>' : '') +
     '<ul id="opts" class="opts"></ul>' +
     '<section id="add" class="add"></section>' +
     '<section id="ownerTools"></section>';
@@ -618,6 +626,7 @@ function doVote(id, v) {
   var o = optById(id); if (!o) return;
   var next = o.mine === v ? 0 : v;
   // update the screen at once, then confirm with the server
+  if (next === 1 && S.poll.single_vote) S.options.forEach(function (x) { if (x !== o && x.mine === 1) { x.up--; x.mine = 0; } });
   if (o.mine === 1) o.up--; if (o.mine === -1) o.down--;
   if (next === 1) o.up++; if (next === -1) o.down++;
   o.mine = next;
@@ -712,6 +721,15 @@ $app.addEventListener('click', function (e) {
       break;
     case 'new-person': store.set('pick.pid', uuid()); store.set('pick.name', ''); toast('You are now a new person in this browser.'); route(); break;
   }
+});
+
+$app.addEventListener('change', function (e) {
+  if (e.target.name !== 'single_vote' || !e.target.form) return;
+  var down = e.target.form.elements.allow_down, on = e.target.checked;
+  if (on) down.checked = false;
+  down.disabled = on;
+  var sm = down.closest('label').querySelector('small');
+  sm.textContent = on ? 'Not available with one vote per person.' : 'Adds a thumbs-down next to each choice.';
 });
 
 $app.addEventListener('input', function (e) {
