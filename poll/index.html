@@ -98,12 +98,18 @@ textarea{resize:vertical}
 .ownrow .link{padding:4px 0;font-size:14px}
 .rchk{min-width:96px;min-height:48px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer}
 .rchk[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+.editf{grid-column:1/3;display:flex;gap:8px;flex-wrap:wrap}
+.editf input{flex:1 1 180px;min-width:0}
 .add{margin-top:16px}
 .add form{display:flex;gap:8px}
 .add input{flex:1;min-width:0}
 .owner{margin-top:26px;border:2px solid var(--brand)}
 .owner h2{font-size:19px}
 .owner .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.admin-list{list-style:none;margin:14px 0 0;padding:0}
+.admin-list li{padding:14px 0;border-top:1px solid var(--line)}
+.admin-list .nm{font-family:var(--head);font-size:19px;font-weight:600;overflow-wrap:anywhere}
+.admin-list .meta{color:var(--muted);font-size:14px;margin:2px 0 10px}
 .foot{margin-top:30px;font-size:14px;text-align:center;color:var(--muted)}
 
 #toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translate(-50%,-14px);opacity:0;background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;max-width:calc(100% - 32px);pointer-events:none;transition:opacity .2s,transform .2s;z-index:10;font-size:15px}
@@ -202,9 +208,17 @@ var remoteApi = {
   addOption: function (a) {
     return this.rpc('poll_add_option', { p_code: a.code, p_participant: a.pid, p_name: a.name, p_owner_token: a.owner, p_label: a.label });
   },
-  removeOption: function (a) { return this.rpc('poll_remove_option', { p_code: a.code, p_owner_token: a.owner, p_option: a.option }); },
+  removeOption: function (a) { return this.rpc('poll_remove_option', { p_code: a.code, p_participant: a.pid, p_owner_token: a.owner, p_option: a.option }); },
+  editOption: function (a) { return this.rpc('poll_edit_option', { p_code: a.code, p_participant: a.pid, p_owner_token: a.owner, p_option: a.option, p_label: a.label }); },
   setWinner: function (a) { return this.rpc('poll_set_winner', { p_code: a.code, p_owner_token: a.owner, p_option: a.option, p_method: a.method }); },
-  del: function (a) { return this.rpc('poll_delete', { p_code: a.code, p_owner_token: a.owner }); }
+  del: function (a) { return this.rpc('poll_delete', { p_code: a.code, p_owner_token: a.owner }); },
+  // Admin functions report problems as {error: "..."} so failed guesses stay counted server-side.
+  unwrap: function (p, key) {
+    return p.then(function (d) { if (d && d.error) throw new ApiError(d.error); return key ? ((d && d[key]) || (key === 'polls' ? [] : null)) : d; });
+  },
+  adminList: function (pw) { return this.unwrap(this.rpc('poll_admin_list', { p_password: pw }), 'polls'); },
+  adminGrant: function (pw, code) { return this.unwrap(this.rpc('poll_admin_grant', { p_password: pw, p_code: code }), 'owner_token'); },
+  adminDelete: function (pw, code) { return this.unwrap(this.rpc('poll_admin_delete', { p_password: pw, p_code: code })); }
 };
 
 // Preview mode: same behavior, but everything lives in this browser's localStorage.
@@ -242,7 +256,7 @@ var localApi = {
       options: p.options.map(function (o) {
         var v = p.votes[o.id] || {}, up = [], dn = [];
         Object.keys(v).forEach(function (k) { (v[k] === 1 ? up : dn).push(p.voters[k] || ''); });
-        return { id: o.id, label: o.label, up: up.length, down: dn.length, mine: v[pid] || 0, by_owner: o.by_owner,
+        return { id: o.id, label: o.label, up: up.length, down: dn.length, mine: v[pid] || 0, by_owner: o.by_owner, mine_added: !!o.pid && o.pid === pid,
           added_by: p.anonymous ? null : o.added_by,
           up_names: p.anonymous ? [] : up.filter(Boolean).sort(), down_names: p.anonymous ? [] : dn.filter(Boolean).sort() };
       })
@@ -278,7 +292,7 @@ var localApi = {
     var n = this.clean(a.name);
     if (!p.anonymous && !owner && !n) return this.fail('invalid_name');
     if (!p.anonymous && n) p.voters[a.pid] = n.slice(0, 40);
-    p.options.push({ id: uuid(), label: l, by_owner: owner, added_by: p.anonymous ? null : (n || null) });
+    p.options.push({ id: uuid(), label: l, by_owner: owner, pid: a.pid, added_by: p.anonymous ? null : (n || null) });
     this.put(db);
     return Promise.resolve();
   },
@@ -286,12 +300,28 @@ var localApi = {
     var db = this.db(), p = db.polls[a.code];
     return (p && a.owner && a.owner === p.owner_token) ? { db: db, p: p } : null;
   },
+  canEdit: function (a) {
+    var db = this.db(), p = db.polls[a.code];
+    if (!p) return null;
+    var opt = p.options.filter(function (x) { return x.id === a.option; })[0];
+    if (!opt) return { err: 'option_not_found' };
+    var owner = !!a.owner && a.owner === p.owner_token;
+    if (!owner && !(opt.pid && opt.pid === a.pid)) return { err: 'not_allowed' };
+    return { db: db, p: p, opt: opt };
+  },
   removeOption: function (a) {
-    var o = this.owned(a); if (!o) return this.fail('not_owner');
-    if (o.p.winner_option_id === a.option) { o.p.winner_option_id = null; o.p.winner_method = null; }
-    o.p.options = o.p.options.filter(function (x) { return x.id !== a.option; });
-    delete o.p.votes[a.option];
-    this.put(o.db); return Promise.resolve();
+    var c = this.canEdit(a); if (!c) return this.fail('poll_not_found'); if (c.err) return this.fail(c.err);
+    if (c.p.winner_option_id === a.option) { c.p.winner_option_id = null; c.p.winner_method = null; }
+    c.p.options = c.p.options.filter(function (x) { return x.id !== a.option; });
+    delete c.p.votes[a.option];
+    this.put(c.db); return Promise.resolve();
+  },
+  editOption: function (a) {
+    var c = this.canEdit(a); if (!c) return this.fail('poll_not_found'); if (c.err) return this.fail(c.err);
+    var l = this.clean(a.label);
+    if (!l || l.length > 80) return this.fail('invalid_option');
+    if (c.p.options.some(function (x) { return x.id !== a.option && x.label.toLowerCase() === l.toLowerCase(); })) return this.fail('duplicate_option');
+    c.opt.label = l; this.put(c.db); return Promise.resolve();
   },
   setWinner: function (a) {
     var o = this.owned(a); if (!o) return this.fail('not_owner');
@@ -305,7 +335,10 @@ var localApi = {
   del: function (a) {
     var o = this.owned(a); if (!o) return this.fail('not_owner');
     delete o.db.polls[a.code]; this.put(o.db); return Promise.resolve();
-  }
+  },
+  adminList: function () { return this.fail('admin_needs_supabase'); },
+  adminGrant: function () { return this.fail('admin_needs_supabase'); },
+  adminDelete: function () { return this.fail('admin_needs_supabase'); }
 };
 
 var api = REMOTE ? remoteApi : localApi;
@@ -323,7 +356,12 @@ function friendly(e) {
     downvotes_off: 'Down votes are turned off for this poll.',
     custom_off: 'Only the organizer can add choices to this poll.',
     not_owner: 'Only the organizer can do that.',
-    poll_full: 'This poll already has the maximum number of voters.'
+    not_allowed: 'You can only change choices you added.',
+    poll_full: 'This poll already has the maximum number of voters.',
+    wrong_password: 'Wrong password.',
+    too_many_attempts: 'Too many wrong attempts. Try again in 15 minutes.',
+    admin_not_configured: 'No admin password is set yet. Follow the steps at the bottom of admin.sql from the Which day works? app.',
+    admin_needs_supabase: 'Admin mode needs the Supabase connection. Preview mode only keeps data in this browser.'
   };
   if (map[m]) return map[m];
   if (/find the function|schema cache/i.test(m)) return 'The database is not set up yet. Run schema.sql in the Supabase SQL Editor.';
@@ -336,7 +374,7 @@ function friendly(e) {
 
 /* -------------------------------------------------------------------- state */
 
-var S = { code: '', pid: '', owner: null, isOwner: false, poll: null, options: [], myName: '', justCreated: false, busy: false };
+var S = { editing: null, editText: '', fromAdmin: false, code: '', pid: '', owner: null, isOwner: false, poll: null, options: [], myName: '', justCreated: false, busy: false };
 var R = { on: false, sel: {}, spinning: false, hi: null };
 
 var toastTimer;
@@ -376,6 +414,8 @@ function sorted() {
 function route() {
   var qs = new URLSearchParams(location.search), code = qs.get('p');
   S.justCreated = false;
+  if (qs.has('admin') && !code) { renderAdmin(); return; }
+  S.fromAdmin = !!A.polls;
   if (!code) { renderHome(); return; }
   code = code.trim().toLowerCase();
   var tok = qs.get('o');
@@ -452,7 +492,8 @@ function renderHome() {
     (recent.length ? '<section class="recent"><h2>Your polls</h2><ul>' +
       recent.map(function (r) {
         return '<li><a href="?p=' + esc(r.code) + '">' + esc(r.name) + '</a>' + (owners[r.code] ? '<span class="tagq">organizer</span>' : '') + '</li>';
-      }).join('') + '</ul></section>' : '');
+      }).join('') + '</ul></section>' : '') +
+    '<p class="foot"><a href="?admin">Admin</a></p>';
   if (REMOTE) checkConnection();
 }
 
@@ -493,24 +534,101 @@ function submitCreate(form) {
     });
 }
 
+/* -------------------------------------------------------------------- admin */
+
+var A = { pw: '', polls: null }; // the password lives only in memory, never saved
+
+function fmtStamp(ts) {
+  var d = new Date(ts);
+  return isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function renderAdmin(msg) {
+  document.title = 'Admin | Poll';
+  var nav = '<nav class="topnav"><a href="' + esc(baseUrl()) + '">Home</a></nav>';
+  if (!REMOTE) {
+    $app.innerHTML = previewBanner() + nav + '<h1>Admin</h1><p class="err">' + esc(friendly(new ApiError('admin_needs_supabase'))) + '</p>';
+    return;
+  }
+  if (!A.polls) {
+    $app.innerHTML = nav + '<h1>Admin</h1>' +
+      '<p class="lede">Enter the admin password (the same one as Which day works?) to see every poll and act as its organizer.</p>' +
+      '<form id="adminForm" class="panel" novalidate>' +
+        '<label class="fld"><span>Password</span><input type="password" id="adminPw" name="adminPw" autocomplete="current-password"></label>' +
+        '<button class="btn primary" type="submit">Sign in</button>' +
+        '<p class="err" id="adminErr" role="alert">' + esc(msg || '') + '</p>' +
+      '</form>';
+    return;
+  }
+  var list = A.polls;
+  $app.innerHTML = nav + '<h1>All polls (' + list.length + ')</h1>' +
+    '<div class="tools"><button type="button" class="chipbtn" data-act="admin-refresh">Refresh</button>' +
+    '<button type="button" class="chipbtn" data-act="admin-out">Sign out</button></div>' +
+    (list.length ? '<ul class="admin-list">' + list.map(function (p) {
+      var bits = ['Created ' + fmtStamp(p.created_at) + '.', p.options + (p.options === 1 ? ' choice, ' : ' choices, ') + p.voters + (p.voters === 1 ? ' voter.' : ' voters.')];
+      if (p.winner) bits.push('Winner: ' + p.winner + '.');
+      var tags = [];
+      if (p.single_vote) tags.push('one vote each'); else if (p.allow_down) tags.push('up and down votes');
+      if (p.anonymous) tags.push('anonymous');
+      if (!p.allow_custom) tags.push('organizer adds choices');
+      if (tags.length) bits.push(tags.join(', ') + '.');
+      return '<li><div class="nm">' + esc(p.name) + '</div><div class="meta">' + bits.map(esc).join(' ') + '</div>' +
+        '<div class="tools" style="margin:0"><button type="button" class="btn small" data-act="admin-open" data-code="' + esc(p.code) + '">Open as organizer</button>' +
+        '<button type="button" class="btn small danger" data-act="admin-del" data-code="' + esc(p.code) + '" data-name="' + esc(p.name) + '">Delete</button></div></li>';
+    }).join('') + '</ul>' : '<p class="hint" style="margin-top:14px">No polls yet.</p>');
+}
+
+function submitAdmin(form) {
+  var pw = form.elements.adminPw.value, btn = form.querySelector('button[type=submit]');
+  if (!pw) { $('#adminErr').textContent = 'Enter the password.'; return; }
+  btn.disabled = true; btn.textContent = 'Checking…';
+  api.adminList(pw).then(function (list) { A.pw = pw; A.polls = list; renderAdmin(); },
+    function (e) { A.pw = ''; A.polls = null; renderAdmin(friendly(e)); });
+}
+
+function adminFail(e) {
+  var m = e && e.message;
+  if (m === 'wrong_password' || m === 'too_many_attempts' || m === 'admin_not_configured') { A.pw = ''; A.polls = null; renderAdmin(friendly(e)); }
+  else toast(friendly(e));
+}
+
+function adminRefresh(quiet) {
+  api.adminList(A.pw).then(function (list) { A.polls = list; renderAdmin(); if (!quiet) toast('Updated.'); }, adminFail);
+}
+
+function adminOpen(code) {
+  api.adminGrant(A.pw, code).then(function (token) {
+    setOwnerToken(code, token);
+    history.pushState(null, '', baseUrl() + '?p=' + code);
+    S.fromAdmin = true;
+    loadPoll(code);
+  }, adminFail);
+}
+
+function adminDelete(code, name) {
+  if (!confirm('Delete “' + name + '” for everyone? This can’t be undone.')) return;
+  api.adminDelete(A.pw, code).then(function () {
+    A.polls = A.polls.filter(function (p) { return p.code !== code; });
+    var o = store.get('pick.owners', {}) || {}; delete o[code]; store.set('pick.owners', o);
+    store.set('pick.recent', store.get('pick.recent', []).filter(function (r) { return r.code !== code; }));
+    renderAdmin(); toast('Poll deleted.');
+  }, adminFail);
+}
+
 /* -------------------------------------------------------------------- poll */
 
 function renderPoll() {
   var p = S.poll;
   document.title = p.name + ' | Poll';
-  var facts = [];
-  facts.push(p.single_vote ? 'One vote each' : p.allow_down ? 'Up and down votes' : 'Up votes only');
-  if (p.anonymous) facts.push('Anonymous');
-  facts.push(p.allow_custom ? 'Anyone can add choices' : 'Organizer adds choices');
   $app.innerHTML =
     previewBanner() +
-    '<nav class="topnav"><a href="' + esc(baseUrl()) + '">New poll</a>' + (S.isOwner ? '<span class="hint">You’re the organizer</span>' : '') + '</nav>' +
+    '<nav class="topnav">' + (S.fromAdmin ? '<button type="button" class="link" data-act="to-admin" style="padding:0">← All polls (admin)</button>' : '<a href="' + esc(baseUrl()) + '">New poll</a>') +
+      (S.isOwner ? '<span class="hint">' + (S.fromAdmin ? 'Admin: organizer view' : 'You’re the organizer') + '</span>' : '') + '</nav>' +
     (S.justCreated ? '<section class="panel created"><h2>Poll created</h2><p style="margin-top:4px">Send this link to the group:</p>' +
       '<div class="linkbox"><input type="text" id="shareUrl" readonly value="' + esc(shareUrl(S.code)) + '" aria-label="Poll link">' +
       '<button type="button" class="btn small" data-act="copy-link">Copy</button></div></section>' : '') +
     '<header><h1>' + esc(p.name) + '</h1>' +
       (p.description ? '<p class="desc">' + esc(p.description) + '</p>' : '') +
-      '<div class="facts">' + facts.map(function (f) { return '<span>' + esc(f) + '</span>'; }).join('') + '</div>' +
       '<div class="tools"><button type="button" class="chipbtn" data-act="share">Share link</button>' +
       '<button type="button" class="chipbtn" data-act="refresh">Refresh</button></div></header>' +
     '<section id="winner" aria-live="polite"></section>' +
@@ -544,6 +662,8 @@ function nameLine(o) {
 function renderOptions() {
   var el = $('#opts');
   if (!el) return;
+  var cur = document.getElementById('editOpt');
+  if (cur) S.editText = cur.value; // keep what's being typed across refreshes
   var focus = document.activeElement, fa = focus && focus.dataset && focus.dataset.act, fid = focus && focus.dataset && focus.dataset.id, fv = focus && focus.dataset && focus.dataset.v;
   var list = sorted(), P = S.poll;
   if (!list.length) {
@@ -552,9 +672,17 @@ function renderOptions() {
   }
   el.innerHTML = list.map(function (o) {
     var win = P.winner_option_id === o.id;
+    if (S.editing === o.id && !R.on) {
+      return '<li class="opt" data-id="' + esc(o.id) + '"><form id="editForm" class="editf" data-id="' + esc(o.id) + '" novalidate>' +
+        '<input type="text" id="editOpt" maxlength="80" autocomplete="off" aria-label="Edit choice" value="' + esc(S.editText) + '">' +
+        '<button type="submit" class="btn small primary">Save</button><button type="button" class="btn small" data-act="edit-cancel">Cancel</button></form></li>';
+    }
     var meta = [];
     if (win) meta.push('🏆 Winner');
-    if (o.added_by && !o.by_owner) meta.push('added by ' + esc(o.added_by));
+    if (!P.anonymous) {
+      if (o.added_by) meta.push('suggested by ' + esc(o.added_by));
+      else if (o.by_owner) meta.push('suggested by the organizer');
+    }
     var right;
     if (R.on) {
       right = '<button type="button" class="rchk" data-act="rsel" data-id="' + esc(o.id) + '" aria-pressed="' + !!R.sel[o.id] + '">' + (R.sel[o.id] ? '✓ In' : 'Include') + '</button>';
@@ -562,12 +690,16 @@ function renderOptions() {
       right = '<div class="votes"><button type="button" class="vb up" data-act="vote" data-id="' + esc(o.id) + '" data-v="1" aria-pressed="' + (o.mine === 1) + '" aria-label="Thumbs up for ' + esc(o.label) + ', ' + o.up + ' so far">' + THUMB + '<span>' + o.up + '</span></button>' +
         (P.allow_down ? '<button type="button" class="vb dn" data-act="vote" data-id="' + esc(o.id) + '" data-v="-1" aria-pressed="' + (o.mine === -1) + '" aria-label="Thumbs down for ' + esc(o.label) + ', ' + o.down + ' so far">' + THUMB + '<span>' + o.down + '</span></button>' : '') + '</div>';
     }
-    var own = (S.isOwner && !R.on) ? '<div class="ownrow">' +
-      (win ? '' : '<button type="button" class="link" data-act="winner" data-id="' + esc(o.id) + '">🏆 Pick as winner</button>') +
+    var mayEdit = S.isOwner || o.mine_added;
+    var own = (mayEdit && !R.on) ? '<div class="ownrow">' +
+      (S.isOwner && !win ? '<button type="button" class="link" data-act="winner" data-id="' + esc(o.id) + '">🏆 Pick as winner</button>' : '') +
+      '<button type="button" class="link" data-act="edit" data-id="' + esc(o.id) + '">Edit</button>' +
       '<button type="button" class="link danger" data-act="remove" data-id="' + esc(o.id) + '">Remove</button></div>' : '';
     return '<li class="opt' + (win ? ' win' : '') + (R.hi === o.id ? ' hi' : '') + '" data-id="' + esc(o.id) + '"><div class="otxt"><b>' + esc(o.label) + '</b>' +
       (meta.length ? '<span class="meta">' + meta.join(' · ') + '</span>' : '') + nameLine(o) + '</div>' + right + own + '</li>';
   }).join('');
+  var ed = document.getElementById('editOpt');
+  if (ed && S.focusEdit) { S.focusEdit = false; ed.focus(); ed.setSelectionRange(ed.value.length, ed.value.length); return; }
   if (fa && fid) {
     var again = el.querySelector('[data-act="' + fa + '"][data-id="' + fid + '"]' + (fv ? '[data-v="' + fv + '"]' : ''));
     if (again) again.focus();
@@ -689,20 +821,18 @@ $app.addEventListener('click', function (e) {
   switch (t.dataset.act) {
     case 'vote': doVote(id, Number(t.dataset.v)); break;
     case 'copy-link': copyText(shareUrl(S.code), $('#shareUrl')).then(function (ok) { toast(ok ? 'Link copied.' : 'Press and hold the link to copy it.'); }); break;
-    case 'share':
-      if (navigator.share) {
-        navigator.share({ title: S.poll.name, text: 'Vote: ' + S.poll.name, url: shareUrl(S.code) }).catch(function () {});
-      } else copyText(shareUrl(S.code)).then(function (ok) { toast(ok ? 'Link copied. Paste it into your group chat.' : shareUrl(S.code)); });
-      break;
+    case 'share': copyText(shareUrl(S.code)).then(function (ok) { toast(ok ? 'Link copied. Paste it into your group chat.' : shareUrl(S.code)); }); break;
     case 'refresh': reload().then(function () { renderParts(); toast('Updated.'); }, function (er) { toast(friendly(er)); }); break;
     case 'winner': if (!R.spinning) setWinner(id, 'picked', '🏆 Winner set.'); break;
     case 'clear-winner': setWinner(null, null, 'Winner cleared.'); break;
     case 'remove':
       var o = optById(id);
       if (o && confirm('Remove “' + o.label + '” and its votes?')) {
-        api.removeOption({ code: S.code, owner: S.owner, option: id }).then(reload).then(renderParts, function (er) { toast(friendly(er)); });
+        api.removeOption({ code: S.code, pid: S.pid, owner: S.owner, option: id }).then(reload).then(renderParts, function (er) { toast(friendly(er)); reload().then(renderParts, function () {}); });
       }
       break;
+    case 'edit': var eo = optById(id); if (eo) { S.editing = id; S.editText = eo.label; S.focusEdit = true; renderOptions(); } break;
+    case 'edit-cancel': S.editing = null; renderOptions(); break;
     case 'roulette': R.on = true; R.sel = {}; S.options.forEach(function (x) { R.sel[x.id] = true; }); renderParts(); break;
     case 'rcancel': R.on = false; renderParts(); break;
     case 'rsel': if (!R.spinning) { R.sel[id] = !R.sel[id]; renderParts(); } break;
@@ -719,6 +849,11 @@ $app.addEventListener('click', function (e) {
         }, function (er) { toast(friendly(er)); });
       }
       break;
+    case 'to-admin': history.pushState(null, '', baseUrl() + '?admin'); renderAdmin(); break;
+    case 'admin-refresh': adminRefresh(false); break;
+    case 'admin-out': A.pw = ''; A.polls = null; S.fromAdmin = false; renderAdmin(); break;
+    case 'admin-open': adminOpen(t.dataset.code); break;
+    case 'admin-del': adminDelete(t.dataset.code, t.dataset.name); break;
     case 'new-person': store.set('pick.pid', uuid()); store.set('pick.name', ''); toast('You are now a new person in this browser.'); route(); break;
   }
 });
@@ -739,6 +874,15 @@ $app.addEventListener('input', function (e) {
 $app.addEventListener('submit', function (e) {
   if (e.target.id === 'createForm') { e.preventDefault(); submitCreate(e.target); }
   else if (e.target.id === 'addForm') { e.preventDefault(); doAdd(e.target); }
+  else if (e.target.id === 'editForm') {
+    e.preventDefault();
+    var id = e.target.dataset.id, label = $('#editOpt').value.replace(/\s+/g, ' ').trim();
+    if (!label) { $('#editOpt').focus(); return; }
+    api.editOption({ code: S.code, pid: S.pid, owner: S.owner, option: id, label: label })
+      .then(reload).then(function () { S.editing = null; renderParts(); toast('Saved.'); },
+        function (er) { toast(friendly(er)); });
+  }
+  else if (e.target.id === 'adminForm') { e.preventDefault(); submitAdmin(e.target); }
 });
 
 document.addEventListener('visibilitychange', function () {
