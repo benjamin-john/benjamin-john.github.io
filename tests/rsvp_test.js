@@ -210,6 +210,17 @@ async function bridge(ctx) {
   check((await host.textContent('#guests')).includes('peanuts'), 'host sees answers');
   check((await host.textContent('#guests')).includes('Ana Lee') && (await host.locator('.g .stamp').count()) === 2, 'host sees full names and reply times');
   check(!(await ana.locator('.stamp').count()), 'guests do not see reply times');
+  // downloads
+  const [csvDl] = await Promise.all([host.waitForEvent('download'), host.click('[data-act=dl][data-id=guests]')]);
+  const csv = require('fs').readFileSync(await csvDl.path(), 'utf8');
+  check(csvDl.suggestedFilename() === 'fall-cookout-responses.csv', 'csv name ' + csvDl.suggestedFilename());
+  check(csv.startsWith('\ufeff"First name","Last name","Response"') && csv.includes('"Any allergies?"') && csv.includes('"Ana","Lee","Maybe","2","3","Can’t wait!","peanuts"'), 'responses csv: ' + csv.slice(0, 300));
+  const [zipDl] = await Promise.all([host.waitForEvent('download'), host.click('[data-act=dl][data-id=all]')]);
+  const zipPath = await zipDl.path();
+  const listing = require('child_process').execFileSync('python3', ['-I', '-c',
+    'import sys,zipfile;z=zipfile.ZipFile(sys.argv[1]);assert z.testzip() is None;print("|".join(z.namelist()));print(z.read("fall-cookout-bring-list.csv").decode("utf-8-sig"))', zipPath]).toString();
+  check(listing.includes('fall-cookout-responses.csv|fall-cookout-bring-list.csv|fall-cookout-comments.csv|fall-cookout-announcements.csv|fall-cookout-event-details.csv'), 'zip contents: ' + listing.split('\n')[0]);
+  check(listing.includes('"Chips","1","1","Ana Lee"'), 'bring list csv in zip');
   // unlimited item
   await host.fill('#newItem', 'Side dishes');
   await host.selectOption('#newItemNeeded', '0');

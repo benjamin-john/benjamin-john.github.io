@@ -306,6 +306,8 @@ begin
   if v_owner or not e.hide_guests then
     select coalesce(jsonb_agg(jsonb_build_object(
              'id', g.id, 'name', g.name, 'status', g.status, 'plus_ones', g.plus_ones, 'note', g.note,
+             'first_name', coalesce(g.first_name, split_part(g.name, ' ', 1)),
+             'last_name', coalesce(g.last_name, nullif(btrim(substr(g.name, char_length(split_part(g.name, ' ', 1)) + 1)), '')),
              'mine', g.participant = v_pid,
              'answers', case when v_owner then g.answers end,
              'replied_at', case when v_owner then g.created_at end,
