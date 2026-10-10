@@ -1,0 +1,71 @@
+{
+  "title": "Hunting Shack",
+  "tagline": "John Family & Friends Deer Camp",
+  "motto": "Never let a lie get in the way of a good story.",
+  "intro": "It all began as a humble fence to protect its inhabitants from the elements during a cold hunting season many years ago. It ended with this website chronicling the events from that inaugural season to present day. Most of the events are factual, but please keep in mind the motto on the door.",
+  "submit_email": "",
+  "home_photos": ["1.jpg", "JT-2000.jpg", "Camp2.jpg", "70.jpg", "WinterWonderland.jpg", "10.jpg", "IMG_1224-1-.jpg"],
+  "members": [
+    ["Eugene", "Papa", "John"],
+    ["Larry", "B-boy", "John", "B is for Buck Master"],
+    ["Steve", "John-Boy", "John"],
+    ["Jeff", "JJ – I'm Going to Town to Get More Shells", "John"],
+    ["Chad", "Shooter", "Erickson"],
+    ["Tom", "Little Joe", "John"],
+    ["Jake", "Easy Bake", "John"],
+    ["Mike", "Newby", "Splittgerber"],
+    ["Ben", "The Talker", "John"],
+    ["Mitch", "Brown It's Down", "Splittgerber"],
+    ["Mike", "Big Mike", "Splittgerber Sr."],
+    ["Collin", "What's With These John's?", "Larson"],
+    ["Cory", "Karl – Hey That's My Helmet!", "John"],
+    ["Justin", "Shrek", "Heurung"],
+    ["Matt", "What the Heck Did I Get Into?", "John"],
+    ["Elizabeth", "Can I Just Sit in the Shack?", "John"],
+    ["Sam", "How Do We Get This Kid to Shut Up?", "John"]
+  ],
+  "race": {
+    "bucks": [
+      ["Larry", "2000 (10) · 2001 (10) · 2004 (8, 2) · 2007 (2) · 2008 (4) · 2011 (5) · 2018 (7)", 48],
+      ["Jake", "2000 (5) · 2006 (*2) · 2007 (7) · 2009 (10) · 2010 (3) · 2016 (2, 3) · 2017 (4) · 2018 (8)", 44],
+      ["Jeff", "2001 (9) · 2004 (2) · 2007 (8, 10)", 29],
+      ["Mitch", "2011 (9) · 2012 (8) · 2015 (4)", 21],
+      ["Ben", "2014 (8) · 2018 (9)", 17],
+      ["Tom", "2000 (8) · 2010 (6)", 14],
+      ["Mike", "2003 (2) · 2009 (2)", 4],
+      ["Steve", "1994 (*8)", 0]
+    ],
+    "bucks_total": 31,
+    "does": [
+      ["Jeff", "2004 (1) · 2009 (2) · 2018 (1)", 4],
+      ["Larry", "1994 (*1) · 1995 (*2) · 2000 (1) · 200? (1)", 2],
+      ["Tom", "2003 (1) · 2011 (1)", 2],
+      ["Eugene", "1995 (*1) · 1997 (1) · 1999 (1)", 2],
+      ["Mike", "2007 (1)", 1],
+      ["Mitch", "2009 (1)", 1],
+      ["Jake", "2010 (1)", 1],
+      ["Cory", "2012 (1)", 1],
+      ["Sam", "2016 (1)", 1]
+    ],
+    "does_total": 19,
+    "rules": [
+      "Bucks are scored in antler points. Does are scored in does tagged.",
+      "Race totals start in 1997 (Jake's first year at camp). Entries marked * don't count toward the totals.",
+      "Button-buck rule: after 2006 we declared that points need to be actual (1\" and polished).",
+      "Race totals don't include every deer harvested."
+    ]
+  },
+  "honorable_mentions": [
+    "October 23, 2003 – My first bow kill, a 6 pointer in Browerville, MN.",
+    "2004 – Doe, Cold Spring, MN.",
+    "2014 – Doe, Hudson, WI."
+  ],
+  "cabin_intro": "2014 was the year the Hunting Shack got a facelift: a new cabin for eating and sleeping, a steel shack for cards and movies, and eventually a heated outhouse with a shower. These are the work-weekend logs, oldest first.",
+  "links": [
+    ["Minnesota DNR – Deer Hunting", "https://www.dnr.state.mn.us/hunting/deer/index.html", "Seasons, regulations and permit areas"],
+    ["Sportsman's Guide", "https://www.sportsmansguide.com/", ""],
+    ["Cabela's", "https://www.cabelas.com/", ""],
+    ["Fleet Farm", "https://www.fleetfarm.com/", ""],
+    ["Dick's Sporting Goods", "https://www.dickssportinggoods.com/", ""]
+  ]
+}
