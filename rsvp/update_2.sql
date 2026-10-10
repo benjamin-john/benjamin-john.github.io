@@ -1,89 +1,5 @@
--- RSVP app: tables and functions.
--- Run in the Supabase SQL Editor. Safe to re-run (idempotent).
--- Then run rsvp_admin.sql (needs admin.sql from Which day works? to be run first).
---
--- Security model (same as the other apps): RLS on with no policies and all table
--- grants revoked. The browser only calls the SECURITY DEFINER functions below.
--- An event is reached by its random 8-character code. A browser is identified by a
--- random id kept in localStorage (p_participant) that is never returned to others.
--- Hosts hold a secret key; only its SHA-256 hash is stored.
-
--- ------------------------------------------------------------------ tables
-
-create table if not exists rsvp_events (
-  id               uuid primary key default gen_random_uuid(),
-  code             text not null unique,
-  title            text not null,
-  host_name        text not null default '',
-  description      text not null default '',
-  location         text not null default '',
-  event_date       date,                       -- null = date to be decided
-  start_time       time,                       -- null = time to be decided
-  end_time         time,
-  tz               text not null default 'UTC',-- host's time zone, e.g. America/Chicago
-  theme            text not null default 'sunset',
-  emoji            text not null default '🎉',
-  max_plus_ones    int  not null default 0,
-  rsvp_by          date,                       -- RSVPs close at the end of this day (host's time zone)
-  hide_guests      boolean not null default false,
-  hide_count       boolean not null default false,
-  guests_add_items boolean not null default true,
-  questions        jsonb not null default '[]'::jsonb,  -- [{"id":"ab12","text":"Any allergies?"}]
-  created_at       timestamptz not null default now(),
-  updated_at       timestamptz not null default now()
-);
-
-create table if not exists rsvp_owner_keys (
-  event_id   uuid not null references rsvp_events(id) on delete cascade,
-  key_hash   text not null,
-  label      text not null default 'host',     -- 'host' or 'admin'
-  created_at timestamptz not null default now(),
-  primary key (event_id, key_hash)
-);
-
-create table if not exists rsvp_guests (
-  id          uuid primary key default gen_random_uuid(),
-  event_id    uuid not null references rsvp_events(id) on delete cascade,
-  participant text not null,
-  name        text not null,
-  status      text not null check (status in ('going', 'maybe', 'no')),
-  plus_ones   int  not null default 0,
-  note        text not null default '',
-  answers     jsonb not null default '{}'::jsonb, -- {"<question id>":"answer"}, host-only
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now(),
-  unique (event_id, participant)
-);
-
-create table if not exists rsvp_posts (
-  id          uuid primary key default gen_random_uuid(),
-  event_id    uuid not null references rsvp_events(id) on delete cascade,
-  kind        text not null check (kind in ('announce', 'comment')),
-  participant text,
-  name        text not null default '',
-  body        text not null,
-  created_at  timestamptz not null default now()
-);
-
-create table if not exists rsvp_items (
-  id            uuid primary key default gen_random_uuid(),
-  event_id      uuid not null references rsvp_events(id) on delete cascade,
-  label         text not null,
-  needed        int  not null default 1,
-  by_host       boolean not null default false,
-  added_by_pid  text,
-  added_by_name text,
-  created_at    timestamptz not null default clock_timestamp()
-);
-
-create table if not exists rsvp_claims (
-  item_id     uuid not null references rsvp_items(id) on delete cascade,
-  event_id    uuid not null references rsvp_events(id) on delete cascade,
-  participant text not null,
-  name        text not null,
-  created_at  timestamptz not null default clock_timestamp(),
-  primary key (item_id, participant)
-);
+-- RSVP update 2: multi-day, link buttons, first/last names, optional bring list,
+-- unlimited bring items, soft RSVP date, reply times. Safe to re-run.
 
 -- columns added after the first version (safe on new and existing databases)
 alter table rsvp_events add column if not exists end_date   date;                      -- last day of a multi-day event
@@ -93,79 +9,8 @@ alter table rsvp_events add column if not exists rsvp_lock  boolean not null def
 alter table rsvp_guests add column if not exists first_name text;
 alter table rsvp_guests add column if not exists last_name  text;
 
-create index if not exists rsvp_guests_event on rsvp_guests(event_id);
-create index if not exists rsvp_posts_event  on rsvp_posts(event_id);
-create index if not exists rsvp_items_event  on rsvp_items(event_id);
-create index if not exists rsvp_claims_event on rsvp_claims(event_id);
-
-alter table rsvp_events     enable row level security;
-alter table rsvp_owner_keys enable row level security;
-alter table rsvp_guests     enable row level security;
-alter table rsvp_posts      enable row level security;
-alter table rsvp_items      enable row level security;
-alter table rsvp_claims     enable row level security;
-revoke all on rsvp_events, rsvp_owner_keys, rsvp_guests, rsvp_posts, rsvp_items, rsvp_claims from public;
-do $$ begin
-  if exists (select 1 from pg_roles where rolname = 'anon') then
-    execute 'revoke all on rsvp_events, rsvp_owner_keys, rsvp_guests, rsvp_posts, rsvp_items, rsvp_claims from anon';
-  end if;
-  if exists (select 1 from pg_roles where rolname = 'authenticated') then
-    execute 'revoke all on rsvp_events, rsvp_owner_keys, rsvp_guests, rsvp_posts, rsvp_items, rsvp_claims from authenticated';
-  end if;
-end $$;
-
--- ------------------------------------------------------------------ helpers
-
--- old signature (single name) replaced by first + last name
 drop function if exists rsvp_respond(text, text, text, text, text, int, text, jsonb);
 
-create or replace function _rsvp_hash(p_token text) returns text
-language sql immutable set search_path = public, pg_temp as $$
-  select encode(sha256(convert_to(coalesce(p_token, ''), 'UTF8')), 'hex');
-$$;
-
--- 64 hex characters of randomness from two v4 UUIDs (no extensions needed).
-create or replace function _rsvp_token() returns text
-language sql volatile set search_path = public, pg_temp as $$
-  select encode(uuid_send(gen_random_uuid()) || uuid_send(gen_random_uuid()), 'hex');
-$$;
-
-create or replace function _rsvp_new_code() returns text
-language plpgsql volatile set search_path = public, pg_temp as $$
-declare
-  a text := 'abcdefghjkmnpqrstuvwxyz23456789';
-  b bytea; c text; i int;
-begin
-  loop
-    b := uuid_send(gen_random_uuid());
-    c := '';
-    for i in 0..7 loop
-      -- bytes 0-5 and 9-15 of a v4 UUID are fully random; use bytes 0-3 and 10-13
-      c := c || substr(a, (get_byte(b, case when i < 4 then i else i + 6 end) % 31) + 1, 1);
-    end loop;
-    exit when not exists (select 1 from rsvp_events where code = c);
-  end loop;
-  return c;
-end $$;
-
-create or replace function _rsvp_clean(p text) returns text
-language sql immutable set search_path = public, pg_temp as $$
-  select btrim(regexp_replace(coalesce(p, ''), '\s+', ' ', 'g'));
-$$;
-
--- Trim, keep line breaks, squeeze 3+ blank lines.
-create or replace function _rsvp_text(p text) returns text
-language sql immutable set search_path = public, pg_temp as $$
-  select btrim(regexp_replace(replace(coalesce(p, ''), E'\r', ''), E'\n{3,}', E'\n\n', 'g'));
-$$;
-
-create or replace function _rsvp_is_owner(p_event uuid, p_token text) returns boolean
-language sql stable security definer set search_path = public, pg_temp as $$
-  select coalesce(p_token, '') <> ''
-     and exists (select 1 from rsvp_owner_keys where event_id = p_event and key_hash = _rsvp_hash(p_token));
-$$;
-
--- Validates event details from the create/edit form and returns them cleaned.
 create or replace function _rsvp_event_fields(p jsonb) returns jsonb
 language plpgsql stable set search_path = public, pg_temp as $$
 declare
@@ -244,8 +89,6 @@ create or replace function _rsvp_closed(e rsvp_events) returns boolean
 language sql stable set search_path = public, pg_temp as $$
   select e.rsvp_lock and e.rsvp_by is not null and now() >= ((e.rsvp_by + 1)::timestamp at time zone e.tz);
 $$;
-
--- --------------------------------------------------------------- functions
 
 create or replace function rsvp_create(p_event jsonb, p_items text[] default null)
 returns jsonb language plpgsql security definer set search_path = public, pg_temp as $$
@@ -404,29 +247,6 @@ begin
   where id = e.id;
 end $$;
 
-create or replace function rsvp_delete_event(p_code text, p_owner_token text)
-returns void language plpgsql security definer set search_path = public, pg_temp as $$
-declare v_id uuid;
-begin
-  select id into v_id from rsvp_events where code = lower(btrim(p_code));
-  if not found then raise exception 'event_not_found'; end if;
-  if not _rsvp_is_owner(v_id, p_owner_token) then raise exception 'not_owner'; end if;
-  delete from rsvp_events where id = v_id;
-end $$;
-
-create or replace function rsvp_remove_guest(p_code text, p_owner_token text, p_guest uuid)
-returns void language plpgsql security definer set search_path = public, pg_temp as $$
-declare v_id uuid; v_pid text;
-begin
-  select id into v_id from rsvp_events where code = lower(btrim(p_code));
-  if not found then raise exception 'event_not_found'; end if;
-  if not _rsvp_is_owner(v_id, p_owner_token) then raise exception 'not_owner'; end if;
-  delete from rsvp_guests where id = p_guest and event_id = v_id returning participant into v_pid;
-  if v_pid is null then raise exception 'guest_not_found'; end if;
-  delete from rsvp_claims where event_id = v_id and participant = v_pid;
-end $$;
-
--- p_kind: 'announce' (host only) or 'comment' (anyone with a name)
 create or replace function rsvp_post(p_code text, p_participant text, p_owner_token text, p_name text, p_kind text, p_body text)
 returns void language plpgsql security definer set search_path = public, pg_temp as $$
 declare
@@ -449,20 +269,6 @@ begin
     raise exception 'invalid_kind';
   end if;
   insert into rsvp_posts (event_id, kind, participant, name, body) values (v_id, p_kind, p_participant, v_name, v_body);
-end $$;
-
-create or replace function rsvp_delete_post(p_code text, p_participant text, p_owner_token text, p_post uuid)
-returns void language plpgsql security definer set search_path = public, pg_temp as $$
-declare v_id uuid; v_pid text;
-begin
-  select id into v_id from rsvp_events where code = lower(btrim(p_code));
-  if not found then raise exception 'event_not_found'; end if;
-  select participant into v_pid from rsvp_posts where id = p_post and event_id = v_id;
-  if not found then raise exception 'post_not_found'; end if;
-  if not (_rsvp_is_owner(v_id, p_owner_token) or (v_pid is not null and v_pid = coalesce(p_participant, ''))) then
-    raise exception 'not_allowed';
-  end if;
-  delete from rsvp_posts where id = p_post;
 end $$;
 
 create or replace function rsvp_item_add(p_code text, p_participant text, p_owner_token text, p_name text, p_label text, p_needed int)
@@ -518,21 +324,6 @@ begin
    where id = i.id;
 end $$;
 
-create or replace function rsvp_item_remove(p_code text, p_participant text, p_owner_token text, p_item uuid)
-returns void language plpgsql security definer set search_path = public, pg_temp as $$
-declare v_id uuid; i rsvp_items;
-begin
-  select id into v_id from rsvp_events where code = lower(btrim(p_code));
-  if not found then raise exception 'event_not_found'; end if;
-  select * into i from rsvp_items where id = p_item and event_id = v_id;
-  if not found then raise exception 'item_not_found'; end if;
-  if not (_rsvp_is_owner(v_id, p_owner_token) or (i.added_by_pid is not null and i.added_by_pid = coalesce(p_participant, ''))) then
-    raise exception 'not_allowed';
-  end if;
-  delete from rsvp_items where id = i.id;
-end $$;
-
--- p_claim true = "I'll bring it", false = take my claim back
 create or replace function rsvp_item_claim(p_code text, p_participant text, p_name text, p_item uuid, p_claim boolean)
 returns void language plpgsql security definer set search_path = public, pg_temp as $$
 declare v_id uuid; i rsvp_items; v_name text := _rsvp_clean(p_name);
@@ -556,25 +347,5 @@ begin
   insert into rsvp_claims (item_id, event_id, participant, name) values (i.id, v_id, p_participant, v_name);
 end $$;
 
--- ------------------------------------------------------------------ grants
-
-revoke all on function _rsvp_hash(text), _rsvp_token(), _rsvp_new_code(), _rsvp_clean(text), _rsvp_text(text),
-  _rsvp_is_owner(uuid, text), _rsvp_event_fields(jsonb), _rsvp_closed(rsvp_events) from public;
-
-do $$
-declare r text;
-begin
-  for r in select unnest(array['anon', 'authenticated']) loop
-    if exists (select 1 from pg_roles where rolname = r) then
-      execute format('revoke all on function _rsvp_hash(text), _rsvp_token(), _rsvp_new_code(), _rsvp_clean(text), _rsvp_text(text),
-        _rsvp_is_owner(uuid, text), _rsvp_event_fields(jsonb), _rsvp_closed(rsvp_events) from %I', r);
-      execute format('grant execute on function
-        rsvp_create(jsonb, text[]), rsvp_get(text, text, text),
-        rsvp_respond(text, text, text, text, text, text, int, text, jsonb),
-        rsvp_update_event(text, text, jsonb), rsvp_delete_event(text, text), rsvp_remove_guest(text, text, uuid),
-        rsvp_post(text, text, text, text, text, text), rsvp_delete_post(text, text, text, uuid),
-        rsvp_item_add(text, text, text, text, text, int), rsvp_item_edit(text, text, text, uuid, text, int),
-        rsvp_item_remove(text, text, text, uuid), rsvp_item_claim(text, text, text, uuid, boolean) to %I', r);
-    end if;
-  end loop;
-end $$;
+revoke all on function _rsvp_event_fields(jsonb), _rsvp_closed(rsvp_events) from public, anon, authenticated;
+grant execute on function rsvp_respond(text, text, text, text, text, text, int, text, jsonb) to anon, authenticated;

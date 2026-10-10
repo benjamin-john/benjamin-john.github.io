@@ -46,7 +46,7 @@ async function bridge(ctx) {
   }
   console.log(PGURL ? 'Mode: real database' : 'Mode: preview (localStorage)');
   const browser = await chromium.launch();
-  const mk = async () => { const c = await browser.newContext({ ...devices['Pixel 7'], acceptDownloads: true }); await bridge(c); return c; };
+  const mk = async () => { const c = await browser.newContext({ ...devices['Pixel 7'], acceptDownloads: true, permissions: ['clipboard-read', 'clipboard-write'] }); await bridge(c); return c; };
   const noHScroll = async (page, where) => check(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), 'no sideways scroll: ' + where);
 
   /* ---- host creates an event */
@@ -67,10 +67,17 @@ async function bridge(ctx) {
   await host.fill('input[name=end_time]', '21:00');
   await host.fill('input[name=location]', '123 Main St, Springfield');
   await host.fill('input[name=host_name]', 'Ben');
-  await host.fill('textarea[name=description]', 'Burgers and games.\nBring a chair!');
+  await host.fill('textarea[name=description]', 'Burgers and games.\nBring a chair! Map: www.example.com/map.');
+  await host.fill('#linkRows input[data-link=label]', 'Registry');
+  await host.fill('#linkRows input[data-link=url]', 'example.com/registry');
+  await host.click('[data-act=link-add]');
+  await host.fill('#linkRows .linkrow >> nth=1 >> input[data-link=label]', 'Sign-up');
+  await host.fill('#linkRows .linkrow >> nth=1 >> input[data-link=url]', 'https://example.org/signup');
   await host.selectOption('select[name=max_plus_ones]', '2');
   await host.fill('input[name=rsvp_by]', day(5));
   await host.fill('input[name=q] >> nth=0', 'Any allergies?');
+  check(!(await host.locator('textarea[name=items]').isVisible()), 'bring list off by default');
+  await host.check('input[name=bring_list]');
   await host.fill('textarea[name=items]', 'Chips\nDessert\nchips');
   await host.click('#eventForm button[type=submit]');
   await host.waitForSelector('.created');
@@ -85,6 +92,11 @@ async function bridge(ctx) {
   check((await host.locator('.item').count()) === 2, 'two bring items (duplicate dropped)');
   check((await host.textContent('#me')).includes('reply by'), 'deadline line');
   check((await host.textContent('.desc')).includes('Bring a chair!'), 'description');
+  check((await host.getAttribute('.desc a', 'href')) === 'https://www.example.com/map' && (await host.textContent('.desc')).includes('/map.'), 'description link detected, trailing dot kept as text');
+  check((await host.locator('.linkbtns a').count()) === 2 && (await host.getAttribute('.linkbtns a >> nth=0', 'href')) === 'https://example.com/registry', 'link buttons at top');
+  await host.click('[data-act=share-details]');
+  const details = await host.evaluate(() => navigator.clipboard.readText());
+  check(details.includes('🍕 Fall Cookout') && details.includes('📍 123 Main St') && details.includes('Registry: https://example.com/registry') && details.includes('RSVP here: ' + share), 'share details text');
   await noHScroll(host, 'event page');
 
   // directions + calendar
@@ -96,10 +108,10 @@ async function bridge(ctx) {
   check(/DTSTART:\d{8}T\d{6}Z/.test(ics) && ics.includes('SUMMARY:Fall Cookout') && ics.includes('LOCATION:123 Main St\\, Springfield'), 'ics content');
 
   // announcement
-  await host.fill('#annBody', 'Parking is out back.');
+  await host.fill('#annBody', 'Parking is out back. Info at https://example.com/parking');
   await host.click('#annForm button');
   await host.waitForSelector('.ann');
-  check((await host.textContent('.ann')).includes('Parking is out back.'), 'announcement posted');
+  check((await host.textContent('.ann')).includes('Parking is out back.') && (await host.getAttribute('.ann a', 'href')) === 'https://example.com/parking', 'announcement posted with link');
 
   // host adds an item that needs 2 people
   await host.fill('#newItem', 'Folding chairs');
@@ -114,12 +126,12 @@ async function bridge(ctx) {
   const people = {};
   async function save(page, who) {
     if (PGURL) return;
-    people[who] = await page.evaluate(() => ({ pid: JSON.parse(localStorage.getItem('rsvp.pid')), name: JSON.parse(localStorage.getItem('rsvp.name') || '""'), owners: localStorage.getItem('rsvp.owners') || '{}' }));
+    people[who] = await page.evaluate(() => ({ pid: JSON.parse(localStorage.getItem('rsvp.pid')), first: JSON.parse(localStorage.getItem('rsvp.first') || '""'), last: JSON.parse(localStorage.getItem('rsvp.last') || '""'), owners: localStorage.getItem('rsvp.owners') || '{}' }));
   }
   async function be(page, who) {
     if (PGURL) return;
-    const p = people[who] || (people[who] = { pid: who + '-pid', name: '', owners: '{}' });
-    await page.evaluate(p => { localStorage.setItem('rsvp.pid', JSON.stringify(p.pid)); localStorage.setItem('rsvp.name', JSON.stringify(p.name)); localStorage.setItem('rsvp.owners', p.owners); }, p);
+    const p = people[who] || (people[who] = { pid: who + '-pid', first: '', last: '', owners: '{}' });
+    await page.evaluate(p => { localStorage.setItem('rsvp.pid', JSON.stringify(p.pid)); localStorage.setItem('rsvp.first', JSON.stringify(p.first)); localStorage.setItem('rsvp.last', JSON.stringify(p.last)); localStorage.setItem('rsvp.name', '""'); localStorage.setItem('rsvp.owners', p.owners); }, p);
   }
   await save(host, 'host');
 
@@ -132,7 +144,10 @@ async function bridge(ctx) {
   check(!(await ana.locator('.host').count()), 'guest sees no host tools');
   check((await ana.textContent('.ann')).includes('Parking'), 'guest sees announcement');
   await ana.click('[data-act=status][data-id=going]');
-  await ana.fill('#rName', 'Ana');
+  await ana.fill('#rFirst', 'Ana');
+  await ana.click('#rsvpForm button[type=submit]');
+  check(await ana.locator('#rsvpForm').isVisible(), 'last name required');
+  await ana.fill('#rLast', 'Lee');
   await ana.selectOption('#rPlus', '2');
   await ana.fill('#rNote', 'Can’t wait!');
   await ana.fill('input[data-q]', 'peanuts');
@@ -159,7 +174,7 @@ async function bridge(ctx) {
   await ana.click('[data-act=rsvp-change]');
   check((await ana.inputValue('input[data-q]')) === 'peanuts', 'answers prefilled on change');
   await ana.click('[data-act=status][data-id=maybe]');
-  check((await ana.inputValue('#rName')) === 'Ana', 'name kept when switching status');
+  check((await ana.inputValue('#rFirst')) === 'Ana' && (await ana.inputValue('#rLast')) === 'Lee', 'name kept when switching status');
   await ana.click('#rsvpForm button[type=submit]');
   await ana.waitForSelector('.me.maybe');
   check((await ana.textContent('.counts')).includes('3 maybe'), 'maybe count');
@@ -178,7 +193,8 @@ async function bridge(ctx) {
   check(true, 'claim without name opens RSVP form');
   await bo.click('[data-act=status][data-id=no]');
   check(await bo.locator('#rPlus').count() === 0, 'no plus-ones when can’t go');
-  await bo.fill('#rName', 'Bo');
+  await bo.fill('#rFirst', 'Bo');
+  await bo.fill('#rLast', 'Diaz');
   await bo.click('#rsvpForm button[type=submit]');
   await bo.waitForSelector('.me.no');
   await bo.click('.item:has-text("Dessert") [data-act=claim]');
@@ -192,6 +208,20 @@ async function bridge(ctx) {
   await host.goto(share);
   await host.waitForSelector('#guests .g');
   check((await host.textContent('#guests')).includes('peanuts'), 'host sees answers');
+  check((await host.textContent('#guests')).includes('Ana Lee') && (await host.locator('.g .stamp').count()) === 2, 'host sees full names and reply times');
+  check(!(await ana.locator('.stamp').count()), 'guests do not see reply times');
+  // unlimited item
+  await host.fill('#newItem', 'Side dishes');
+  await host.selectOption('#newItemNeeded', '0');
+  await host.click('#itemForm button');
+  await host.waitForSelector('.item:has-text("Side dishes")');
+  await host.click('.item:has-text("Side dishes") [data-act=claim]');
+  if (await host.locator('#rsvpForm').count()) { // host hasn't replied yet: asked for a name first
+    await host.fill('#rFirst', 'Ben'); await host.fill('#rLast', 'Smith');
+    await host.click('#rsvpForm button[type=submit]'); await host.waitForSelector('.myans');
+    await host.click('.item:has-text("Side dishes") [data-act=claim]');
+  }
+  await host.waitForSelector('.item:has-text("Side dishes") .cb[aria-pressed=true]');
   host.once('dialog', d => d.accept());
   await host.click('.g:has-text("Bo") [data-act=rm-guest]');
   await host.waitForFunction(() => !document.querySelector('#guests').textContent.includes('Bo'));
@@ -217,6 +247,9 @@ async function bridge(ctx) {
   check((await ana.textContent('#guests')).includes('keeping the guest list private'), 'guest sees private list');
   check(!(await ana.locator('.counts').count()), 'guest sees no count');
   check((await ana.textContent('.myans')).includes('+1'), 'plus-ones trimmed to new max');
+  await ana.click('.item:has-text("Side dishes") [data-act=claim]');
+  await ana.waitForSelector('.item:has-text("Side dishes") .cb[aria-pressed=true]');
+  check((await ana.textContent('.item:has-text("Side dishes")')).includes('Ben') && (await ana.textContent('.item:has-text("Side dishes")')).includes('more welcome'), 'unlimited item takes several people');
   // ana deletes her comment
   ana.once('dialog', d => d.accept());
   await ana.click('.cmt [data-act=del-post]');
@@ -234,11 +267,12 @@ async function bridge(ctx) {
   }
 
   /* ---- closed RSVPs and past events */
-  async function quickEvent(page, title, date, rsvpBy) {
+  async function quickEvent(page, title, date, rsvpBy, more) {
     await page.goto(BASE);
     await page.fill('input[name=title]', title);
     if (date) await page.fill('input[name=event_date]', date);
     if (rsvpBy) await page.fill('input[name=rsvp_by]', rsvpBy);
+    if (more) await more(page);
     await page.click('#eventForm button[type=submit]');
     await page.waitForSelector('.created');
     return page.inputValue('#shareUrl');
@@ -249,13 +283,26 @@ async function bridge(ctx) {
   const pastUrl = await quickEvent(host, 'Old party', day(-2), null);
   check((await host.textContent('#facts')).includes('This event has passed'), 'past banner');
   const tbdUrl = await quickEvent(host, 'Someday', null, null);
-  check((await host.textContent('#facts')).includes('Date to be decided') && !(await host.locator('[data-act=cal]').count()), 'date TBD, no calendar');
+  { const f = await host.textContent('#facts'); check(f.includes('Date to be decided') && !(await host.locator('[data-act=cal]').count()), 'date TBD, no calendar: ' + f); }
+  check(!(await host.locator('#bring .item, #bring form').count()), 'event without bring list');
+  const softUrl = await quickEvent(host, 'Soft deadline', day(4), day(-1), async pg => { await pg.uncheck('input[name=rsvp_lock]'); });
+  const multiUrl = await quickEvent(host, 'Camping trip', day(10), null, async pg => {
+    await pg.fill('input[name=end_date]', day(12)); await pg.fill('input[name=start_time]', '16:00'); await pg.fill('input[name=end_time]', '11:00');
+  });
+  const ft = await host.textContent('#facts');
+  check(ft.includes('–') && ft.includes('Starts 4:00') && ft.includes('ends 11:00') && ft.includes('In 10 days'), 'multi-day dates: ' + ft);
+  await host.click('[data-act=cal]');
+  const gcal = decodeURIComponent(await host.getAttribute('a:has-text("Google Calendar")', 'href'));
+  check(/dates=\d{8}T\d{6}Z\/\d{8}T\d{6}Z/.test(gcal), 'multi-day calendar dates');
   const g2 = await personPage();
   await save(host, 'host');
   await g2.goto(BASE); await be(g2, 'cy');
   await g2.goto(closedUrl);
   await g2.waitForSelector('#me');
   check((await g2.textContent('#me')).includes('RSVPs are closed') && !(await g2.locator('[data-act=status]').count()), 'guest sees closed RSVPs');
+  await g2.goto(softUrl);
+  await g2.waitForSelector('[data-act=status]');
+  check((await g2.textContent('#me')).includes('Please reply by'), 'soft deadline still open');
   await g2.goto(BASE);
   check(await g2.locator('.recent li').count() >= 1, 'recent events on home');
 
