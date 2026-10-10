@@ -1,0 +1,116 @@
+<?php
+require_once("res/x5engine.php");
+imCheckAccess('7', '');
+?>
+<!DOCTYPE html><!-- HTML5 -->
+<html prefix="og: http://ogp.me/ns#" lang="en-GB" dir="ltr">
+	<head>
+		<title>Members Only - Hunting-Shack</title>
+		<meta charset="utf-8" />
+		<!--[if IE]><meta http-equiv="ImageToolbar" content="False" /><![endif]-->
+		<meta name="generator" content="Incomedia WebSite X5 Evolution 12.0.10.32 - www.websitex5.com" />
+		<meta name="viewport" content="width=1049" />
+		<link rel="icon" href="favicon.png?12-0-10-32-637133462855192010" type="image/png" />
+		<link rel="stylesheet" type="text/css" href="style/reset.css?12-0-10-32" media="screen,print" />
+		<link rel="stylesheet" type="text/css" href="style/print.css?12-0-10-32" media="print" />
+		<link rel="stylesheet" type="text/css" href="style/style.css?12-0-10-32" media="screen,print" />
+		<link rel="stylesheet" type="text/css" href="style/template.css?12-0-10-32" media="screen" />
+		<link rel="stylesheet" type="text/css" href="style/menu.css?12-0-10-32" media="screen" />
+		<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="style/ie.css?12-0-10-32" media="screen" /><![endif]-->
+		<link rel="stylesheet" type="text/css" href="pcss/members-only.css?12-0-10-32-637133462855341613" media="screen" />
+		
+		<script type="text/javascript" src="res/jquery.js?12-0-10-32"></script>
+		<script type="text/javascript" src="res/x5engine.js?12-0-10-32" data-files-version="12-0-10-32"></script>
+		
+	</head>
+	<body>
+		<div id="imHeaderBg"></div>
+		<div id="imFooterBg"></div>
+		<div id="imPage">
+			<div id="imHeader">
+				<h1 class="imHidden">Members Only - Hunting-Shack</h1>
+				
+				<div class="imTemplateContent" onclick="x5engine.utils.location('index.html', null, false); return false;" style="position: absolute; top: 8px; left: 393px; width: 275px; height: 139px; cursor: pointer;"></div>
+				<div class="imTemplateContent" onclick="x5engine.utils.location('index.html', null, false); return false;" style="position: absolute; top: 52px; left: 38px; width: 330px; height: 73px; cursor: pointer;"></div>
+				<div class="imTemplateContent" onclick="x5engine.utils.location('index.html', null, false); return false;" style="position: absolute; top: 52px; left: 703px; width: 199px; height: 73px; cursor: pointer;"></div>
+				<div class="imTemplateContent" onclick="x5engine.utils.location('index.html', null, false); return false;" style="position: absolute; top: 75px; left: 906px; width: 91px; height: 43px; cursor: pointer;"></div>
+			</div>
+			<a class="imHidden" href="#imGoToCont" title="Skip the main menu">Go to content</a>
+			<a id="imGoToMenu"></a><p class="imHidden">Main menu:</p>
+			<div id="imMnMnGraphics"></div>
+			<div id="imMnMn" class="auto">
+				<div class="hamburger-menu-background-container"><div class="hamburger-menu-background menu-mobile-hidden"><div class="hamburger-menu-close-button"><span>&times;</span></div></div></div>
+				<ul class="auto menu-mobile-hidden">
+					<li id="imMnMnNode9" class=" imLevel">
+				<a href="index.html" onclick="return x5engine.utils.location('index.html', null, false)">		<span class="imMnMnFirstBg">
+							<span class="imMnMnTxt"><span class="imMnMnImg"></span><span class="imMnMnTextLabel">Home</span></span>
+						</span>
+				</a><div class="auto" style="width: 136px;"><ul>
+				</ul></div></li>
+				<li id="imMnMnNode10" class=" imLevel">
+				<a href="2018.html" onclick="return x5engine.utils.location('2018.html', null, false)">		<span class="imMnMnFirstBg">
+							<span class="imMnMnTxt"><span class="imMnMnImg"></span><span class="imMnMnTextLabel">Hunting Log</span></span>
+						</span>
+				</a></li>
+				<li id="imMnMnNode11" class=" imLevel">
+				<a href="the-race.html" onclick="return x5engine.utils.location('the-race.html', null, false)">		<span class="imMnMnFirstBg">
+							<span class="imMnMnTxt"><span class="imMnMnImg"></span><span class="imMnMnTextLabel">The Race</span></span>
+						</span>
+				</a></li>
+				<li id="imMnMnNode12" class=" imLevel">
+				<a href="2018-1.html" onclick="return x5engine.utils.location('2018-1.html', null, false)">		<span class="imMnMnFirstBg">
+							<span class="imMnMnTxt"><span class="imMnMnImg"></span><span class="imMnMnTextLabel">Photo Gallery</span></span>
+						</span>
+				</a></li>
+				<li id="imMnMnNode14" class=" imLevel">
+				<a href="helpful-links.html" onclick="return x5engine.utils.location('helpful-links.html', null, false)">		<span class="imMnMnFirstBg">
+							<span class="imMnMnTxt"><span class="imMnMnImg"></span><span class="imMnMnTextLabel">Helpful Links</span></span>
+						</span>
+				</a></li>
+				<li id="imMnMnNode54" class=" imLevel">
+				<a href="progress-page.html" onclick="return x5engine.utils.location('progress-page.html', null, false)">		<span class="imMnMnFirstBg">
+							<span class="imMnMnTxt"><span class="imMnMnImg"></span><span class="imMnMnTextLabel">Cabin Update</span></span>
+						</span>
+				</a><div class="auto" style="width: 272px;"><ul>
+				</ul></div></li>
+				<li id="imMnMnNode13" class="imLevel imMnMnCurrent">
+				<a href="members-only.php" onclick="return x5engine.utils.location('members-only.php', null, false)">		<span class="imMnMnFirstBg">
+							<span class="imMnMnLevelImg"></span><span class="imMnMnTxt"><span class="imMnMnImg"></span><span class="imMnMnTextLabel">Members Only</span></span>
+						</span>
+				</a><div class="auto" style="width: 136px;"><ul>
+				<li id="imMnMnNode56" class=" imPage">
+						<a href="submission-form.html">
+							<span class="imMnMnBorder">
+								<span class="imMnMnTxt"><span class="imMnMnImg"></span><span class="imMnMnTextLabel">Submission Form</span></span>
+							</span>
+						</a>
+					</li></ul></div></li>
+				</ul>
+			</div>
+			<div id="imContentGraphics"></div>
+			<div id="imContent">
+				<a id="imGoToCont"></a>
+				<div id="imBreadcrumb"><a href="members-only.php" onclick="return x5engine.utils.location('members-only.php', null, false)">Members Only</a></div>
+				<div id="imGroup_1" class="imVGroup">
+				<div id="imCell_1"><div id="imCellStyleGraphics_1"></div><div id="imCellStyle_1"><div id="imTextObject_1">
+					<div class="text-tab-content"  id="imTextObject_1_tab0" style="">
+						<div class="text-inner">
+							<p style="text-align: left;"><span class="fs20"><span class="ff1"><br /></span></span></p><p style="text-align: center;"><span class="ff1 cf4 fs72"><b>Members Only!</b></span><span class="ff1 fs20"><br /></span></p>
+						</div>
+					</div>
+				
+				</div>
+				</div></div><div id="imCell_2"><div id="imCellStyleGraphics_2"></div><div id="imCellStyle_2"><div id="imObjectGallery_2"><div id="imObjectGalleryContainer_2"></div></div><script type="text/javascript">var imObjectGallery_2_settings = {'target': '#imObjectGallery_2','backgroundColor': 'transparent','description': { 'fontSize': '9pt','fontFamily': 'Tahoma','fontStyle': 'normal','fontWeight': 'normal'},'autoplay': false,'thumbs': { 'position': 'embed', 'number': 4 },'controlBar': { 'show': true, 'color': '#141414' },'random': false,'slideshow': { 'active': true, buttonPrev: { url: 'gallery/b01_l.png', x: -12, y: 0 }, buttonNext: { url: 'gallery/b01_r.png', x: -12, y: 0 }, nextPrevMode: 'visible'},'media': [{'type': 'image','width': 526,'height': 391,'url': 'gallery/18_4i2257kr.jpg','thumb': 'gallery/18_thumb_4i2257kr.png','autoplayTime': 5000,'effect': 'none'},{'type': 'image','width': 526,'height': 391,'url': 'gallery/21.jpg','thumb': 'gallery/21_thumb.png','autoplayTime': 5000,'effect': 'none'},{'type': 'image','width': 295,'height': 394,'url': 'gallery/Corys-new-gun.jpg','thumb': 'gallery/Corys-new-gun_thumb.png','autoplayTime': 5000,'effect': 'none'}]};var dataimObjectGallery_2 = null;function loadimObjectGallery_2() {var startIndex = 0;if(!!dataimObjectGallery_2) {imObjectGallery_2_settings.startFrom = dataimObjectGallery_2.currentItemIndex();}var w = 0;var h = 0;var cbp = x5engine.responsive.getCurrentBreakPoint();if (cbp.fluid) {w = $('#imObjectGallery_2').innerWidth();h = w / 550 * 412;imObjectGallery_2_settings.width = w;imObjectGallery_2_settings.height = h + (w / 4);}else if (cbp.hash == '07f2700f6ec4f1b55fd2ddadf847c969') {imObjectGallery_2_settings.width = 526;imObjectGallery_2_settings.height = 394;imObjectGallery_2_settings.thumbs.size = 25;}dataimObjectGallery_2 = x5engine.gallery(imObjectGallery_2_settings);$('#imContent').off('breakpointChangedOrFluid', loadimObjectGallery_2).on('breakpointChangedOrFluid', loadimObjectGallery_2);}x5engine.boot.push(loadimObjectGallery_2);</script></div></div>
+				</div>
+				<div id="imFooPad" style="height: 0px; float: left;">&nbsp;</div><div id="imBtMn"><a href="index.html" onclick="return x5engine.utils.location('index.html', null, false)">Home</a> | <a href="2018.html" onclick="return x5engine.utils.location('2018.html', null, false)">Hunting Log</a> | <a href="the-race.html" onclick="return x5engine.utils.location('the-race.html', null, false)">The Race</a> | <a href="2018-1.html" onclick="return x5engine.utils.location('2018-1.html', null, false)">Photo Gallery</a> | <a href="helpful-links.html" onclick="return x5engine.utils.location('helpful-links.html', null, false)">Helpful Links</a> | <a href="progress-page.html" onclick="return x5engine.utils.location('progress-page.html', null, false)">Cabin Update</a> | <a href="members-only.php" onclick="return x5engine.utils.location('members-only.php', null, false)">Members Only</a> | <a href="imsitemap.html">General Site Map</a></div>
+				<div class="imClear"></div>
+			</div>
+			<div id="imFooter">
+				
+			</div>
+		</div>
+		<span class="imHidden"><a href="#imGoToCont" title="Read this page again">Back to content</a> | <a href="#imGoToMenu" title="Remain on this page">Back to main menu</a></span>
+		
+		<noscript class="imNoScript"><div class="alert alert-red">To use this website you must enable JavaScript.</div></noscript>
+	</body>
+</html>
