@@ -95,7 +95,11 @@ legend{font-weight:600;font-size:15px;margin-bottom:6px;padding:0}
 .facts .sub{display:block;color:var(--muted);font-size:14px}
 .pill{display:inline-block;margin-top:4px;font-size:13px;font-weight:600;border-radius:999px;padding:2px 10px;background:var(--gold-t)}
 .pill.now{background:var(--go);color:#fff}
-.desc{margin-top:16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.hero .desc{margin:14px auto 0;max-width:46ch;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.55);color:#26190F;white-space:pre-wrap;overflow-wrap:anywhere;text-align:left;font-size:16px;line-height:1.45}
+.hero .desc.short{text-align:center}
+.hero.light-ink .desc{background:rgba(255,255,255,.88)}
+.hero .desc a{color:inherit}
+.endtools{justify-content:center;margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
 .calopts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .linkbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center}
 .linkbtns a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:999px;background:var(--surface);border:2px solid var(--brand);color:var(--brand);font-weight:600;text-decoration:none;max-width:100%;overflow-wrap:anywhere;text-align:center}
@@ -1088,22 +1092,22 @@ function renderEvent() {
     '<header class="hero' + (t.ink === '#FFFFFF' ? ' light-ink' : '') + '" style="--ga:' + t.a + ';--gb:' + t.b + ';--gi:' + t.ink + '">' +
       '<div class="big" aria-hidden="true">' + esc(ev.emoji) + '</div>' +
       '<h1>' + esc(ev.title) + '</h1>' +
+      (ev.description ? '<p class="desc' + (ev.description.length <= 140 && ev.description.indexOf('\n') < 0 ? ' short' : '') + '">' + linkify(ev.description) + '</p>' : '') +
       (ev.host_name ? '<p class="by">Hosted by ' + esc(ev.host_name) + '</p>' : '') +
     '</header>' +
     ((ev.links || []).length ? '<nav class="linkbtns" aria-label="Links">' + ev.links.map(function (l) {
       return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' + esc(l.label) + '</a>';
     }).join('') + '</nav>' : '') +
     '<section id="facts"></section>' +
-    (ev.description ? '<p class="desc">' + linkify(ev.description) + '</p>' : '') +
-    '<div class="tools"><button type="button" class="chipbtn" data-act="share">🔗 Share link</button>' +
-      '<button type="button" class="chipbtn" data-act="share-details">📋 Share details</button>' +
-      '<button type="button" class="chipbtn" data-act="refresh">Refresh</button></div>' +
     '<section id="annc" class="annc" aria-label="Announcements"></section>' +
     '<section id="me" class="panel me"></section>' +
     '<section id="guests"></section>' +
     '<section id="bring"></section>' +
     '<section id="comments"></section>' +
-    '<section id="host"></section>';
+    '<section id="host"></section>' +
+    '<div class="tools endtools"><button type="button" class="chipbtn" data-act="share">🔗 Share link</button>' +
+      '<button type="button" class="chipbtn" data-act="share-details">📋 Share details</button>' +
+      '<button type="button" class="chipbtn" data-act="refresh">Refresh</button></div>';
   renderParts();
 }
 
