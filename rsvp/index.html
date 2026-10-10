@@ -516,7 +516,7 @@ var localApi = {
     }
     if (own || !e.hide_guests) {
       guests = e.guests.map(function (g) {
-        return { id: g.id, name: g.name, status: g.status, plus_ones: g.plus_ones, note: g.note, mine: g.pid === pid, answers: own ? g.answers : null,
+        return { id: g.id, name: g.name, first_name: g.first_name, last_name: g.last_name, status: g.status, plus_ones: g.plus_ones, note: g.note, mine: g.pid === pid, answers: own ? g.answers : null,
           replied_at: own ? g.created_at : null, updated_at: own ? g.updated_at : null };
       });
     }
@@ -1390,7 +1390,107 @@ function renderHost() {
     '<div class="row"><button type="button" class="btn small" data-act="edit-event">Edit event</button>' +
       '<button type="button" class="btn small" data-act="copy-host">Copy host link</button>' +
       '<button type="button" class="btn small danger" data-act="delete-event">Delete event</button></div>' +
-    '<p class="hint" style="margin-top:8px;font-size:13px">The host link gives control of this event on another device. Keep it private.</p></div>';
+    '<p class="hint" style="margin-top:8px;font-size:13px">The host link gives control of this event on another device. Keep it private.</p>' +
+    '<h3 style="font-size:16px;margin-top:20px">Download</h3>' +
+    '<p class="hint" style="font-size:13px;margin-top:2px">Spreadsheet files (CSV) that open in Excel, Numbers or Google Sheets.</p>' +
+    '<div class="row"><button type="button" class="btn small primary" data-act="dl" data-id="all">Everything (.zip)</button>' +
+      '<button type="button" class="btn small" data-act="dl" data-id="guests">Responses</button>' +
+      (S.ev.bring_list !== false ? '<button type="button" class="btn small" data-act="dl" data-id="bring">Bring list</button>' : '') +
+      '<button type="button" class="btn small" data-act="dl" data-id="comments">Comments</button>' +
+      '<button type="button" class="btn small" data-act="dl" data-id="announcements">Announcements</button>' +
+      '<button type="button" class="btn small" data-act="dl" data-id="event">Event details</button></div></div>';
+}
+
+/* downloads (host) */
+function csvCell(v) {
+  var t = v == null ? '' : String(v);
+  if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; // stop spreadsheets treating text as a formula
+  return '"' + t.replace(/"/g, '""') + '"';
+}
+function toCsv(rows) { return '\ufeff' + rows.map(function (r) { return r.map(csvCell).join(','); }).join('\r\n') + '\r\n'; }
+function csvStamp(ts) {
+  if (!ts) return '';
+  var d = new Date(ts); if (isNaN(d.getTime())) return '';
+  function two(n) { return String(n).padStart(2, '0'); }
+  return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()) + ' ' + two(d.getHours()) + ':' + two(d.getMinutes());
+}
+function exportFiles() {
+  var ev = S.ev, qs = ev.questions || [], files = {};
+  var guests = [['First name', 'Last name', 'Response', 'Plus-ones', 'Party size', 'Note'].concat(qs.map(function (q) { return q.text; })).concat(['Replied', 'Last changed'])];
+  (S.guests || []).forEach(function (g) {
+    guests.push([g.first_name || g.name, g.last_name || '', STATUS[g.status].label.replace('’', "'"), g.status === 'no' ? 0 : g.plus_ones,
+      g.status === 'no' ? 0 : 1 + g.plus_ones, g.note].concat(qs.map(function (q) { return (g.answers || {})[q.id] || ''; }))
+      .concat([csvStamp(g.replied_at), csvStamp(g.updated_at)]));
+  });
+  files.guests = toCsv(guests);
+  var bring = [['Item', 'People needed', 'People bringing', 'Who', 'Added by']];
+  S.items.forEach(function (i) {
+    bring.push([i.label, i.needed === 0 ? 'Unlimited' : i.needed, i.claims.length, i.claims.map(function (c) { return c.name; }).join('; '), i.by_host ? 'Host' : (i.added_by || '')]);
+  });
+  files.bring = toCsv(bring);
+  var cm = [['Name', 'Posted', 'Comment']], an = [['Posted', 'Announcement']];
+  S.posts.forEach(function (p) { if (p.kind === 'comment') cm.push([p.name, csvStamp(p.created_at), p.body]); else an.push([csvStamp(p.created_at), p.body]); });
+  files.comments = toCsv(cm); files.announcements = toCsv(an);
+  var w = whenText(ev), c = S.counts || {};
+  var info = [['Field', 'Value'], ['Event', ev.title], ['When', w.when + (w.sub ? ' · ' + w.sub : '')], ['Location', ev.location], ['Hosted by', ev.host_name],
+    ['RSVP by', ev.rsvp_by || ''], ['Details', ev.description], ['Link', shareUrl(S.code)],
+    ['Going (incl. plus-ones)', c.going], ['Maybe', c.maybe], ["Can't go", c.no], ['Exported', csvStamp(Date.now())]];
+  (ev.links || []).forEach(function (l) { info.push(['Link button: ' + l.label, l.url]); });
+  files.event = toCsv(info);
+  return files;
+}
+function fileBase() { return (S.ev.title.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-').toLowerCase() || 'event').slice(0, 40); }
+function saveBlob(blob, name) {
+  var a = document.createElement('a'), url = URL.createObjectURL(blob);
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+}
+// Minimal ZIP writer (files stored without compression), so all CSVs come as one download.
+var CRC_TABLE = null;
+function crc32(bytes) {
+  if (!CRC_TABLE) { CRC_TABLE = []; for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; CRC_TABLE[n] = c >>> 0; } }
+  var crc = 0xFFFFFFFF;
+  for (var i = 0; i < bytes.length; i++) crc = CRC_TABLE[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+function makeZip(files) {
+  var enc = new TextEncoder(), parts = [], central = [], offset = 0, d = new Date();
+  var time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  var date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  function hdr(size) { var b = new DataView(new ArrayBuffer(size)); return b; }
+  files.forEach(function (f) {
+    var data = enc.encode(f.text), name = enc.encode(f.name), crc = crc32(data);
+    var h = hdr(30);
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, time, true); h.setUint16(12, date, true); h.setUint32(14, crc, true);
+    h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+    parts.push(h.buffer, name, data);
+    var c = hdr(46);
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, time, true); c.setUint16(14, date, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+    c.setUint16(28, name.length, true); c.setUint32(42, offset, true);
+    central.push(c.buffer, name);
+    offset += 30 + name.length + data.length;
+  });
+  var size = central.reduce(function (n, x) { return n + x.byteLength; }, 0), e = hdr(22);
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true);
+  e.setUint32(12, size, true); e.setUint32(16, offset, true);
+  return new Blob(parts.concat(central, [e.buffer]), { type: 'application/zip' });
+}
+function doDownload(which) {
+  reload().then(function () {
+    renderParts();
+    var f = exportFiles(), base = fileBase();
+    var names = { guests: 'responses', bring: 'bring-list', comments: 'comments', announcements: 'announcements', event: 'event-details' };
+    if (which === 'all') {
+      var list = Object.keys(names).filter(function (k) { return k !== 'bring' || S.ev.bring_list !== false; })
+        .map(function (k) { return { name: base + '-' + names[k] + '.csv', text: f[k] }; });
+      saveBlob(makeZip(list), base + '-rsvp.zip');
+    } else {
+      saveBlob(new Blob([f[which]], { type: 'text/csv;charset=utf-8' }), base + '-' + names[which] + '.csv');
+    }
+  }, function (e) { toast(friendly(e)); });
 }
 
 /* ------------------------------------------------------------------- events */
@@ -1405,6 +1505,7 @@ $app.addEventListener('click', function (e) {
     case 'edit-cancel': S.mode = 'view'; renderEvent(); break;
     case 'link-add': if (F.links.length < 5) { F.links.push({ label: '', url: '' }); $('#linkRows').innerHTML = linkRowsHtml(); var li = document.querySelector('#linkRows .linkrow:last-of-type input'); if (li) li.focus(); } break;
     case 'link-rm': F.links.splice(Number(t.dataset.i), 1); if (!F.links.length) F.links.push({ label: '', url: '' }); $('#linkRows').innerHTML = linkRowsHtml(); break;
+    case 'dl': doDownload(id); break;
     case 'share-details': copyText(detailsText()).then(function (ok) { toast(ok ? 'Event details copied. Paste them into a text or email.' : 'Could not copy.'); }); break;
     case 'copy-link': copyText(shareUrl(S.code), $('#shareUrl')).then(function (ok) { toast(ok ? 'Link copied.' : 'Press and hold the link to copy it.'); }); break;
     case 'share': copyText(shareUrl(S.code)).then(function (ok) { toast(ok ? 'Link copied. Paste it into your group chat.' : shareUrl(S.code)); }); break;
