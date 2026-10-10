@@ -660,7 +660,7 @@ function renderWinner() {
   var w = S.poll.winner_option_id && optById(S.poll.winner_option_id);
   if (!w) { el.innerHTML = ''; return; }
   el.innerHTML = '<div class="winner"><span class="tr" aria-hidden="true">🏆</span><div><small>Winner</small><b>' + esc(w.label) + '</b><small>' +
-    (S.poll.winner_method === 'roulette' ? 'Chosen by Russian roulette' : 'Picked by the organizer') + '</small></div></div>';
+    (S.poll.winner_method === 'roulette' ? 'Chosen by random pick' : 'Picked by the organizer') + '</small></div></div>';
 }
 
 function nameLine(o) {
@@ -703,7 +703,7 @@ function renderOptions() {
     }
     var mayEdit = S.isOwner || o.mine_added;
     var own = (mayEdit && !R.on) ? '<div class="ownrow">' +
-      (S.isOwner && !win ? '<button type="button" class="link" data-act="winner" data-id="' + esc(o.id) + '">🏆 Pick as winner</button>' : '') +
+      (S.isOwner && !win ? '<button type="button" class="link" data-act="winner" data-id="' + esc(o.id) + '">Pick as winner</button>' : '') +
       '<button type="button" class="link" data-act="edit" data-id="' + esc(o.id) + '">Edit</button>' +
       '<button type="button" class="link danger" data-act="remove" data-id="' + esc(o.id) + '">Remove</button></div>' : '';
     return '<li class="opt' + (win ? ' win' : '') + (R.hi === o.id ? ' hi' : '') + '" data-id="' + esc(o.id) + '"><div class="otxt"><b>' + esc(o.label) + '</b>' +
@@ -736,13 +736,13 @@ function renderOwnerTools() {
   var P = S.poll, html = '<div class="panel owner"><h2>Organizer tools</h2><p class="hint" style="margin-top:4px">Only you can see this.</p>';
   if (R.on) {
     var n = Object.keys(R.sel).filter(function (k) { return R.sel[k] && optById(k); }).length;
-    html += '<p style="margin-top:10px"><b>Russian roulette:</b> choose which choices go in the chamber, then spin. One is picked at random and becomes the winner.</p>' +
+    html += '<p style="margin-top:10px"><b>Random Pick:</b> choose which choices are in the running, then spin. One is picked at random and becomes the winner.</p>' +
       '<div class="row"><button type="button" class="btn small" data-act="rall"' + (R.spinning ? ' disabled' : '') + '>Select all</button>' +
       '<button type="button" class="btn small" data-act="rnone"' + (R.spinning ? ' disabled' : '') + '>Select none</button></div>' +
       '<div class="row"><button type="button" class="btn primary" data-act="spin"' + (R.spinning || n < 2 ? ' disabled' : '') + '>' + (R.spinning ? 'Spinning…' : '🎲 Spin (' + n + ' in)') + '</button>' +
       '<button type="button" class="btn" data-act="rcancel"' + (R.spinning ? ' disabled' : '') + '>Cancel</button></div>';
   } else {
-    html += '<div class="row"><button type="button" class="btn primary" data-act="roulette"' + (S.options.length < 2 ? ' disabled' : '') + '>🎲 Russian roulette</button>' +
+    html += '<div class="row"><button type="button" class="btn primary" data-act="roulette"' + (S.options.length < 2 ? ' disabled' : '') + '>🎲 Random Pick</button>' +
       (P.winner_option_id ? '<button type="button" class="btn" data-act="clear-winner">Clear winner</button>' : '') + '</div>' +
       '<p class="hint" style="margin-top:10px">To choose the winner yourself, tap “Pick as winner” under a choice.</p>' +
       '<div class="row"><button type="button" class="btn small" data-act="copy-owner">Copy organizer link</button>' +
@@ -817,7 +817,7 @@ function spin() {
     var pick = optById(ids[chosen]);
     setTimeout(function () {
       R.spinning = false; R.on = false; R.hi = null;
-      setWinner(pick.id, 'roulette', '🎲 The roulette picked “' + pick.label + '”.');
+      setWinner(pick.id, 'roulette', '🎲 Random pick: “' + pick.label + '”.');
     }, 900);
   }
   step();
