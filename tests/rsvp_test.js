@@ -131,7 +131,7 @@ async function bridge(ctx) {
   async function be(page, who) {
     if (PGURL) return;
     const p = people[who] || (people[who] = { pid: who + '-pid', first: '', last: '', owners: '{}' });
-    await page.evaluate(p => { localStorage.setItem('rsvp.pid', JSON.stringify(p.pid)); localStorage.setItem('rsvp.first', JSON.stringify(p.first)); localStorage.setItem('rsvp.last', JSON.stringify(p.last)); localStorage.setItem('rsvp.name', '""'); localStorage.setItem('rsvp.owners', p.owners); }, p);
+    await page.evaluate(p => { localStorage.setItem('rsvp.pid', JSON.stringify(p.pid)); localStorage.setItem('rsvp.first', JSON.stringify(p.first)); localStorage.setItem('rsvp.last', JSON.stringify(p.last)); localStorage.setItem('rsvp.name', '""'); localStorage.setItem('rsvp.phone', '""'); localStorage.setItem('rsvp.owners', p.owners); }, p);
   }
   await save(host, 'host');
 
@@ -148,6 +148,7 @@ async function bridge(ctx) {
   await ana.click('#rsvpForm button[type=submit]');
   check(await ana.locator('#rsvpForm').isVisible(), 'last name required');
   await ana.fill('#rLast', 'Lee');
+  await ana.fill('#rPhone', '(612) 978-6322');
   await ana.selectOption('#rPlus', '2');
   await ana.fill('#rNote', 'Can’t wait!');
   await ana.fill('input[data-q]', 'peanuts');
@@ -208,13 +209,31 @@ async function bridge(ctx) {
   await host.goto(share);
   await host.waitForSelector('#guests .g');
   check((await host.textContent('#guests')).includes('peanuts'), 'host sees answers');
-  check((await host.textContent('#guests')).includes('Ana Lee') && (await host.locator('.g .stamp').count()) === 2, 'host sees full names and reply times');
+  check((await host.textContent('#guests')).includes('Ana Lee') && (await host.locator('.g .stamp', { hasText: 'Replied' }).count()) === 2, 'host sees full names and reply times');
   check(!(await ana.locator('.stamp').count()), 'guests do not see reply times');
+  check(!(await ana.locator('.av').count()) && !(await host.locator('.av').count()), 'no name circles');
+  check((await host.textContent('#guests')).includes('(612) 978-6322'), 'host sees phone');
+  check(!(await ana.textContent('#guests')).includes('978-6322'), 'guests do not see phones');
+  // text guests
+  await host.fill('#smsBody', 'See you Saturday!');
+  const smsHref = await host.getAttribute('#textList a[data-text]', 'href');
+  check(smsHref === 'sms:+16129786322?body=' + encodeURIComponent('See you Saturday!\n\n' + share), 'sms link: ' + smsHref);
+  await host.check('.aud input[data-aud=no]');
+  check((await host.textContent('#textList')).includes('didn’t give a number: Bo Diaz'), 'people without numbers listed');
+  await host.uncheck('.aud input[data-aud=no]');
+  await host.uncheck('#smsLink');
+  check((await host.getAttribute('#textList a[data-text]', 'href')) === 'sms:+16129786322?body=See%20you%20Saturday!', 'link can be left off');
+  await host.uncheck('.aud input[data-aud=maybe]');
+  check(!(await host.locator('#textList a[data-text]').count()), 'audience filter (Ana is maybe)');
+  await host.check('.aud input[data-aud=maybe]');
+  await host.evaluate(() => { const a = document.querySelector('#textList a[data-text]'); a.addEventListener('click', e => e.preventDefault(), { once: true }); a.click(); });
+  await host.waitForSelector('#textList li.done');
+  check((await host.textContent('#textList')).includes('1 of 1 opened'), 'tick off after texting');
   // downloads
   const [csvDl] = await Promise.all([host.waitForEvent('download'), host.click('[data-act=dl][data-id=guests]')]);
   const csv = require('fs').readFileSync(await csvDl.path(), 'utf8');
   check(csvDl.suggestedFilename() === 'fall-cookout-responses.csv', 'csv name ' + csvDl.suggestedFilename());
-  check(csv.startsWith('\ufeff"First name","Last name","Response"') && csv.includes('"Any allergies?"') && csv.includes('"Ana","Lee","Maybe","2","3","Can’t wait!","peanuts"'), 'responses csv: ' + csv.slice(0, 300));
+  check(csv.startsWith('\ufeff"First name","Last name","Phone","Response"') && csv.includes('"Any allergies?"') && csv.includes('"Ana","Lee","(612) 978-6322","Maybe","2","3","Can’t wait!","peanuts"'), 'responses csv: ' + csv.slice(0, 300));
   const [zipDl] = await Promise.all([host.waitForEvent('download'), host.click('[data-act=dl][data-id=all]')]);
   const zipPath = await zipDl.path();
   const listing = require('child_process').execFileSync('python3', ['-I', '-c',
@@ -296,6 +315,7 @@ async function bridge(ctx) {
   const tbdUrl = await quickEvent(host, 'Someday', null, null);
   { const f = await host.textContent('#facts'); check(f.includes('Date to be decided') && !(await host.locator('[data-act=cal]').count()), 'date TBD, no calendar: ' + f); }
   check(!(await host.locator('#bring .item, #bring form').count()), 'event without bring list');
+  const phoneUrl = await quickEvent(host, 'Phone needed', day(6), null, async pg => { await pg.check('input[name=require_phone]'); });
   const softUrl = await quickEvent(host, 'Soft deadline', day(4), day(-1), async pg => { await pg.uncheck('input[name=rsvp_lock]'); });
   const multiUrl = await quickEvent(host, 'Camping trip', day(10), null, async pg => {
     await pg.fill('input[name=end_date]', day(12)); await pg.fill('input[name=start_time]', '16:00'); await pg.fill('input[name=end_time]', '11:00');
@@ -311,6 +331,18 @@ async function bridge(ctx) {
   await g2.goto(closedUrl);
   await g2.waitForSelector('#me');
   check((await g2.textContent('#me')).includes('RSVPs are closed') && !(await g2.locator('[data-act=status]').count()), 'guest sees closed RSVPs');
+  await g2.goto(phoneUrl);
+  await g2.click('[data-act=status][data-id=going]');
+  await g2.fill('#rFirst', 'Cy'); await g2.fill('#rLast', 'Ng'); await g2.fill('#rPhone', '');
+  await g2.click('#rsvpForm button[type=submit]');
+  check(await g2.locator('#rsvpForm').isVisible(), 'phone required blocks RSVP');
+  await g2.fill('#rPhone', '12');
+  await g2.click('#rsvpForm button[type=submit]');
+  check(await g2.locator('#rsvpForm').isVisible(), 'bad phone rejected');
+  await g2.fill('#rPhone', '612-555-0100');
+  await g2.click('#rsvpForm button[type=submit]');
+  await g2.waitForSelector('.myans');
+  check(true, 'RSVP with required phone');
   await g2.goto(softUrl);
   await g2.waitForSelector('[data-act=status]');
   check((await g2.textContent('#me')).includes('Please reply by'), 'soft deadline still open');

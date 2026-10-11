@@ -92,6 +92,8 @@ alter table rsvp_events add column if not exists bring_list boolean not null def
 alter table rsvp_events add column if not exists rsvp_lock  boolean not null default true; -- false = the RSVP date is only a reminder
 alter table rsvp_guests add column if not exists first_name text;
 alter table rsvp_guests add column if not exists last_name  text;
+alter table rsvp_events add column if not exists require_phone boolean not null default false;
+alter table rsvp_guests add column if not exists phone text;            -- host-only
 
 create index if not exists rsvp_guests_event on rsvp_guests(event_id);
 create index if not exists rsvp_posts_event  on rsvp_posts(event_id);
@@ -118,6 +120,19 @@ end $$;
 
 -- old signature (single name) replaced by first + last name
 drop function if exists rsvp_respond(text, text, text, text, text, int, text, jsonb);
+drop function if exists rsvp_respond(text, text, text, text, text, text, int, text, jsonb);
+
+-- Phone number as +digits. 10 digits are taken as a US number.
+create or replace function _rsvp_phone(p text) returns text
+language sql immutable set search_path = public, pg_temp as $$
+  select case
+    when d = '' then ''
+    when plus then '+' || d
+    when length(d) = 10 then '+1' || d
+    when length(d) = 11 and left(d, 1) = '1' then '+' || d
+    else d end
+  from (select regexp_replace(coalesce(p, ''), '\D', '', 'g') as d, btrim(coalesce(p, '')) like '+%' as plus) x;
+$$;
 
 create or replace function _rsvp_hash(p_token text) returns text
 language sql immutable set search_path = public, pg_temp as $$
@@ -237,6 +252,7 @@ begin
     'guests_add_items', coalesce((p->>'guests_add_items')::boolean, true),
     'bring_list', coalesce((p->>'bring_list')::boolean, true),
     'rsvp_lock', coalesce((p->>'rsvp_lock')::boolean, true),
+    'require_phone', coalesce((p->>'require_phone')::boolean, false),
     'questions', v_qs, 'links', v_links);
 end $$;
 
@@ -256,11 +272,11 @@ declare
   v_id uuid; v_label text; v_n int := 0;
 begin
   insert into rsvp_events (code, title, host_name, description, location, event_date, end_date, start_time, end_time, tz,
-    theme, emoji, max_plus_ones, rsvp_by, hide_guests, hide_count, guests_add_items, bring_list, rsvp_lock, questions, links)
+    theme, emoji, max_plus_ones, rsvp_by, hide_guests, hide_count, guests_add_items, bring_list, rsvp_lock, require_phone, questions, links)
   values (v_code, f->>'title', f->>'host_name', f->>'description', f->>'location', (f->>'event_date')::date,
     (f->>'end_date')::date, (f->>'start_time')::time, (f->>'end_time')::time, f->>'tz', f->>'theme', f->>'emoji',
     (f->>'max_plus_ones')::int, (f->>'rsvp_by')::date, (f->>'hide_guests')::boolean, (f->>'hide_count')::boolean,
-    (f->>'guests_add_items')::boolean, (f->>'bring_list')::boolean, (f->>'rsvp_lock')::boolean, f->'questions', f->'links')
+    (f->>'guests_add_items')::boolean, (f->>'bring_list')::boolean, (f->>'rsvp_lock')::boolean, (f->>'require_phone')::boolean, f->'questions', f->'links')
   returning id into v_id;
   insert into rsvp_owner_keys (event_id, key_hash, label) values (v_id, _rsvp_hash(v_token), 'host');
   if p_items is not null and (f->>'bring_list')::boolean then
@@ -289,7 +305,7 @@ begin
   v_owner := _rsvp_is_owner(e.id, p_owner_token);
 
   select jsonb_build_object('id', g.id, 'name', g.name, 'status', g.status, 'plus_ones', g.plus_ones,
-           'note', g.note, 'answers', g.answers,
+           'note', g.note, 'answers', g.answers, 'phone', coalesce(g.phone, ''),
            'first_name', coalesce(g.first_name, split_part(g.name, ' ', 1)),
            'last_name', coalesce(g.last_name, nullif(btrim(substr(g.name, char_length(split_part(g.name, ' ', 1)) + 1)), '')))
     into v_me from rsvp_guests g where g.event_id = e.id and g.participant = v_pid and v_pid <> '';
@@ -310,6 +326,7 @@ begin
              'last_name', coalesce(g.last_name, nullif(btrim(substr(g.name, char_length(split_part(g.name, ' ', 1)) + 1)), '')),
              'mine', g.participant = v_pid,
              'answers', case when v_owner then g.answers end,
+             'phone', case when v_owner then coalesce(g.phone, '') end,
              'replied_at', case when v_owner then g.created_at end,
              'updated_at', case when v_owner then g.updated_at end) order by g.created_at), '[]'::jsonb)
       into v_guests from rsvp_guests g where g.event_id = e.id;
@@ -335,7 +352,8 @@ begin
       'end_time', to_char(e.end_time, 'HH24:MI'), 'tz', e.tz, 'theme', e.theme, 'emoji', e.emoji,
       'max_plus_ones', e.max_plus_ones, 'rsvp_by', e.rsvp_by, 'rsvp_closed', _rsvp_closed(e),
       'hide_guests', e.hide_guests, 'hide_count', e.hide_count, 'guests_add_items', e.guests_add_items,
-      'bring_list', e.bring_list, 'rsvp_lock', e.rsvp_lock, 'questions', e.questions, 'links', e.links),
+      'bring_list', e.bring_list, 'rsvp_lock', e.rsvp_lock, 'require_phone', e.require_phone,
+      'questions', e.questions, 'links', e.links),
     'is_owner', v_owner,
     'me', v_me,
     'counts', v_counts,
@@ -345,7 +363,7 @@ begin
 end $$;
 
 create or replace function rsvp_respond(p_code text, p_participant text, p_owner_token text, p_first_name text,
-  p_last_name text, p_status text, p_plus_ones int, p_note text, p_answers jsonb)
+  p_last_name text, p_phone text, p_status text, p_plus_ones int, p_note text, p_answers jsonb)
 returns void language plpgsql security definer set search_path = public, pg_temp as $$
 declare
   e rsvp_events;
@@ -353,6 +371,7 @@ declare
   v_last text := _rsvp_clean(p_last_name);
   v_name text := v_first || ' ' || v_last;
   v_note text := _rsvp_text(p_note);
+  v_phone text := _rsvp_phone(p_phone);
   v_plus int := coalesce(p_plus_ones, 0);
   v_ans jsonb := '{}'::jsonb; q jsonb; v_a text;
 begin
@@ -362,6 +381,8 @@ begin
   if _rsvp_closed(e) and not _rsvp_is_owner(e.id, p_owner_token) then raise exception 'rsvp_closed'; end if;
   if v_first = '' or v_last = '' or char_length(v_first) > 30 or char_length(v_last) > 30 then raise exception 'invalid_full_name'; end if;
   if p_status not in ('going', 'maybe', 'no') then raise exception 'invalid_status'; end if;
+  if v_phone = '' and e.require_phone then raise exception 'phone_required'; end if;
+  if v_phone <> '' and length(regexp_replace(v_phone, '\D', '', 'g')) not between 7 and 15 then raise exception 'invalid_phone'; end if;
   if char_length(v_note) > 200 then raise exception 'note_too_long'; end if;
   if p_status = 'no' then v_plus := 0; end if;
   if v_plus < 0 or v_plus > e.max_plus_ones then raise exception 'too_many_plus_ones'; end if;
@@ -374,10 +395,10 @@ begin
      and (select count(*) from rsvp_guests where event_id = e.id) >= 300 then
     raise exception 'event_full';
   end if;
-  insert into rsvp_guests (event_id, participant, name, first_name, last_name, status, plus_ones, note, answers)
-  values (e.id, p_participant, v_name, v_first, v_last, p_status, v_plus, v_note, v_ans)
+  insert into rsvp_guests (event_id, participant, name, first_name, last_name, phone, status, plus_ones, note, answers)
+  values (e.id, p_participant, v_name, v_first, v_last, nullif(v_phone, ''), p_status, v_plus, v_note, v_ans)
   on conflict (event_id, participant) do update
-    set name = excluded.name, first_name = excluded.first_name, last_name = excluded.last_name, status = excluded.status, plus_ones = excluded.plus_ones,
+    set name = excluded.name, first_name = excluded.first_name, last_name = excluded.last_name, phone = excluded.phone, status = excluded.status, plus_ones = excluded.plus_ones,
         note = excluded.note, answers = excluded.answers, updated_at = now();
   -- keep the name on bring-list claims in step
   update rsvp_claims set name = v_name where event_id = e.id and participant = p_participant;
@@ -402,7 +423,7 @@ begin
     tz = f->>'tz', theme = f->>'theme', emoji = f->>'emoji', max_plus_ones = (f->>'max_plus_ones')::int,
     rsvp_by = (f->>'rsvp_by')::date, hide_guests = (f->>'hide_guests')::boolean, hide_count = (f->>'hide_count')::boolean,
     guests_add_items = (f->>'guests_add_items')::boolean, bring_list = (f->>'bring_list')::boolean,
-    rsvp_lock = (f->>'rsvp_lock')::boolean, questions = f->'questions', links = f->'links', updated_at = now()
+    rsvp_lock = (f->>'rsvp_lock')::boolean, require_phone = (f->>'require_phone')::boolean, questions = f->'questions', links = f->'links', updated_at = now()
   where id = e.id;
 end $$;
 
@@ -560,6 +581,7 @@ end $$;
 
 -- ------------------------------------------------------------------ grants
 
+revoke all on function _rsvp_phone(text) from public;
 revoke all on function _rsvp_hash(text), _rsvp_token(), _rsvp_new_code(), _rsvp_clean(text), _rsvp_text(text),
   _rsvp_is_owner(uuid, text), _rsvp_event_fields(jsonb), _rsvp_closed(rsvp_events) from public;
 
@@ -572,7 +594,7 @@ begin
         _rsvp_is_owner(uuid, text), _rsvp_event_fields(jsonb), _rsvp_closed(rsvp_events) from %I', r);
       execute format('grant execute on function
         rsvp_create(jsonb, text[]), rsvp_get(text, text, text),
-        rsvp_respond(text, text, text, text, text, text, int, text, jsonb),
+        rsvp_respond(text, text, text, text, text, text, text, int, text, jsonb),
         rsvp_update_event(text, text, jsonb), rsvp_delete_event(text, text), rsvp_remove_guest(text, text, uuid),
         rsvp_post(text, text, text, text, text, text), rsvp_delete_post(text, text, text, uuid),
         rsvp_item_add(text, text, text, text, text, int), rsvp_item_edit(text, text, text, uuid, text, int),
