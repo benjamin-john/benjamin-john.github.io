@@ -137,7 +137,6 @@ legend{font-weight:600;font-size:15px;margin-bottom:6px;padding:0}
 .glist{list-style:none;margin:8px 0 0;padding:0}
 .ghead{font-weight:600;font-size:15px;margin-top:14px;color:var(--muted)}
 .g{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
-.av{width:38px;height:38px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px}
 .g .nm{font-weight:600;overflow-wrap:anywhere}
 .g .plus{font-size:13px;font-weight:600;color:var(--muted);margin-left:4px}
 .g .note{display:block;color:var(--muted);font-size:14px;font-style:italic;overflow-wrap:anywhere}
@@ -180,6 +179,16 @@ legend{font-weight:600;font-size:15px;margin-bottom:6px;padding:0}
 .admin-list li{padding:14px 0;border-top:1px solid var(--line)}
 .admin-list .nm{font-family:var(--head);font-size:19px;font-weight:600;overflow-wrap:anywhere}
 .admin-list .meta{color:var(--muted);font-size:14px;margin:2px 0 10px}
+.texts{list-style:none;margin:10px 0 0;padding:0}
+.texts li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.texts li .who{min-width:0;overflow-wrap:anywhere}
+.texts li .who small{display:block;color:var(--muted);font-size:13px}
+.texts li.done .who b{color:var(--muted)}
+.texts a.btn{display:inline-flex;align-items:center;text-decoration:none;flex:none}
+.texts li.done a.btn{border-color:var(--line);color:var(--muted)}
+.aud{display:flex;flex-wrap:wrap;gap:4px 14px;margin:4px 0 8px}
+.aud label{display:flex;align-items:center;gap:6px;min-height:40px;cursor:pointer}
+.aud input{width:20px;height:20px;accent-color:var(--brand)}
 .foot{margin-top:30px;font-size:14px;text-align:center;color:var(--muted)}
 
 #toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translate(-50%,-14px);opacity:0;background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;max-width:calc(100% - 32px);pointer-events:none;transition:opacity .2s,transform .2s;z-index:10;font-size:15px}
@@ -420,7 +429,7 @@ var remoteApi = {
   create: function (ev, items) { return this.rpc('rsvp_create', { p_event: ev, p_items: items }); },
   get: function (code, pid, owner) { return this.rpc('rsvp_get', { p_code: code, p_participant: pid, p_owner_token: owner }); },
   respond: function (a) {
-    return this.rpc('rsvp_respond', { p_code: a.code, p_participant: a.pid, p_owner_token: a.owner, p_first_name: a.first, p_last_name: a.last,
+    return this.rpc('rsvp_respond', { p_code: a.code, p_participant: a.pid, p_owner_token: a.owner, p_first_name: a.first, p_last_name: a.last, p_phone: a.phone,
       p_status: a.status, p_plus_ones: a.plus_ones, p_note: a.note, p_answers: a.answers });
   },
   update: function (a) { return this.rpc('rsvp_update_event', { p_code: a.code, p_owner_token: a.owner, p_event: a.event }); },
@@ -457,7 +466,7 @@ var localApi = {
       emoji: String(p.emoji || '').trim() || '🎉', max_plus_ones: Number(p.max_plus_ones || 0),
       event_date: p.event_date || null, end_date: p.end_date || null, start_time: p.start_time || null, end_time: p.end_time || null, rsvp_by: p.rsvp_by || null,
       hide_guests: !!p.hide_guests, hide_count: !!p.hide_count, guests_add_items: p.guests_add_items !== false,
-      bring_list: p.bring_list !== false, rsvp_lock: p.rsvp_lock !== false, questions: [], links: []
+      bring_list: p.bring_list !== false, rsvp_lock: p.rsvp_lock !== false, require_phone: !!p.require_phone, questions: [], links: []
     };
     if (!f.title || this.len(f.title) > 120) throw new ApiError('invalid_title');
     if (this.len(f.host_name) > 40) throw new ApiError('invalid_host');
@@ -506,7 +515,7 @@ var localApi = {
     var e = this.find(this.db(), code);
     if (!e) return this.ok(null);
     var own = this.isOwner(e, owner), me = null, counts = null, guests = null;
-    e.guests.forEach(function (g) { if (g.pid === pid) me = { id: g.id, name: g.name, first_name: g.first_name, last_name: g.last_name, status: g.status, plus_ones: g.plus_ones, note: g.note, answers: g.answers }; });
+    e.guests.forEach(function (g) { if (g.pid === pid) me = { id: g.id, name: g.name, first_name: g.first_name, last_name: g.last_name, phone: g.phone || '', status: g.status, plus_ones: g.plus_ones, note: g.note, answers: g.answers }; });
     if (own || !e.hide_count) {
       counts = { going: 0, going_plus: 0, maybe: 0, no: 0 };
       e.guests.forEach(function (g) {
@@ -516,7 +525,7 @@ var localApi = {
     }
     if (own || !e.hide_guests) {
       guests = e.guests.map(function (g) {
-        return { id: g.id, name: g.name, first_name: g.first_name, last_name: g.last_name, status: g.status, plus_ones: g.plus_ones, note: g.note, mine: g.pid === pid, answers: own ? g.answers : null,
+        return { id: g.id, name: g.name, first_name: g.first_name, last_name: g.last_name, status: g.status, plus_ones: g.plus_ones, note: g.note, mine: g.pid === pid, answers: own ? g.answers : null, phone: own ? g.phone || '' : null,
           replied_at: own ? g.created_at : null, updated_at: own ? g.updated_at : null };
       });
     }
@@ -524,7 +533,7 @@ var localApi = {
       event: { code: e.code, title: e.title, host_name: e.host_name, description: e.description, location: e.location,
         event_date: e.event_date, end_date: e.end_date || null, start_time: e.start_time, end_time: e.end_time, tz: e.tz, theme: e.theme, emoji: e.emoji,
         max_plus_ones: e.max_plus_ones, rsvp_by: e.rsvp_by, rsvp_closed: rsvpClosed(e), hide_guests: e.hide_guests,
-        hide_count: e.hide_count, guests_add_items: e.guests_add_items, bring_list: e.bring_list !== false, rsvp_lock: e.rsvp_lock !== false,
+        hide_count: e.hide_count, guests_add_items: e.guests_add_items, bring_list: e.bring_list !== false, rsvp_lock: e.rsvp_lock !== false, require_phone: !!e.require_phone,
         questions: e.questions, links: e.links || [] },
       is_owner: own, me: me, counts: counts, guests: guests,
       posts: e.posts.map(function (p) { return { id: p.id, kind: p.kind, name: p.name, body: p.body, created_at: p.created_at, mine: !!p.pid && p.pid === pid }; }),
@@ -541,6 +550,9 @@ var localApi = {
     var first = this.clean(a.first), last = this.clean(a.last), name = first + ' ' + last, note = this.text(a.note), plus = a.status === 'no' ? 0 : Number(a.plus_ones || 0);
     if (!first || !last || this.len(first) > 30 || this.len(last) > 30) return this.fail('invalid_full_name');
     if (!STATUS[a.status]) return this.fail('invalid_status');
+    var phone = normPhone(a.phone);
+    if (!phone && e.require_phone) return this.fail('phone_required');
+    if (phone && !phoneOk(phone)) return this.fail('invalid_phone');
     if (this.len(note) > 200) return this.fail('note_too_long');
     if (!(plus >= 0 && plus <= e.max_plus_ones)) return this.fail('too_many_plus_ones');
     var ans = {}, long = false;
@@ -551,7 +563,7 @@ var localApi = {
       if (e.guests.length >= 300) return this.fail('event_full');
       g = { id: uuid(), pid: a.pid, created_at: now }; e.guests.push(g);
     }
-    g.name = name; g.first_name = first; g.last_name = last; g.status = a.status; g.plus_ones = plus; g.note = note; g.answers = ans; g.updated_at = now;
+    g.name = name; g.first_name = first; g.last_name = last; g.phone = phone; g.status = a.status; g.plus_ones = plus; g.note = note; g.answers = ans; g.updated_at = now;
     e.items.forEach(function (i) { i.claims.forEach(function (c) { if (c.pid === a.pid) c.name = name; }); });
     this.put(db); return this.ok();
   },
@@ -685,6 +697,8 @@ function friendly(e) {
     invalid_participant: 'This browser’s identity is missing. Reload the page and try again.',
     rsvp_closed: 'RSVPs for this event are closed.',
     invalid_name: 'Enter your name first.',
+    phone_required: 'Enter your phone number. The host asked for one.',
+    invalid_phone: 'That phone number doesn’t look right.',
     invalid_full_name: 'Enter your first and last name (up to 30 characters each).',
     invalid_end_date: 'The end date can’t be before the start date.',
     invalid_link_label: 'Each link button needs a label (up to 40 characters).',
@@ -730,7 +744,8 @@ var S = {};
 function resetState() {
   S = { code: '', pid: '', owner: null, isOwner: false, ev: null, me: null, counts: null, guests: null, posts: [], items: [],
     justCreated: false, fromAdmin: !!A.events, rsvpOpen: false, form: null, editingItem: null, editItemText: '', editItemNeeded: 1,
-    draft: { comment: '', ann: '', item: '', needed: 1, cfirst: '', clast: '' }, calOpen: false, mode: 'view' };
+    draft: { comment: '', ann: '', item: '', needed: 1, cfirst: '', clast: '', sms: '' },
+    aud: { going: true, maybe: true, no: false }, smsLink: true, texted: {}, calOpen: false, mode: 'view' };
 }
 var A = { pw: '', events: null }; // the admin password lives only in memory, never saved
 
@@ -768,18 +783,26 @@ function savedNames() {
   return { first: f, last: l };
 }
 function saveNames(f, l) { store.set('rsvp.first', f); store.set('rsvp.last', l); store.set('rsvp.name', (f + ' ' + l).trim()); }
+// Same rules as _rsvp_phone in schema.sql: +digits, 10 digits taken as a US number.
+function normPhone(v) {
+  var t = String(v || '').trim(), d = t.replace(/\D/g, '');
+  if (!d) return '';
+  if (t.charAt(0) === '+') return '+' + d;
+  if (d.length === 10) return '+1' + d;
+  if (d.length === 11 && d.charAt(0) === '1') return '+' + d;
+  return d;
+}
+function phoneOk(p) { var n = p.replace(/\D/g, '').length; return n >= 7 && n <= 15; }
+function fmtPhone(p) {
+  var m = /^\+1(\d{3})(\d{3})(\d{4})$/.exec(p || '');
+  return m ? '(' + m[1] + ') ' + m[2] + '-' + m[3] : (p || '');
+}
 function cleanName(v) { return String(v || '').replace(/\s+/g, ' ').trim(); }
 function myName() {
   if (S.me && S.me.name) return S.me.name;
   var n = savedNames();
   return n.first && n.last ? n.first + ' ' + n.last : '';
 }
-function avatarColor(name) {
-  var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  return ['#8A3B12', '#2E8B57', '#1C6E8C', '#7B2FF7', '#B7860B', '#CC423D', '#35577D', '#C2185B'][h % 8];
-}
-function avatar(name) { var n = String(name || '?').trim(); return '<span class="av" aria-hidden="true" style="background:' + avatarColor(n) + '">' + esc((Array.from(n)[0] || '?').toUpperCase()) + '</span>'; }
-
 /* -------------------------------------------------------------------- routes */
 
 function route() {
@@ -925,6 +948,7 @@ function eventFormHtml(ev) {
     '<div class="checks">' +
       '<label class="check"><input type="checkbox" name="hide_guests"' + (e.hide_guests ? ' checked' : '') + '><span><b>Hide guest list</b><small>Guests don’t see who else replied. You always do.</small></span></label>' +
       '<label class="check"><input type="checkbox" name="hide_count"' + (e.hide_count ? ' checked' : '') + '><span><b>Hide guest count</b><small>Guests don’t see how many are going.</small></span></label>' +
+      '<label class="check"><input type="checkbox" name="require_phone"' + (e.require_phone ? ' checked' : '') + '><span><b>Require a phone number</b><small>So you can text guests from your phone. Only you see the numbers. Without this, it’s optional.</small></span></label>' +
     '</div>' +
 
     '<h3 class="sect">Bring list</h3>' +
@@ -961,7 +985,7 @@ function readEventForm(form, ev) {
     tz: ev ? ev.tz : viewerTz(), theme: F.theme, emoji: (f.emoji.value || '').trim() || F.emoji || '🎉',
     max_plus_ones: Number(f.max_plus_ones.value || 0), rsvp_by: f.rsvp_by.value || null,
     hide_guests: f.hide_guests.checked, hide_count: f.hide_count.checked, guests_add_items: f.guests_add_items.checked,
-    bring_list: f.bring_list.checked, rsvp_lock: f.rsvp_lock.checked, questions: qs,
+    bring_list: f.bring_list.checked, rsvp_lock: f.rsvp_lock.checked, require_phone: f.require_phone.checked, questions: qs,
     links: F.links.map(function (l) { return { label: l.label.replace(/\s+/g, ' ').trim(), url: l.url.trim() }; }).filter(function (l) { return l.label || l.url; })
   };
 }
@@ -1190,7 +1214,7 @@ function renderAnnc() {
 function startForm(status) {
   var m = S.me;
   var sn = savedNames();
-  S.form = { status: status || (m && m.status) || 'going', first: m && m.first_name ? m.first_name : sn.first, last: m && m.first_name ? (m.last_name || '') : sn.last, plus: m ? m.plus_ones : 0, note: m ? m.note : '', answers: m ? Object.assign({}, m.answers || {}) : {} };
+  S.form = { phone: m && m.phone ? m.phone : store.get('rsvp.phone', '') || '', status: status || (m && m.status) || 'going', first: m && m.first_name ? m.first_name : sn.first, last: m && m.first_name ? (m.last_name || '') : sn.last, plus: m ? m.plus_ones : 0, note: m ? m.note : '', answers: m ? Object.assign({}, m.answers || {}) : {} };
   S.rsvpOpen = true;
 }
 
@@ -1206,6 +1230,8 @@ function renderMe() {
       '<form id="rsvpForm" class="rform" novalidate>' +
         '<div class="row2"><label class="fld"><span>First name</span><input type="text" id="rFirst" maxlength="30" autocomplete="given-name" value="' + esc(f.first) + '"></label>' +
           '<label class="fld"><span>Last name</span><input type="text" id="rLast" maxlength="30" autocomplete="family-name" value="' + esc(f.last) + '"></label></div>' +
+        '<label class="fld"><span>Mobile number' + (ev.require_phone ? '' : ' (optional)') + '</span><input type="tel" id="rPhone" maxlength="25" autocomplete="tel" inputmode="tel" placeholder="(612) 555-0123" value="' + esc(fmtPhone(f.phone)) + '">' +
+          '<small>Only the host sees it, for event texts.</small></label>' +
         (ev.max_plus_ones > 0 && f.status !== 'no' ? '<label class="fld"><span>Bringing anyone?</span><select id="rPlus">' +
           Array.apply(null, { length: ev.max_plus_ones + 1 }).map(function (_, i) {
             return '<option value="' + i + '"' + (Math.min(f.plus, ev.max_plus_ones) === i ? ' selected' : '') + '>' + (i === 0 ? 'Just me' : '+' + i + (i === 1 ? ' guest' : ' guests')) + '</option>';
@@ -1246,9 +1272,13 @@ function submitRsvp() {
   f.first = cleanName($('#rFirst').value); f.last = cleanName($('#rLast').value);
   if (!f.first) { toast('Enter your first name.'); $('#rFirst').focus(); return; }
   if (!f.last) { toast('Enter your last name.'); $('#rLast').focus(); return; }
+  f.phone = normPhone($('#rPhone').value);
+  if (!f.phone && S.ev.require_phone) { toast(friendly(new ApiError('phone_required'))); $('#rPhone').focus(); return; }
+  if (f.phone && !phoneOk(f.phone)) { toast(friendly(new ApiError('invalid_phone'))); $('#rPhone').focus(); return; }
   saveNames(f.first, f.last);
+  if (f.phone) store.set('rsvp.phone', f.phone);
   btn.disabled = true;
-  api.respond({ code: S.code, pid: S.pid, owner: S.owner, first: f.first, last: f.last, status: f.status, plus_ones: f.status === 'no' ? 0 : Number(f.plus || 0), note: f.note, answers: f.answers })
+  api.respond({ code: S.code, pid: S.pid, owner: S.owner, first: f.first, last: f.last, phone: f.phone, status: f.status, plus_ones: f.status === 'no' ? 0 : Number(f.plus || 0), note: f.note, answers: f.answers })
     .then(reload).then(function () {
       S.rsvpOpen = false; renderParts();
       toast(f.status === 'going' ? 'See you there! 🎉' : f.status === 'maybe' ? 'Got it. Hope you can make it.' : 'Thanks for letting the host know.');
@@ -1277,9 +1307,10 @@ function renderGuests() {
       var ans = S.isOwner && x.answers ? qs.filter(function (q) { return x.answers[q.id]; }).map(function (q) {
         return '<span class="ans"><i>' + esc(q.text) + '</i> ' + esc(x.answers[q.id]) + '</span>';
       }).join('') : '';
-      return '<li class="g">' + avatar(x.name) + '<div class="grow"><span class="nm">' + esc(x.name) + '</span>' +
+      return '<li class="g"><div class="grow"><span class="nm">' + esc(x.name) + '</span>' +
         (x.plus_ones && x.status !== 'no' ? '<span class="plus">+' + x.plus_ones + '</span>' : '') + (x.mine ? ' <span class="hint" style="font-size:13px">(you)</span>' : '') +
         (x.note ? '<span class="note">“' + esc(x.note) + '”</span>' : '') + ans +
+        (S.isOwner && x.phone ? '<span class="stamp">📱 ' + esc(fmtPhone(x.phone)) + '</span>' : '') +
         (S.isOwner && x.replied_at ? '<span class="stamp">Replied ' + esc(fmtStampTime(x.replied_at)) +
           (x.updated_at && new Date(x.updated_at) - new Date(x.replied_at) > 60000 ? ' · changed ' + esc(fmtStampTime(x.updated_at)) : '') + '</span>' : '') +
         (S.isOwner ? '<button type="button" class="link danger" data-act="rm-guest" data-id="' + esc(x.id) + '" data-name="' + esc(x.name) + '">Remove</button>' : '') +
@@ -1357,7 +1388,7 @@ function renderComments() {
   var el = $('#comments'), list = S.posts.filter(function (p) { return p.kind === 'comment'; }), named = !!myName();
   el.innerHTML = '<h3 class="sect">Comments' + (list.length ? ' (' + list.length + ')' : '') + '</h3>' +
     (list.length ? '<ul class="cmts">' + list.map(function (p) {
-      return '<li class="cmt">' + avatar(p.name) + '<div class="grow"><div class="top"><b>' + esc(p.name) + '</b> · ' + esc(relTime(p.created_at)) + '</div><p>' + linkify(p.body) + '</p>' +
+      return '<li class="cmt"><div class="grow"><div class="top"><b>' + esc(p.name) + '</b> · ' + esc(relTime(p.created_at)) + '</div><p>' + linkify(p.body) + '</p>' +
         (p.mine || S.isOwner ? '<button type="button" class="link danger" data-act="del-post" data-id="' + esc(p.id) + '">Delete</button>' : '') + '</div></li>';
     }).join('') + '</ul>' : '<p class="hint">No comments yet.</p>') +
     '<form id="cmtForm" class="cform" novalidate>' +
@@ -1391,6 +1422,14 @@ function renderHost() {
       '<button type="button" class="btn small" data-act="copy-host">Copy host link</button>' +
       '<button type="button" class="btn small danger" data-act="delete-event">Delete event</button></div>' +
     '<p class="hint" style="margin-top:8px;font-size:13px">The host link gives control of this event on another device. Keep it private.</p>' +
+    '<h3 style="font-size:16px;margin-top:20px">Text guests</h3>' +
+    '<p class="hint" style="font-size:13px;margin-top:2px">Each “Text” button opens Messages on your phone with the message ready. Tap Send, come back, and do the next one. Texts come from your number.</p>' +
+    '<div class="aud" role="group" aria-label="Who to text">' + ['going', 'maybe', 'no'].map(function (k) {
+      return '<label><input type="checkbox" data-aud="' + k + '"' + (S.aud[k] ? ' checked' : '') + '>' + STATUS[k].label + '</label>';
+    }).join('') + '</div>' +
+    '<label class="fld" style="margin-bottom:6px"><span>Message</span><textarea id="smsBody" rows="3" maxlength="600" placeholder="Hi! Quick reminder…">' + esc(S.draft.sms) + '</textarea></label>' +
+    '<label class="check" style="min-height:0;padding:4px"><input type="checkbox" id="smsLink"' + (S.smsLink ? ' checked' : '') + '><span>Add the event link at the end</span></label>' +
+    '<div id="textList"></div>' +
     '<h3 style="font-size:16px;margin-top:20px">Download</h3>' +
     '<p class="hint" style="font-size:13px;margin-top:2px">Spreadsheet files (CSV) that open in Excel, Numbers or Google Sheets.</p>' +
     '<div class="row"><button type="button" class="btn small primary" data-act="dl" data-id="all">Everything (.zip)</button>' +
@@ -1399,6 +1438,31 @@ function renderHost() {
       '<button type="button" class="btn small" data-act="dl" data-id="comments">Comments</button>' +
       '<button type="button" class="btn small" data-act="dl" data-id="announcements">Announcements</button>' +
       '<button type="button" class="btn small" data-act="dl" data-id="event">Event details</button></div></div>';
+  renderTextList();
+}
+
+/* texting (host) */
+function smsBody() {
+  var msg = S.draft.sms.trim(), link = S.smsLink ? shareUrl(S.code) : '';
+  return msg + (msg && link ? '\n\n' : '') + link;
+}
+function renderTextList() {
+  var el = $('#textList');
+  if (!el) return;
+  var list = (S.guests || []).filter(function (g) { return S.aud[g.status]; });
+  var withPhone = list.filter(function (g) { return g.phone; }), without = list.length - withPhone.length, body = smsBody();
+  if (!list.length) { el.innerHTML = '<p class="hint" style="margin-top:8px">Nobody to text yet.</p>'; return; }
+  var sent = withPhone.filter(function (g) { return S.texted[g.id]; }).length;
+  el.innerHTML = (withPhone.length ? '<p class="hint" style="margin-top:8px;font-size:14px">' + sent + ' of ' + withPhone.length + ' opened' +
+      (sent ? ' · <button type="button" class="link" style="padding:0;font-size:14px" data-act="texts-reset">Start over</button>' : '') + '</p>' : '') +
+    '<ul class="texts">' + withPhone.map(function (g) {
+      var href = 'sms:' + g.phone + '?body=' + encodeURIComponent(body);
+      return '<li' + (S.texted[g.id] ? ' class="done"' : '') + '><span class="who"><b>' + (S.texted[g.id] ? '✓ ' : '') + esc(g.name) + '</b><small>' + esc(fmtPhone(g.phone)) + ' · ' + STATUS[g.status].label + '</small></span>' +
+        (body ? '<a class="btn small" href="' + esc(href) + '" data-text="' + esc(g.id) + '">' + (S.texted[g.id] ? 'Again' : 'Text') + '</a>' : '') + '</li>';
+    }).join('') + '</ul>' +
+    (!body && withPhone.length ? '<p class="hint" style="font-size:14px;margin-top:6px">Write a message to get the Text buttons.</p>' : '') +
+    (without ? '<p class="hint" style="font-size:14px;margin-top:6px">' + without + (without === 1 ? ' person' : ' people') + ' didn’t give a number: ' +
+      list.filter(function (g) { return !g.phone; }).map(function (g) { return esc(g.name); }).join(', ') + '.</p>' : '');
 }
 
 /* downloads (host) */
@@ -1416,9 +1480,9 @@ function csvStamp(ts) {
 }
 function exportFiles() {
   var ev = S.ev, qs = ev.questions || [], files = {};
-  var guests = [['First name', 'Last name', 'Response', 'Plus-ones', 'Party size', 'Note'].concat(qs.map(function (q) { return q.text; })).concat(['Replied', 'Last changed'])];
+  var guests = [['First name', 'Last name', 'Phone', 'Response', 'Plus-ones', 'Party size', 'Note'].concat(qs.map(function (q) { return q.text; })).concat(['Replied', 'Last changed'])];
   (S.guests || []).forEach(function (g) {
-    guests.push([g.first_name || g.name, g.last_name || '', STATUS[g.status].label.replace('’', "'"), g.status === 'no' ? 0 : g.plus_ones,
+    guests.push([g.first_name || g.name, g.last_name || '', fmtPhone(g.phone || ''), STATUS[g.status].label.replace('’', "'"), g.status === 'no' ? 0 : g.plus_ones,
       g.status === 'no' ? 0 : 1 + g.plus_ones, g.note].concat(qs.map(function (q) { return (g.answers || {})[q.id] || ''; }))
       .concat([csvStamp(g.replied_at), csvStamp(g.updated_at)]));
   });
@@ -1496,6 +1560,12 @@ function doDownload(which) {
 /* ------------------------------------------------------------------- events */
 
 $app.addEventListener('click', function (e) {
+  var tx = e.target.closest('[data-text]');
+  if (tx) { // let Messages open, then tick the person off
+    var gid = tx.dataset.text;
+    setTimeout(function () { S.texted[gid] = true; renderTextList(); }, 400);
+    return;
+  }
   var t = e.target.closest('[data-act]');
   if (!t || !$app.contains(t)) return;
   var id = t.dataset.id;
@@ -1506,6 +1576,7 @@ $app.addEventListener('click', function (e) {
     case 'link-add': if (F.links.length < 5) { F.links.push({ label: '', url: '' }); $('#linkRows').innerHTML = linkRowsHtml(); var li = document.querySelector('#linkRows .linkrow:last-of-type input'); if (li) li.focus(); } break;
     case 'link-rm': F.links.splice(Number(t.dataset.i), 1); if (!F.links.length) F.links.push({ label: '', url: '' }); $('#linkRows').innerHTML = linkRowsHtml(); break;
     case 'dl': doDownload(id); break;
+    case 'texts-reset': S.texted = {}; renderTextList(); break;
     case 'share-details': copyText(detailsText()).then(function (ok) { toast(ok ? 'Event details copied. Paste them into a text or email.' : 'Could not copy.'); }); break;
     case 'copy-link': copyText(shareUrl(S.code), $('#shareUrl')).then(function (ok) { toast(ok ? 'Link copied.' : 'Press and hold the link to copy it.'); }); break;
     case 'share': copyText(shareUrl(S.code)).then(function (ok) { toast(ok ? 'Link copied. Paste it into your group chat.' : shareUrl(S.code)); }); break;
@@ -1563,6 +1634,7 @@ $app.addEventListener('input', function (e) {
   if (S.form) {
     if (t.id === 'rFirst') S.form.first = t.value;
     else if (t.id === 'rLast') S.form.last = t.value;
+    else if (t.id === 'rPhone') S.form.phone = t.value;
     else if (t.id === 'rNote') S.form.note = t.value;
     else if (t.dataset.q) S.form.answers[t.dataset.q] = t.value;
   }
@@ -1570,12 +1642,15 @@ $app.addEventListener('input', function (e) {
   else if (t.id === 'cFirst') S.draft.cfirst = t.value;
   else if (t.id === 'cLast') S.draft.clast = t.value;
   else if (t.id === 'annBody') S.draft.ann = t.value;
+  else if (t.id === 'smsBody') { S.draft.sms = t.value; renderTextList(); }
   else if (t.id === 'newItem') S.draft.item = t.value;
   else if (t.id === 'itemEdit') S.editItemText = t.value;
 });
 
 $app.addEventListener('change', function (e) {
   var t = e.target;
+  if (t.dataset.aud) { S.aud[t.dataset.aud] = t.checked; renderTextList(); return; }
+  if (t.id === 'smsLink') { S.smsLink = t.checked; renderTextList(); return; }
   if (t.name === 'bring_list' && t.form) { $('#bringOpts').hidden = !t.checked; return; }
   if (t.name === 'end_date' && t.form) { $('#multiHint').hidden = !t.value; return; }
   if (t.id === 'rPlus' && S.form) S.form.plus = Number(t.value);
