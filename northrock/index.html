@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NorthRock</title>
+  <link rel="icon" type="image/svg+xml" href="n.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;800&family=Noto+Serif+Display:ital,wght@1,600&display=swap">
+  <link rel="stylesheet" href="northrock.css">
+</head>
+
+<body>
+  <svg class="watermark" viewBox="0 0 184.83 189.97" aria-hidden="true">
+    <path d="M142.56,0c14,6.36,19.09,20.27,20.71,34.71C165.81,20.5,170.09,5.87,184.83,0Z"/>
+    <path d="M163.63,89.33s-1.14,35.73-21.76,10.42C132.15,87.83,94.78,36.21,73.39,7A19.17,19.17,0,0,0,59.5,0C49.35,0,16.82.11,10.32.11c10.8,5,21.67,14.74,28.47,23.76q53.87,71.34,107.5,142.91c5.29,7,17.3,23.19,17.3,23.19s.25-40,0-57.72Z"/>
+    <path d="M62.87,189.86c-20.86-9.47-28.4-30.14-30.79-51.65C28.28,159.37,21.93,181.13,0,189.86Z"/>
+  </svg>
+
+  <main>
+    <header>
+      <img class="wordmark" src="wordmark.svg" alt="NorthRock Partners">
+      <p class="tagline">Extraordinary advice for exceptional people</p>
+    </header>
+
+    <section class="search">
+      <input id="searchBox" type="text" autocomplete="off" spellcheck="false"
+             placeholder="Search, or paste a Salesforce Id or URL" autofocus>
+      <div class="buttons">
+        <button data-engine="google" class="primary">Google</button>
+        <button data-engine="prod">Salesforce</button>
+        <button data-engine="fullsb" class="sandbox">Full Sandbox</button>
+        <button data-engine="claude">Claude</button>
+      </div>
+      <p id="hint" class="hint">Enter: Google &middot; Shift+Enter: Salesforce &middot; Option+Enter: Full Sandbox</p>
+    </section>
+
+    <nav id="bookmarks" class="bookmarks"></nav>
+  </main>
+
+  <script src="northrock.js"></script>
+</body>
+</html>

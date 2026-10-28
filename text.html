@@ -68,6 +68,10 @@
 <script>
 /* =========================================
    Global version store + per-tab autosaving
+
+   Text lives in IndexedDB, not localStorage. localStorage caps out around
+   5 MB per site, and every snapshot holds a full copy of the note, so one
+   large paste used to fill it and throw QuotaExceededError on every save.
    ========================================= */
 
 // ---- Tab identity (persists across reloads in same tab) ----
@@ -88,9 +92,9 @@ function getTabId() {
 }
 const TAB_ID = getTabId();
 
-// ---- Keys (shared across tabs for the same site/origin) ----
-const CURRENT_KEY  = 'notepad.current';      // last working text (global)
-const VERSIONS_KEY = 'notepad.versions';     // array of snapshots (global)
+// ---- Legacy localStorage keys (migrated into IndexedDB on first load) ----
+const CURRENT_KEY  = 'notepad.current';
+const VERSIONS_KEY = 'notepad.versions';
 
 // ---- Settings ----
 const MAX_VERSIONS = 200;                    // total versions kept
@@ -110,31 +114,125 @@ function fmtDateMMDDYYYY(date) {
   return `${mm}/${dd}/${yyyy}`;
 }
 function previewN(txt, n = DROPDOWN_PREVIEW_LIMIT) {
-  const t = (txt || '').replace(/\s+/g, ' ').trim();
+  // Only look at the head of the text; collapsing whitespace across megabytes is wasted work
+  const t = (txt || '').slice(0, n * 4).replace(/\s+/g, ' ').trim();
   return t.length <= n ? t : (t.slice(0, n) + '…');
 }
-function loadVersions() {
-  try {
-    const raw = localStorage.getItem(VERSIONS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-function saveVersions(list) {
-  localStorage.setItem(VERSIONS_KEY, JSON.stringify(list));
-}
+function hasContent(text) { return /\S/.test(text || ''); }
 function setStatus(msg) { $status().textContent = msg || ''; }
-
-// Find the index of the most recent snapshot for THIS tab (prefer the most recent overall)
-function findLastSnapshotIndexForTab(list) {
-  for (let i = list.length - 1; i >= 0; i--) {
-    if (list[i].tabId === TAB_ID) return i;
-  }
-  return -1;
+function isQuotaError(e) {
+  return e && (e.name === 'QuotaExceededError' || e.code === 22 ||
+               (e.inner && e.inner.name === 'QuotaExceededError'));
 }
 
-function updateDropdown() {
+/* ==================
+   IndexedDB storage
+   ==================
+   versions: { key, ts, text, tabId, kind }
+     key is 'auto:<tabId>' for a tab's single autosave, 'manual:<ts>' for snapshots.
+   kv: { key: 'current', text } for the last working text. */
+let dbPromise = null;
+
+function openDb() {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open('notepad', 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      db.createObjectStore('versions', { keyPath: 'key' }).createIndex('ts', 'ts');
+      db.createObjectStore('kv', { keyPath: 'key' });
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return dbPromise;
+}
+
+async function tx(stores, mode, work) {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const t = db.transaction(stores, mode);
+    let result;
+    Promise.resolve(work(t)).then(r => { result = r; });
+    t.oncomplete = () => resolve(result);
+    t.onerror = () => reject(t.error);
+    t.onabort = () => reject(t.error || new DOMException('Transaction aborted', 'AbortError'));
+  });
+}
+
+function reqToPromise(req) {
+  return new Promise((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function loadVersions() {
+  return tx(['versions'], 'readonly', t => reqToPromise(t.objectStore('versions').getAll()));
+}
+
+async function putVersion(v) {
+  await tx(['versions'], 'readwrite', t => { t.objectStore('versions').put(v); });
+  await pruneVersions();
+}
+
+// Keep the newest MAX_VERSIONS; walks the ts index oldest-first so texts are never loaded.
+function pruneVersions(extra = 0) {
+  return tx(['versions'], 'readwrite', t => {
+    const store = t.objectStore('versions');
+    store.count().onsuccess = e => {
+      let toDelete = e.target.result - MAX_VERSIONS + extra;
+      if (toDelete <= 0) return;
+      store.index('ts').openKeyCursor().onsuccess = ev => {
+        const cursor = ev.target.result;
+        if (!cursor || toDelete <= 0) return;
+        store.delete(cursor.primaryKey);
+        toDelete--;
+        cursor.continue();
+      };
+    };
+  });
+}
+
+function saveCurrent(text) {
+  return tx(['kv'], 'readwrite', t => { t.objectStore('kv').put({ key: 'current', text }); });
+}
+
+// Save, and if the disk quota is hit, drop the oldest snapshots and try once more.
+async function withQuotaRetry(save) {
+  try {
+    await save();
+  } catch (e) {
+    if (!isQuotaError(e)) throw e;
+    await pruneVersions(Math.ceil(MAX_VERSIONS / 4));
+    await save();
+  }
+}
+
+// One-time move of the old localStorage data into IndexedDB, then free that space.
+async function migrateFromLocalStorage() {
+  let raw;
+  try { raw = localStorage.getItem(VERSIONS_KEY); } catch { return; }
+  if (!raw) return;
+  let list = [];
+  try { list = JSON.parse(raw) || []; } catch {}
+  await tx(['versions'], 'readwrite', t => {
+    const store = t.objectStore('versions');
+    list.forEach(v => {
+      if (!v || typeof v.text !== 'string') return;
+      const key = v.kind === 'auto' && v.tabId ? `auto:${v.tabId}` : `manual:${v.id}`;
+      store.put({ key, ts: v.id, text: v.text, tabId: v.tabId, kind: v.kind || 'manual' });
+    });
+  });
+  try {
+    localStorage.removeItem(VERSIONS_KEY);
+    localStorage.removeItem(CURRENT_KEY);
+  } catch {}
+}
+
+async function updateDropdown() {
   const sel = $select();
-  const versions = loadVersions();
+  const versions = await loadVersions();
   sel.innerHTML = '';
   if (!versions.length) {
     const opt = document.createElement('option');
@@ -145,70 +243,55 @@ function updateDropdown() {
     return;
   }
   sel.disabled = false;
-  versions.slice().sort((a,b) => b.id - a.id).forEach(v => {
+  versions.sort((a,b) => b.ts - a.ts).forEach(v => {
     const opt = document.createElement('option');
-    opt.value = String(v.id);
-    opt.textContent = `${fmtDateMMDDYYYY(new Date(v.id))}: ${previewN(v.text)}`;
+    opt.value = v.key;
+    opt.textContent = `${fmtDateMMDDYYYY(new Date(v.ts))}: ${previewN(v.text)}`;
     sel.appendChild(opt);
   });
-  setStatus(`Snapshots: ${versions.length}`);
+}
+
+function reportSaveError(e, what) {
+  if (isQuotaError(e)) {
+    setStatus('Disk storage for this site is full; unable to save. Use Save Text to File.');
+  } else {
+    console.warn(`${what} failed:`, e);
+    setStatus(`${what} failed. Check console for details.`);
+  }
 }
 
 /* =======================
    Autosave (one per tab)
    ======================= */
 let inputDebounce = null;
+let lastAutosaved = null;
 
-function autosaveSnapshot() {
+async function autosaveSnapshot() {
   const text = $text().value || '';
-  const trimmed = text.replace(/\s+/g, ' ').trim();
   // Don't create/overwrite an autosave if the note is empty
-  if (!trimmed) {
-    localStorage.setItem(CURRENT_KEY, '');
+  if (!hasContent(text)) {
     setStatus('Empty note — autosave skipped.');
     return;
   }
-
-  const versions = loadVersions();
-  const now = Date.now();
-  const idx = findLastSnapshotIndexForTab(versions);
+  if (text === lastAutosaved) {
+    setStatus('No change since last autosave.');
+    return;
+  }
 
   try {
-    if (idx >= 0) {
-      // Overwrite this tab's last snapshot (keep a single autosave per tab)
-      if (versions[idx].text !== text) {
-        versions[idx].text = text;
-        versions[idx].id = now; // refresh date to reflect latest edit
-        saveVersions(versions);
-        setStatus(`Updated autosave @ ${new Date().toLocaleTimeString()}`);
-      } else {
-        setStatus('No change since last autosave.');
-      }
-    } else {
-      // First snapshot for this tab
-      versions.push({ id: now, text, tabId: TAB_ID, kind: 'auto' });
-      // Trim overall history if needed
-      if (versions.length > MAX_VERSIONS) {
-        versions.splice(0, versions.length - MAX_VERSIONS);
-      }
-      saveVersions(versions);
-      setStatus(`Created autosave @ ${new Date().toLocaleTimeString()}`);
-    }
-    localStorage.setItem(CURRENT_KEY, text);
-    updateDropdown();
+    await withQuotaRetry(async () => {
+      await putVersion({ key: `auto:${TAB_ID}`, ts: Date.now(), text, tabId: TAB_ID, kind: 'auto' });
+      await saveCurrent(text);
+    });
+    lastAutosaved = text;
+    setStatus(`Autosaved @ ${new Date().toLocaleTimeString()} (${text.length.toLocaleString()} characters)`);
+    await updateDropdown();
   } catch (e) {
-    if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
-      alert('Storage is full. Please delete older snapshots or lower MAX_VERSIONS.');
-      setStatus('Storage full; unable to save.');
-    } else {
-      console.warn('Autosave failed:', e);
-      setStatus('Autosave failed. Check console for details.');
-    }
+    reportSaveError(e, 'Autosave');
   }
 }
 
 function handleInputDebounced() {
-  try { localStorage.setItem(CURRENT_KEY, $text().value || ''); } catch {}
   if (inputDebounce) clearTimeout(inputDebounce);
   inputDebounce = setTimeout(autosaveSnapshot, AUTOSAVE_IDLE_MS);
 }
@@ -216,48 +299,37 @@ function handleInputDebounced() {
 /* ==========================
    Manual snapshot (permanent)
    ========================== */
-function createManualSnapshot() {
+async function createManualSnapshot() {
   const text = $text().value || '';
-  const trimmed = text.replace(/\s+/g, ' ').trim();
-  if (!trimmed) {
+  if (!hasContent(text)) {
     setStatus('Cannot save empty snapshot.');
     return;
   }
 
-  const versions = loadVersions();
   const now = Date.now();
   try {
-    versions.push({ id: now, text, tabId: TAB_ID, kind: 'manual' });
-    if (versions.length > MAX_VERSIONS) {
-      versions.splice(0, versions.length - MAX_VERSIONS);
-    }
-    saveVersions(versions);
-    localStorage.setItem(CURRENT_KEY, text);
-    updateDropdown();
+    await withQuotaRetry(async () => {
+      await putVersion({ key: `manual:${now}`, ts: now, text, tabId: TAB_ID, kind: 'manual' });
+      await saveCurrent(text);
+    });
+    await updateDropdown();
     setStatus(`Saved manual snapshot @ ${new Date().toLocaleTimeString()}`);
   } catch (e) {
-    if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
-      alert('Storage is full. Please delete older snapshots or lower MAX_VERSIONS.');
-      setStatus('Storage full; unable to save.');
-    } else {
-      console.warn('Manual snapshot failed:', e);
-      setStatus('Snapshot failed. Check console for details.');
-    }
+    reportSaveError(e, 'Snapshot');
   }
 }
 
 /* =================
    Restore + helpers
    ================= */
-function restoreSelectedVersion() {
-  const id = Number($select().value);
-  if (!id) return;
-  const versions = loadVersions();
-  const v = versions.find(x => x.id === id);
+async function restoreSelectedVersion() {
+  const key = $select().value;
+  if (!key) return;
+  const v = await tx(['versions'], 'readonly', t => reqToPromise(t.objectStore('versions').get(key)));
   if (!v) return;
   $text().value = v.text;
-  try { localStorage.setItem(CURRENT_KEY, v.text); } catch {}
-  setStatus(`Restored snapshot from ${new Date(id).toLocaleString()}`);
+  setStatus(`Restored snapshot from ${new Date(v.ts).toLocaleString()}`);
+  autosaveSnapshot();
 }
 
 function saveTextAsFile() {
@@ -268,6 +340,7 @@ function saveTextAsFile() {
   const link = document.createElement("a");
   link.download = fileName; link.href = url; link.style.display = "none";
   document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  setTimeout(() => window.URL.revokeObjectURL(url), 1000);
 }
 function loadFileAsText() {
   const fileToLoad = document.getElementById("fileToLoad").files[0];
@@ -275,7 +348,6 @@ function loadFileAsText() {
   const reader = new FileReader();
   reader.onload = function(e) {
     $text().value = e.target.result;
-    try { localStorage.setItem(CURRENT_KEY, e.target.result); } catch {}
     // After loading a file, also make it this tab's autosave immediately
     autosaveSnapshot();
   };
@@ -290,18 +362,20 @@ function previewHTML(){
 /* ========
    Bootstrap
    ======== */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   // Start blank as requested
   $text().value = '';
-  updateDropdown();
   $text().focus();
 
   // Input handler -> debounced autosave (updates this tab's single autosave)
   $text().addEventListener('input', handleInputDebounced);
 
-  // Persist current before unload (not a version, just working text)
-  window.addEventListener('beforeunload', () => {
-    try { localStorage.setItem(CURRENT_KEY, $text().value || ''); } catch {}
+  // Flush a pending autosave when the tab is hidden or closed
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && inputDebounce) {
+      clearTimeout(inputDebounce);
+      autosaveSnapshot();
+    }
   });
 
   // Buttons
@@ -314,6 +388,17 @@ document.addEventListener('DOMContentLoaded', function() {
   // Spellcheck
   if (window.$Spelling && typeof $Spelling.SpellCheckAsYouType === 'function') {
     $Spelling.SpellCheckAsYouType('myTextArea');
+  }
+
+  // Ask the browser not to evict saved notes under storage pressure
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+  try {
+    await migrateFromLocalStorage();
+    await updateDropdown();
+  } catch (e) {
+    console.warn('Snapshot store unavailable:', e);
+    setStatus('Snapshot storage unavailable in this browser; Save Text to File still works.');
   }
 });
 </script>
