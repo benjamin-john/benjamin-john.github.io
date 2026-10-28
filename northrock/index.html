@@ -132,6 +132,7 @@ header { text-align: center; margin-bottom: 36px; }
 .bookmarks {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  grid-auto-rows: 1fr;
   gap: 14px;
   margin-top: 52px;
 }
@@ -143,6 +144,7 @@ header { text-align: center; margin-bottom: 36px; }
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  height: 100%;
   padding: 18px 8px 14px;
   color: var(--text);
   text-decoration: none;
@@ -294,7 +296,7 @@ function orgMenu(base) {
 // icon: image under icons/. iconBg: sit a light icon on a navy square. badge: small corner tag.
 const BOOKMARKS = [
   { name: 'Salesforce Prod',         url: ORGS.prod + '/lightning/page/home',   icon: 'icons/salesforce.png', menu: orgMenu(ORGS.prod) },
-  { name: 'Salesforce Full Sandbox', url: ORGS.fullsb + '/lightning/page/home', icon: 'icons/salesforce.png', badge: 'SB', menu: orgMenu(ORGS.fullsb) },
+  { name: 'Full Sandbox',            url: ORGS.fullsb + '/lightning/page/home', icon: 'icons/salesforce.png', badge: 'SB', menu: orgMenu(ORGS.fullsb) },
   { name: 'Zoom Docs',     url: 'https://docs.zoom.us/',                 icon: 'icons/zoom.png' },
   { name: 'Outlook',       url: 'https://outlook.office.com/mail/',      icon: 'icons/outlook.png' },
   { name: 'SharePoint',    url: 'https://northrockpartners.sharepoint.com/', icon: 'icons/sharepoint.png' },
